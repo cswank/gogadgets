@@ -63,6 +63,12 @@ func GetGadgets(configs []GadgetConfig) []GoGadget {
 //a chan in case the system is started as a goroutine,
 //but it can just be called directly.
 func (a *App) Start() {
+	x := make(chan Message)
+	a.GoStart(x)
+}
+
+//Useful for tests of other libraries that use Gogadgets
+func (a *App) GoStart(input <-chan Message) {
 	a.Gadgets = append(a.Gadgets, &Runner{})
 	sockets := &Sockets{
 		host:    a.MasterHost,
@@ -84,11 +90,14 @@ func (a *App) Start() {
 	keepRunning := true
 	log.Println("started gagdgets")
 	for keepRunning {
-		msg := <-in
-		a.sendMessage(msg)
-		if msg.Type == "command" && msg.Body == "shutdown" {
-			keepRunning = false
-			time.Sleep(100 * time.Millisecond)
+		select {
+		case msg := <-in:
+			a.sendMessage(msg)
+		case msg := <-input:
+			if msg.Type == "command" && msg.Body == "shutdown" {
+				keepRunning = false
+			}
+			a.sendMessage(msg)
 		}
 	}
 }
