@@ -1,0 +1,44 @@
+{
+    "gadgets": [
+        {
+            "location": "shack",
+            "name": "door",
+            "pin": {
+                "type": "gpio",
+                "port": "8",
+                "pin": "7",
+                "direction": "out"
+            }
+        },
+        {
+            "location": "shack",
+            "name": "hall-sensor",
+            "pin": {
+                "type": "switch",
+                "port": "8",
+                "pin": "8",
+                "direction": "in",
+                "edge": "both",
+                "value": true
+            }
+        },
+        {
+            "location": "shack",
+            "name": "temperature",
+            "pin": {
+                "type": "thermometer",
+		"onewireId": "28-0000047ade8f",
+		"units": "F"
+            }
+        },
+        {
+	    "location": "shack",
+	    "name": "heater",
+	    "pin": {
+		"type": "heater",
+		"port": "8",
+		"pin": "9"
+	    }
+        }
+    ]
+}

@@ -39,6 +39,7 @@ func (h *Heater) Update(msg *Message) {
 }
 
 func (h *Heater) On(val *Value) error {
+	fmt.Println("heater on")
 	if val != nil {
 		target, ok := val.ToFloat()
 		if ok {

@@ -2,6 +2,7 @@ package gogadgets
 
 import (
 	"bitbucket.org/cswank/gogadgets/utils"
+	"os/exec"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -11,8 +12,58 @@ import (
 	"time"
 )
 
-//Reads temperature from a Dallas 1-Wire thermometer and
-//sends that temperature to the rest of the system.
+/*Reads temperature from a Dallas 1-Wire thermometer and
+sends that temperature to the rest of the system.
+
+on ubuntu install dtc (patched)
+  wget -c https://raw.github.com/RobertCNelson/tools/master/pkgs/dtc.sh 
+  chmod +x dtc.sh 
+  ./dtc.sh
+
+  echo '
+/dts-v1/;
+/plugin/;
+
+/ {
+compatible = "ti,beaglebone", "ti,beaglebone-black";
+
+part-number = "BB-W1";
+version = "00A0";
+
+exclusive-use =
+"P9.22",
+"gpio0_2";
+
+fragment@0 {
+               target = <&am33xx_pinmux>;
+               __overlay__ {
+dallas_w1_pins: pinmux_dallas_w1_pins {
+pinctrl-single,pins = < 0x150 0x37 >;
+};
+               };
+};
+
+fragment@1 {
+               target = <&ocp>;
+               __overlay__ {
+       onewire@0 {
+       compatible      = "w1-gpio";
+       pinctrl-names   = "default";
+       pinctrl-0       = <&dallas_w1_pins>;
+       status          = "okay";
+
+       gpios = <&gpio1 2 0>;
+       };
+         };
+};
+};' > BB-W1-00A0.dts
+
+  dtc -O dtb -o BB-W1-00A0.dtbo -b 0 -@ BB-W1-00A0.dts
+  cp BB-W1-00A0.dtbo /lib/firmware/
+  echo BB-W1:00A0 > /sys/devices/bone_capemgr.9/slots
+
+*/
+
 type Thermometer struct {
 	devicePath string
 	units      string
@@ -23,13 +74,16 @@ func NewThermometer(pin *Pin) (InputDevice, error) {
 	var therm *Thermometer
 	var err error
 	path := fmt.Sprintf("/sys/bus/w1/devices/%s/w1_slave", pin.OneWireId)
+	if !utils.FileExists(path) {
+		activateOneWire()
+	}
 	if pin.OneWireId == "" || !utils.FileExists(path) {
 		err = errors.New(fmt.Sprintf("invalid one-wire device path: %s", pin.OneWireId))
 		return therm, err
 	}
 	therm = &Thermometer{
 		devicePath: path,
-		units:      "C",
+		units:      pin.Units,
 	}
 	return therm, err
 }
@@ -89,8 +143,12 @@ func (t *Thermometer) parseValue(val string) (v *Value, err error) {
 	temperatureStr := val[start+2:]
 	temperatureStr = strings.Trim(temperatureStr, "\n")
 	temperature, err := strconv.ParseFloat(temperatureStr, 64)
+	temperature = temperature / 1000.0
+	if t.units == "F" {
+		temperature = temperature * 1.8 + 32.0
+	}
 	if err == nil {
-		t.value = temperature / 1000.0
+		t.value = temperature
 		v = &Value{
 			Value: t.value,
 			Units: t.units,
@@ -115,4 +173,16 @@ func (t *Thermometer) Start(in <-chan Message, out chan<- Value) {
 			log.Println(fmt.Sprintf("error reading thermometer %s", t.devicePath), err)
 		}
 	}
+}
+
+func activateOneWire() {
+	cmd := "echo echo BB-W1:00A0 > /sys/devices/bone_capemgr.9/slots"
+	cmd := exec.Command("echo", "hi")
+	err := cmd.Start()
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("Waiting for command to finish...")
+	err = cmd.Wait()
+	log.Printf("Command finished with error: %v", err)
 }
