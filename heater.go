@@ -49,7 +49,9 @@ func (h *Heater) On(val *Value) error {
 	h.status = true
 	h.update = make(chan Message)
 	h.stop = make(chan bool)
-	go h.watchTemperature(h.update, h.stop)
+	if h.target > 0.0 {
+		go h.watchTemperature(h.update, h.stop)
+	}
 	return nil
 }
 
