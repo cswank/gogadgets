@@ -63,6 +63,7 @@ func (h *Heater) Off() error {
 	if h.status {
 		h.stop <- true
 	}
+	h.target = 0.0
 	return nil
 }
 
