@@ -1,6 +1,7 @@
 package gogadgets
 
 import (
+
 )
 
 type Motor struct {
