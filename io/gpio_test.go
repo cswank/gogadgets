@@ -2,6 +2,7 @@ package io
 
 import (
 	"testing"
+	"time"
 )
 
 func TestGPOutput(t *testing.T) {
