@@ -1,7 +1,6 @@
 package gogadgets
 
 import (
-	"fmt"
 	"time"
 )
 

@@ -1,5 +1,11 @@
 package pins
 
+type Pin struct {
+	Type string
+	Port string
+	Pin string
+}
+
 var (
 	GPIO = map[string]map[string]string{
 		"8": map[string]string{

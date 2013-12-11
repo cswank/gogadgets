@@ -1,4 +1,4 @@
-package io
+package devices
 
 import (
 	"fmt"
@@ -17,14 +17,14 @@ type GPOutput struct {
 	valuePath string
 }
 
-func NewGPOutput(port, pin string) (*GPOutput, error) {
-	portMap, ok := pins.GPIO[port]
+func NewGPOutput(pin *pins.Pin) (*GPOutput, error) {
+	portMap, ok := pins.GPIO[pin.Port]
 	if !ok {
-		return nil, errors.New(fmt.Sprintf("no such port: %s", port))
+		return nil, errors.New(fmt.Sprintf("no such port: %s", pin.Port))
 	}
-	export, ok := portMap[pin]
+	export, ok := portMap[pin.Pin]
 	if !ok {
-		return nil, errors.New(fmt.Sprintf("no such pin: %s", pin))
+		return nil, errors.New(fmt.Sprintf("no such pin: %s", pin.Pin))
 	}
 	g := &GPOutput{
 		export: export,
