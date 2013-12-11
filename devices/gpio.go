@@ -54,6 +54,12 @@ func (g *GPOutput) On() error {
 	return g.writeValue(g.valuePath, "1")
 }
 
+func (g *GPOutput) Status() bool {
+	data, err := ioutil.ReadFile(g.valuePath)
+	fmt.Println(data, err)
+	return err == nil && string(data) == "1"
+}
+
 func (g *GPOutput) Off() error {
 	return g.writeValue(g.valuePath, "0")
 }

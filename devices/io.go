@@ -8,6 +8,7 @@ import (
 type OutputDevice interface {
 	On() error
 	Off() error
+	Status() bool
 }
 
 func NewOutputDevice(pin *pins.Pin) (OutputDevice, error) {

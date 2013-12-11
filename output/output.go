@@ -48,8 +48,10 @@ func (od *OutputGadget) readCommand(msg *gogadgets.Message) {
 		fmt.Println("shutting down")
 		od.Output.Off()
 		od.shutdown = true
-	} else {
-		
+	} else if msg.Command == od.OnCommand {
+		od.Output.On()
+	} else if msg.Command == od.OffCommand {
+		od.Output.Off()
 	}
 }
 
