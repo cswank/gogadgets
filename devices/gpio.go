@@ -11,6 +11,7 @@ import (
 
 type GPOutput struct {
 	OutputDevice
+	units string
 	export string
 	exportPath string
 	directionPath string

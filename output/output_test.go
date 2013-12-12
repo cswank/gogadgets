@@ -3,7 +3,6 @@ package output
 import (
 	"fmt"
 	"testing"
-	"time"
 	//"bitbucket.com/cswank/gogadgets/pins"
 	"bitbucket.com/cswank/gogadgets/devices"
 	"bitbucket.com/cswank/gogadgets"
@@ -38,27 +37,28 @@ func TestStart(t *testing.T) {
 		OnCommand: fmt.Sprintf("turn on %s %s", location, name),
 		OffCommand: fmt.Sprintf("turn off %s %s", location, name),
 		Output: &FakeOutput{},
+		uid: fmt.Sprintf("%s %s", location, name),
 	}
 	input := make(chan gogadgets.Message)
 	output := make(chan gogadgets.Message)
 	go g.Start(input, output)
 	msg := gogadgets.Message{
 		Type: "command",
-		Command: "turn on lab led",
+		Body: "turn on lab led",
 	}
 	input<- msg
-	for !g.Output.Status() {
-		fmt.Println("still off")
-		time.Sleep(10 * time.Millisecond)
+	status := <-output
+	if status.Locations["lab"].Output["led"].Value != true {
+		t.Error("shoulda been on", status)
 	}
+	
 	msg = gogadgets.Message{
 		Type: "command",
-		Command: "shutdown",
+		Body: "shutdown",
 	}
 	input<- msg
-	for g.Output.Status() {
-		//device should turn off when shutdown message is received
-		fmt.Println("still on")
-		time.Sleep(10 * time.Millisecond)
+	status = <-output
+	if status.Locations["lab"].Output["led"].Value != false {
+		t.Error("shoulda been off", status)
 	}
 }
