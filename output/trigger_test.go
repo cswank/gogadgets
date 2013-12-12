@@ -1,19 +1,18 @@
 package output
 
 import (
-	"fmt"
 	"time"
 	"bitbucket.com/cswank/gogadgets"
 	"testing"
 )
 
-func sendVolumeMessage(in chan<- gogadgets.Message) {
+func sendVolumeMessage(out chan<- gogadgets.Message, val float64) {
 	time.Sleep(10 * time.Millisecond)
 	l := gogadgets.Location{
 		Input: map[string]gogadgets.Device{
 			"volume": gogadgets.Device{
 				Units: "liters",
-				Value: 5.0,
+				Value: val,
 			},
 		},
 	}
@@ -22,7 +21,7 @@ func sendVolumeMessage(in chan<- gogadgets.Message) {
 		Type: gogadgets.STATUS,
 		Locations: map[string]gogadgets.Location{"tank": l},
 	}
-	in<- msg
+	out<- msg
 }
 
 func TestVolume(t *testing.T) {
@@ -36,9 +35,11 @@ func TestVolume(t *testing.T) {
 	in := make(chan gogadgets.Message)
 	out := make(chan gogadgets.Message)
 	go tr.Start(in, out)
-	go sendVolumeMessage(in)
-	msg := <-out
-	fmt.Println(msg)
+	go sendVolumeMessage(out, 5.0)
+	msg := <-in
+	if msg.Body != "stop filling tank" {
+		t.Error(msg)
+	}
 }
 
 func TestStripCommand(t *testing.T) {

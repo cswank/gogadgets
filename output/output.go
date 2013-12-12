@@ -27,8 +27,8 @@ type OutputGadget struct {
 	units string
 	trigger *Trigger
 	out chan<- gogadgets.Message
-	triggerIn <-chan gogadgets.Message
-	triggerOut chan<- gogadgets.Message
+	triggerIn chan gogadgets.Message
+	triggerOut chan gogadgets.Message
 }
 
 func NewOutputGadget(config *Config) (*OutputGadget, error) {
@@ -46,78 +46,102 @@ func NewOutputGadget(config *Config) (*OutputGadget, error) {
 	return nil, err
 }
 
-func (od *OutputGadget) isMine(msg *gogadgets.Message) bool {
-	return msg.Body == od.OnCommand || msg.Body == od.OffCommand || msg.Body == "shutdown"
+func (og *OutputGadget) isMine(msg *gogadgets.Message) bool {
+	return strings.Index(msg.Body, og.OnCommand) == 0 || strings.Index(msg.Body, og.OffCommand) == 0 || msg.Body == "shutdown"
 }
 
-func (od *OutputGadget) Start(in <-chan gogadgets.Message, out chan<- gogadgets.Message) {
-	od.out = out
-	od.triggerIn = make(chan gogadgets.Message)
-	od.triggerOut = make(chan gogadgets.Message)
-	for !od.shutdown {
+func (og *OutputGadget) Start(in <-chan gogadgets.Message, out chan<- gogadgets.Message) {
+	og.out = out
+	og.triggerIn = make(chan gogadgets.Message)
+	og.triggerOut = make(chan gogadgets.Message)
+	for !og.shutdown {
 		select {
 		case msg := <-in:
-			if od.isMine(&msg) {
-				od.readMessage(&msg)
+			if og.isMine(&msg) {
+				og.readMessage(&msg)
 			}
-			if od.trigger != nil {
-				od.triggerOut<- msg
+			if og.trigger != nil && msg.Type == gogadgets.STATUS {
+				og.triggerOut<- msg
 			}
-		case msg := <-od.triggerIn:
-			od.readTrigger(&msg)
+		case msg := <-og.triggerIn:
+			og.readTrigger(&msg)
 		}
 	}
 }
 
-func (od *OutputGadget) readCommand(msg *gogadgets.Message) {
-	if msg.Body == "shutdown" {
-		od.Output.Off()
-		od.shutdown = true
-	} else if strings.Index(msg.Body, od.OnCommand) == 0 {
-		od.readOnCommand(msg)
-	} else if strings.Index(msg.Body, od.OffCommand) == 0 {
-		od.readOffCommand(msg)
-	}
-}
-
-func (od *OutputGadget) readTrigger(msg *gogadgets.Message) {
+func (og *OutputGadget) readTrigger(msg *gogadgets.Message) {
 	if msg.Type == gogadgets.DONE || msg.Type == gogadgets.UPDATE {
-		od.out<- *msg
+		og.out<- *msg
 	} else if msg.Type == gogadgets.COMMAND {
-		od.readCommand(msg)
+		og.readCommand(msg)
 	}
 }
 
-func (od *OutputGadget) readMessage(msg *gogadgets.Message) {
+func (og *OutputGadget) readMessage(msg *gogadgets.Message) {
 	if msg.Type == gogadgets.COMMAND {
-		od.readCommand(msg)
+		og.readCommand(msg)
 	}
-	od.sendStatus()
+	
 }
 
-func (od *OutputGadget) readOnCommand(msg *gogadgets.Message) {
-	od.status = true
-	od.Output.On()
+func (og *OutputGadget) readCommand(msg *gogadgets.Message) {
+	if msg.Body == "shutdown" {
+		og.Output.Off()
+		og.shutdown = true
+		og.sendStatus()
+	} else if strings.Index(msg.Body, og.OnCommand) == 0 {
+		og.readOnCommand(msg)
+	} else if strings.Index(msg.Body, og.OffCommand) == 0 {
+		og.readOffCommand(msg)
+	}
 }
 
-func (od *OutputGadget) readOffCommand(msg *gogadgets.Message) {
-	od.status = false
-	od.Output.Off()
+func (og *OutputGadget) readOnCommand(msg *gogadgets.Message) {
+	og.status = true
+	og.Output.On()
+	if len(msg.Body) > len(og.OnCommand) {
+		og.startTrigger(msg)
+	}
+	og.sendStatus()
 }
 
-func (od *OutputGadget) sendStatus() {
+func (og *OutputGadget) startTrigger(msg *gogadgets.Message) {
+	og.trigger = &Trigger{
+		location: og.Location,
+		name: og.Name,
+		operator: ">=",
+		command: msg.Body[len(og.OnCommand):],
+		offCommand: og.OffCommand,
+	}
+	go og.trigger.Start(og.triggerIn, og.triggerOut)
+}
+
+func (og *OutputGadget) readOffCommand(msg *gogadgets.Message) {
+	if og.trigger != nil && msg.Sender != og.trigger.uid {
+		og.triggerOut<- gogadgets.Message{
+			Type: gogadgets.COMMAND,
+			Body: "stop",
+		}
+		og.trigger = nil
+	}
+	og.status = false
+	og.Output.Off()
+	og.sendStatus()
+}
+
+func (og *OutputGadget) sendStatus() {
 	location := gogadgets.Location{
 		Output: map[string]gogadgets.Device{
-			od.Name: gogadgets.Device{
-				Units: od.units,
-				Value:od.Output.Status(),
+			og.Name: gogadgets.Device{
+				Units: og.units,
+				Value:og.Output.Status(),
 			},
 		},
 	}
 	msg := gogadgets.Message{
-		Sender: od.uid,
+		Sender: og.uid,
 		Type: gogadgets.STATUS,
-		Locations: map[string]gogadgets.Location{od.Location: location},
+		Locations: map[string]gogadgets.Location{og.Location: location},
 	}
-	od.out<- msg
+	og.out<- msg
 }

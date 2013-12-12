@@ -1,6 +1,7 @@
 package output
 
 import (
+	"fmt"
 	"log"
 	"strings"
 	"strconv"
@@ -31,6 +32,7 @@ type Comparitor func(x float64) bool
 type Trigger struct {
 	location string
 	name string
+	uid string
 	operator string
 	command string
 	offCommand string
@@ -40,7 +42,8 @@ type Trigger struct {
 	out chan<- gogadgets.Message
 }
 
-func (t *Trigger) Start(in <-chan gogadgets.Message, out chan<- gogadgets.Message) {
+func (t *Trigger) Start(out chan<- gogadgets.Message, in <-chan gogadgets.Message) {
+	t.uid = fmt.Sprintf("%s %s trigger", t.location, t.name)
 	t.in = in
 	t.out = out
 	t.parseCommand()
@@ -89,6 +92,7 @@ func (t *Trigger) splitCommand() (string, string, error) {
 
 func (t *Trigger) getMessage() gogadgets.Message {
 	return gogadgets.Message{
+		Sender: t.uid,
 		Type: gogadgets.COMMAND,
 		Body: t.offCommand,
 	}
@@ -96,6 +100,9 @@ func (t *Trigger) getMessage() gogadgets.Message {
 
 func (t *Trigger) doWaitForMessage() {
 	msg := <-t.in
+	if msg.Type == "command" && msg.Body == "stop" {
+		return
+	}
 	val, ok := msg.Locations[t.location].Input[t.triggerType].Value.(float64)
 	if ok && t.compare(val) {
 		t.out<- t.getMessage()
