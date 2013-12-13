@@ -3,7 +3,8 @@ package output
 import (
 	"fmt"
 	"testing"
-	//"bitbucket.com/cswank/gogadgets/pins"
+	"bitbucket.com/cswank/gogadgets/pins"
+	"bitbucket.com/cswank/gogadgets/utils"
 	"bitbucket.com/cswank/gogadgets/devices"
 	"bitbucket.com/cswank/gogadgets"
 )
@@ -142,8 +143,11 @@ func TestStartWithTimeTriggerForReals(t *testing.T) {
 	if !utils.FileExists("/sys/class/gpio/export") {
 		return //not a beaglebone
 	}
-	pin := pins.Pin{Type:"gpio", Port: "9", Pin: "15"}
-	gpio, err := NewGPOutput(pin)
+	pin := &pins.Pin{Type:"gpio", Port: "9", Pin: "15"}
+	gpio, err := devices.NewGPOutput(pin)
+	if err != nil {
+		t.Fatal(err)
+	}
 	location := "lab"
 	name := "led"
 	g := OutputGadget{
