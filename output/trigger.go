@@ -3,6 +3,7 @@ package output
 import (
 	"fmt"
 	"log"
+	"time"
 	"strings"
 	"strconv"
 	"bitbucket.com/cswank/gogadgets"
@@ -111,8 +112,17 @@ func (t *Trigger) doWaitForMessage() {
 	}
 }
 
+func (t *Trigger) sleep(ch chan<- bool, value time.Duration) {
+	fmt.Println("sleeping")
+	time.Sleep(value * time.Second)
+	ch<- true
+}
+
 func (t *Trigger) waitForTime(value float64, unit string) {
-	//msg := <-t.in
+	ch := make(chan bool)
+	go t.sleep(ch, time.Duration(value))
+	<-ch
+	t.out<- t.getMessage()
 }
 
 func (t *Trigger) stripCommand() {

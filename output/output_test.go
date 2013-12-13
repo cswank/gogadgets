@@ -86,6 +86,8 @@ func TestStartWithTrigger(t *testing.T) {
 	if status.Locations["tank"].Output["valve"].Value != true {
 		t.Error("shoulda been on", status)
 	}
+
+	//make a message that should trigger the trigger and stop the device
 	l := gogadgets.Location{
 		Input: map[string]gogadgets.Device{
 			"volume": gogadgets.Device{
@@ -102,6 +104,36 @@ func TestStartWithTrigger(t *testing.T) {
 	input<- msg
 	status = <-output
 	if status.Locations["tank"].Output["valve"].Value != false {
+		t.Error("shoulda been off", status)
+	}
+}
+
+func TestStartWithTimeTrigger(t *testing.T) {
+	location := "lab"
+	name := "led"
+	g := OutputGadget{
+		Location: location,
+		Name: name,
+		OnCommand: "turn on lab led",
+		OffCommand: "turn off lab led",
+		Output: &FakeOutput{},
+		uid: fmt.Sprintf("%s %s", location, name),
+	}
+	input := make(chan gogadgets.Message)
+	output := make(chan gogadgets.Message)
+	go g.Start(input, output)
+	msg := gogadgets.Message{
+		Type: "command",
+		Body: "turn on lab led for 0.01 second",
+	}
+	input<- msg
+	status := <-output
+	if status.Locations["lab"].Output["led"].Value != true {
+		t.Error("shoulda been on", status)
+	}
+	//wait for a second
+	status = <-output
+	if status.Locations["lab"].Output["led"].Value != false {
 		t.Error("shoulda been off", status)
 	}
 }
