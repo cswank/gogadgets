@@ -57,8 +57,8 @@ func (g *GPOutput) On() error {
 
 func (g *GPOutput) Status() bool {
 	data, err := ioutil.ReadFile(g.valuePath)
-	fmt.Println(data, err)
-	return err == nil && string(data) == "1"
+	fmt.Println(string(data), err)
+	return err == nil && string(data) == "1\n"
 }
 
 func (g *GPOutput) Off() error {
