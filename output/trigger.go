@@ -112,17 +112,23 @@ func (t *Trigger) doWaitForMessage() {
 	}
 }
 
-func (t *Trigger) sleep(ch chan<- bool, value time.Duration) {
-	fmt.Println("sleeping")
-	time.Sleep(value * time.Second)
-	ch<- true
-}
-
 func (t *Trigger) waitForTime(value float64, unit string) {
-	ch := make(chan bool)
-	go t.sleep(ch, time.Duration(value))
-	<-ch
-	t.out<- t.getMessage()
+	start := time.Now()
+	d := time.Duration(value * float64(time.Second))
+	keepGoing := true
+	for  keepGoing{
+		select {
+		case msg:= <-t.in:
+			if msg.Type == "command" && msg.Body == "stop" {
+				keepGoing = false
+			} else {
+				d = time.Since(start)
+			}
+		case <-time.After(d):
+			keepGoing = false
+			t.out<- t.getMessage();
+		}
+	}
 }
 
 func (t *Trigger) stripCommand() {

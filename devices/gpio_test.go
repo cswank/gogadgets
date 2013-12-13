@@ -5,8 +5,8 @@ import (
 	"time"
 )
 
-func TestGPOutput(t *testing.T) {
-	g, err := NewGPOutput("9", "15")
+func TestGPIO(t *testing.T) {
+	g, err := NewGPIO(&Pin{Port:"9", Pin:"15", Direction:"out"})
 	if err != nil {
 		t.Error(err)
 	}

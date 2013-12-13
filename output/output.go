@@ -5,13 +5,12 @@ import (
 	"strings"
 	"bitbucket.com/cswank/gogadgets"
 	"bitbucket.com/cswank/gogadgets/devices"
-	"bitbucket.com/cswank/gogadgets/pins"
 )
 
 type Config struct {
 	Location string
 	Name string
-	Pin *pins.Pin
+	Pin *devices.Pin
 }
 
 type OutputGadget struct {
@@ -60,7 +59,7 @@ func (og *OutputGadget) Start(in <-chan gogadgets.Message, out chan<- gogadgets.
 			if og.isMine(&msg) {
 				og.readMessage(&msg)
 			}
-			if og.trigger != nil && msg.Type == gogadgets.STATUS {
+			if og.trigger != nil && msg.Type == gogadgets.STATUS { 
 				og.triggerOut<- msg
 			}
 		case msg := <-og.triggerIn:
@@ -97,12 +96,14 @@ func (og *OutputGadget) readCommand(msg *gogadgets.Message) {
 }
 
 func (og *OutputGadget) readOnCommand(msg *gogadgets.Message) {
-	og.status = true
-	og.Output.On()
-	if len(msg.Body) > len(og.OnCommand) {
-		og.startTrigger(msg)
+	if !og.status {
+		og.status = true
+		og.Output.On()
+		if len(msg.Body) > len(og.OnCommand) {
+			og.startTrigger(msg)
+		}
+		og.sendStatus()
 	}
-	og.sendStatus()
 }
 
 func (og *OutputGadget) startTrigger(msg *gogadgets.Message) {
@@ -117,16 +118,18 @@ func (og *OutputGadget) startTrigger(msg *gogadgets.Message) {
 }
 
 func (og *OutputGadget) readOffCommand(msg *gogadgets.Message) {
-	if og.trigger != nil && msg.Sender != og.trigger.uid {
-		og.triggerOut<- gogadgets.Message{
-			Type: gogadgets.COMMAND,
-			Body: "stop",
+	if og.status {
+		if og.trigger != nil && msg.Sender != og.trigger.uid {
+			og.triggerOut<- gogadgets.Message{
+				Type: gogadgets.COMMAND,
+				Body: "stop",
+			}
+			og.trigger = nil
 		}
-		og.trigger = nil
+		og.status = false
+		og.Output.Off()
+		og.sendStatus()
 	}
-	og.status = false
-	og.Output.Off()
-	og.sendStatus()
 }
 
 func (og *OutputGadget) sendStatus() {

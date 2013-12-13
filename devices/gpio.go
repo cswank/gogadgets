@@ -2,24 +2,26 @@ package devices
 
 import (
 	"fmt"
-	"bitbucket.com/cswank/gogadgets/pins"
 	"bitbucket.com/cswank/gogadgets/utils"
 	"os"
 	"errors"
 	"io/ioutil"
 )
 
-type GPOutput struct {
+type GPIO struct {
 	OutputDevice
+	InputDevice
 	units string
 	export string
 	exportPath string
 	directionPath string
 	valuePath string
+	direction string
+	edge string
 }
 
-func NewGPOutput(pin *pins.Pin) (*GPOutput, error) {
-	portMap, ok := pins.GPIO[pin.Port]
+func NewGPIO(pin *Pin) (*GPIO, error) {
+	portMap, ok := Pins["gpio"][pin.Port]
 	if !ok {
 		return nil, errors.New(fmt.Sprintf("no such port: %s", pin.Port))
 	}
@@ -27,17 +29,19 @@ func NewGPOutput(pin *pins.Pin) (*GPOutput, error) {
 	if !ok {
 		return nil, errors.New(fmt.Sprintf("no such pin: %s", pin.Pin))
 	}
-	g := &GPOutput{
+	g := &GPIO{
 		export: export,
 		exportPath: "/sys/class/gpio/export",
 		directionPath: fmt.Sprintf("/sys/class/gpio/gpio%s/direction", export),
 		valuePath: fmt.Sprintf("/sys/class/gpio/gpio%s/value", export),
+		direction: pin.Direction,
+		edge: pin.Edge,
 	}
 	err := g.Init()
 	return g, err
 }
 
-func (g *GPOutput) Init() error {
+func (g *GPIO) Init() error {
 	var err error
 	if !utils.FileExists(g.directionPath) {
 		err = g.writeValue(g.exportPath, g.export)
@@ -51,20 +55,19 @@ func (g *GPOutput) Init() error {
 	return err
 }
 
-func (g *GPOutput) On() error {
+func (g *GPIO) On() error {
 	return g.writeValue(g.valuePath, "1")
 }
 
-func (g *GPOutput) Status() bool {
+func (g *GPIO) Status() bool {
 	data, err := ioutil.ReadFile(g.valuePath)
-	fmt.Println(string(data), err)
 	return err == nil && string(data) == "1\n"
 }
 
-func (g *GPOutput) Off() error {
+func (g *GPIO) Off() error {
 	return g.writeValue(g.valuePath, "0")
 }
 
-func (g *GPOutput) writeValue(path, value string) error {
+func (g *GPIO) writeValue(path, value string) error {
 	return ioutil.WriteFile(path, []byte(value), os.ModeDevice)
 }
