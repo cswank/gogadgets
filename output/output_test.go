@@ -124,7 +124,42 @@ func TestStartWithTimeTrigger(t *testing.T) {
 	go g.Start(input, output)
 	msg := gogadgets.Message{
 		Type: "command",
-		Body: "turn on lab led for 0.01 second",
+		Body: "turn on lab led for 0.1 seconds",
+	}
+	input<- msg
+	status := <-output
+	if status.Locations["lab"].Output["led"].Value != true {
+		t.Error("shoulda been on", status)
+	}
+	//wait for a second
+	status = <-output
+	if status.Locations["lab"].Output["led"].Value != false {
+		t.Error("shoulda been off", status)
+	}
+}
+
+func TestStartWithTimeTriggerForReals(t *testing.T) {
+	if !utils.FileExists("/sys/class/gpio/export") {
+		return //not a beaglebone
+	}
+	pin := pins.Pin{Type:"gpio", Port: "9", Pin: "15"}
+	gpio, err := NewGPOutput(pin)
+	location := "lab"
+	name := "led"
+	g := OutputGadget{
+		Location: location,
+		Name: name,
+		OnCommand: "turn on lab led",
+		OffCommand: "turn off lab led",
+		Output: gpio,
+		uid: fmt.Sprintf("%s %s", location, name),
+	}
+	input := make(chan gogadgets.Message)
+	output := make(chan gogadgets.Message)
+	go g.Start(input, output)
+	msg := gogadgets.Message{
+		Type: "command",
+		Body: "turn on lab led for 0.1 seconds",
 	}
 	input<- msg
 	status := <-output
