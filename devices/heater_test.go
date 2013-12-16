@@ -1,6 +1,7 @@
 package devices
 
 import (
+	"time"
 	"bitbucket.com/cswank/gogadgets"
 	"testing"
 )
@@ -36,6 +37,15 @@ func TestCreateHeater(t *testing.T) {
 	}
 }
 
+func getMessage(val float64) *gogadgets.Message {
+	return &gogadgets.Message{
+		Name: "temperature",
+		Value: gogadgets.Value{
+			Value: val,
+		},
+	}
+}
+
 func TestHeater(t *testing.T) {
 	g, err := NewGPIO(&Pin{Port:"9", Pin:"15", Direction:"out"})
 	if err != nil {
@@ -50,7 +60,20 @@ func TestHeater(t *testing.T) {
 		Units: "C",
 	}
 	h.On(v)
-	time.Sleep(1 * time.Second())
+	time.Sleep(1 * time.Second)
+	msg := getMessage(84.0)
+	h.Update(msg)
+	time.Sleep(5 * time.Second)
+	msg = getMessage(84.5)
+	h.Update(msg)
+	time.Sleep(5 * time.Second)
+	msg = getMessage(85.5)
+	h.Update(msg)
+	time.Sleep(5 * time.Second)
+	msg = getMessage(82.0)
+	h.Update(msg)
+	time.Sleep(5 * time.Second)
 	h.Off()
+	
 }
 

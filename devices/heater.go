@@ -1,6 +1,7 @@
 package devices
 
 import (
+	"fmt"
 	"time"
 	"bitbucket.com/cswank/gogadgets"
 )
@@ -66,9 +67,11 @@ func (h *Heater) watchTemperature(update <-chan gogadgets.Message, stop <-chan b
 	for keepGoing {
 		select {
 		case msg := <-update:
-			target, ok := msg.Value.Value.(float64)
+			current, ok := msg.Value.Value.(float64)
 			if ok {
-				h.target = target
+				h.current = current
+				h.toggle()
+				fmt.Println(h.duration)
 			}
 		case <-stop:
 			h.gpio.Off()
@@ -82,7 +85,10 @@ func (h *Heater) watchTemperature(update <-chan gogadgets.Message, stop <-chan b
 func (h *Heater) toggle() {
 	on, off := h.getDurations()
 	status := h.gpio.Status()
-	if status && off != 0 {
+	if on == 0 && off != 0 {
+		h.gpio.Off()
+		h.duration = off
+	} else if status && off != 0 {
 		h.gpio.Off()
 		h.duration = off
 	} else if !status && on != 0 {
@@ -92,15 +98,17 @@ func (h *Heater) toggle() {
 }
 
 func (h *Heater) getDurations() (on time.Duration, off time.Duration) {
-	diff := h.current - h.target
+	diff := h.target - h.current
 	if diff >= 2.0 {
 		on = time.Duration(60.0 * float64(time.Second))
 	} else if diff >= 1.0 {
 		on = time.Duration(0.5 * float64(time.Second))
 		off = time.Duration(0.5 * float64(time.Second))
-	} else if diff >= 0.0 {
+	} else if diff > 0.0 {
 		on = time.Duration(0.25 * float64(time.Second))
 		off = time.Duration(0.75 * float64(time.Second))
+	} else if  diff <= 0.0 {
+		off = time.Duration(60.0 * float64(time.Second))
 	}
 	return on, off
 }
