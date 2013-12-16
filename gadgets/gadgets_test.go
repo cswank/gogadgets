@@ -32,18 +32,15 @@ func (f *FakeOutput) Status() bool {
 
 func sendVolumeMessage(out chan<- gogadgets.Message, val float64) {
 	time.Sleep(10 * time.Millisecond)
-	l := gogadgets.Location{
-		Input: map[string]gogadgets.Device{
-			"volume": gogadgets.Device{
-				Units: "liters",
-				Value: val,
-			},
-		},
-	}
 	msg := gogadgets.Message{
 		Sender: "tank volume",
 		Type: gogadgets.STATUS,
-		Locations: map[string]gogadgets.Location{"tank": l},
+		Location: "tank",
+		Name: "volume",
+		Value: gogadgets.Value{
+			Units: "liters",
+			Value: val,
+		},
 	}
 	out<- msg
 }
@@ -144,7 +141,7 @@ func TestStart(t *testing.T) {
 	}
 	input<- msg
 	status := <-output
-	if status.Locations["lab"].Output["led"].Value != true {
+	if status.Value.Value != true {
 		t.Fatal("shoulda been on", status)
 	}
 	
@@ -154,7 +151,7 @@ func TestStart(t *testing.T) {
 	}
 	input<- msg
 	status = <-output
-	if status.Locations["lab"].Output["led"].Value != false {
+	if status.Value.Value != false {
 		t.Error("shoulda been off", status)
 	}
 	msg = gogadgets.Message{
@@ -186,27 +183,23 @@ func TestStartWithTrigger(t *testing.T) {
 	}
 	input<- msg
 	status := <-output
-	if status.Locations["tank"].Output["valve"].Value != true {
+	if status.Value.Value != true {
 		t.Error("shoulda been on", status)
 	}
-
 	//make a message that should trigger the trigger and stop the device
-	l := gogadgets.Location{
-		Input: map[string]gogadgets.Device{
-			"volume": gogadgets.Device{
-				Units: "liters",
-				Value: 4.4,
-			},
-		},
-	}
 	msg = gogadgets.Message{
 		Sender: "tank volume",
 		Type: gogadgets.STATUS,
-		Locations: map[string]gogadgets.Location{"tank": l},
+		Location: "tank",
+		Name: "volume",
+		Value: gogadgets.Value{
+			Units: "liters",
+			Value: 4.4,
+		},
 	}
 	input<- msg
 	status = <-output
-	if status.Locations["tank"].Output["valve"].Value != false {
+	if status.Value.Value != false {
 		t.Error("shoulda been off", status)
 	}
 }
@@ -232,12 +225,12 @@ func TestStartWithTimeTrigger(t *testing.T) {
 	}
 	input<- msg
 	status := <-output
-	if status.Locations["lab"].Output["led"].Value != true {
+	if status.Value.Value != true {
 		t.Error("shoulda been on", status)
 	}
 	//wait for a second
 	status = <-output
-	if status.Locations["lab"].Output["led"].Value != false {
+	if status.Value.Value != false {
 		t.Error("shoulda been off", status)
 	}
 }
@@ -262,7 +255,7 @@ func TestStartWithTimeTriggerWithInterrupt(t *testing.T) {
 	}
 	input<- msg
 	status := <-output
-	if status.Locations["lab"].Output["led"].Value != true {
+	if status.Value.Value != true {
 		t.Error("shoulda been on", status)
 	}
 	
@@ -284,7 +277,7 @@ func TestStartWithTimeTriggerWithInterrupt(t *testing.T) {
 	}
 	input<- msg
 	status = <-output
-	if status.Locations["lab"].Output["led"].Value != false {
+	if status.Value.Value != false {
 		t.Error("shoulda been off", status)
 	}
 }
@@ -317,12 +310,12 @@ func TestStartWithTimeTriggerForReals(t *testing.T) {
 	}
 	input<- msg
 	status := <-output
-	if status.Locations["lab"].Output["led"].Value != true {
+	if status.Value.Value != true {
 		t.Error("shoulda been on", status)
 	}
 	//wait for a second
 	status = <-output
-	if status.Locations["lab"].Output["led"].Value != false {
+	if status.Value.Value != false {
 		t.Error("shoulda been off", status)
 	}
 }

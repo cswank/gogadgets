@@ -15,15 +15,10 @@ type Gadget interface {
 	Start(input <-chan Message, output chan<- Message)
 }
 
-type Device struct {
-	Units string      `json:"units"`
+type Value struct {
 	Value interface{} `json:"value"`
+	Units string      `json:"units"`
 	ID    string      `json:"id"`
-}
-
-type Location struct {
-	Input  map[string]Device `json:"input"`
-	Output map[string]Device `json:"output"`
 }
 
 type Message struct {
@@ -32,5 +27,6 @@ type Message struct {
 	Body        string      `json:"body"`
 	Timestamp   time.Time   `json:"timestamp"`
 	Name        string      `json:"name"`
-	Locations   map[string]Location `json:"locations"`
+	Location    string      `json:"location"`
+	Value       Value       `json:"value"`
 }

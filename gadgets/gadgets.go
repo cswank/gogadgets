@@ -146,26 +146,32 @@ func (g *Gadget) readOnArguments(cmd string) {
 	if err != nil {
 		log.Println("could not parse", cmd)
 	}
-	triggerType, ok := units[unit]
+	gadget, ok := units[unit]
 	if ok {
-		if triggerType == "time" {
+		if gadget == "time" {
 			go g.startTimer(value, unit, g.timerIn, g.timerOut)
-		} else if triggerType == "volume" || triggerType == "temperature" {
-			g.setCompare(value, unit, triggerType)
+		} else if gadget == "volume" || gadget == "temperature" {
+			g.setCompare(value, unit, gadget)
 		}
 	}
 }
 
-func (g *Gadget) setCompare(value float64, unit string, triggerType string) {
+func (g *Gadget) setCompare(value float64, unit string, gadget string) {
 	if g.operator == "<=" {
 		g.compare = func(msg *gogadgets.Message) bool {
-			val, ok := msg.Locations[g.location].Input[triggerType].Value.(float64)
-			return ok && val <= value
+			val, ok := msg.Value.Value.(float64)
+			return msg.Location == g.location &&
+				ok &&
+				msg.Name == gadget &&
+				val <= value
 		}
 	} else if g.operator == ">=" {
 		g.compare = func(msg *gogadgets.Message) bool {
-			val, ok := msg.Locations[g.location].Input[triggerType].Value.(float64)
-			return ok && val >= value
+			val, ok := msg.Value.Value.(float64)
+			return msg.Location == g.location &&
+				ok &&
+				msg.Name == gadget &&
+				val >= value
 		}
 	}
 }
@@ -213,18 +219,15 @@ func (g *Gadget) readOffCommand(msg *gogadgets.Message) {
 }
 
 func (g *Gadget) sendStatus() {
-	location := gogadgets.Location{
-		Output: map[string]gogadgets.Device{
-			g.name: gogadgets.Device{
-				Units: g.units,
-				Value:g.status,
-			},
-		},
-	}
 	msg := gogadgets.Message{
 		Sender: g.uid,
 		Type: gogadgets.STATUS,
-		Locations: map[string]gogadgets.Location{g.location: location},
+		Location: g.location,
+		Name: g.name,
+		Value: gogadgets.Value{
+			Units: g.units,
+			Value:g.status,
+		},
 	}
 	g.out<- msg
 }
