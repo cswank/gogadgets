@@ -3,6 +3,7 @@ package devices
 import (
 	"fmt"
 	"bitbucket.com/cswank/gogadgets/utils"
+	"bitbucket.com/cswank/gogadgets"
 	"os"
 	"errors"
 	"io/ioutil"
@@ -55,7 +56,11 @@ func (g *GPIO) Init() error {
 	return err
 }
 
-func (g *GPIO) On() error {
+func (g *GPIO) Update(msg *gogadgets.Message) {
+	
+}
+
+func (g *GPIO) On(val *gogadgets.Value) error {
 	return g.writeValue(g.valuePath, "1")
 }
 

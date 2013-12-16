@@ -2,11 +2,13 @@ package devices
 
 import (
 	"errors"
+	"bitbucket.com/cswank/gogadgets"
 )
 
 type OutputDevice interface {
-	On() error
+	On(val *gogadgets.Value) error
 	Off() error
+	Update(msg *gogadgets.Message)
 	Status() bool
 }
 

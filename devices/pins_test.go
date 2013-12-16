@@ -4,11 +4,11 @@ import (
 	"testing"
 )
 
-func TestGPIO(t *testing.T) {
-	if GPIO["8"]["7"] != "66" {
-		t.Error(GPIO)
+func TestPins(t *testing.T) {
+	if Pins["gpio"]["8"]["7"] != "66" {
+		t.Error(Pins)
 	}
-	if GPIO["9"]["15"] != "48" {
-		t.Error(GPIO)
+	if Pins["gpio"]["9"]["15"] != "48" {
+		t.Error(Pins)
 	}
 }

@@ -99,10 +99,12 @@ func (g *Gadget) off() {
 	g.sendStatus()
 }
 
-func (g *Gadget) on() {
-	g.status = true
-	g.output.On()
-	g.sendStatus()
+func (g *Gadget) on(val *gogadgets.Value) {
+	g.output.On(val)
+	if !g.status {
+		g.status = true
+		g.sendStatus()
+	}
 }
 
 func (g *Gadget) readMessage(msg *gogadgets.Message) {
@@ -116,6 +118,8 @@ func (g *Gadget) readMessage(msg *gogadgets.Message) {
 func (g *Gadget) readStatus(msg *gogadgets.Message) {
 	if g.status && g.compare != nil && g.compare(msg) {
 		g.off()
+	} else if g.status && msg.Location == g.location {
+		g.output.Update(msg)
 	}
 }
 
@@ -131,17 +135,18 @@ func (g *Gadget) readCommand(msg *gogadgets.Message) {
 }
 
 func (g *Gadget) readOnCommand(msg *gogadgets.Message) {
+	var val *gogadgets.Value
 	if len(strings.Trim(msg.Body, " ")) > len(g.onCommand) {
-		g.readOnArguments(msg.Body)
+		val = g.readOnArguments(msg.Body)
 	} else {
 		g.compare = nil
+		
 	}
-	if !g.status {
-		g.on()
-	}
+	g.on(val)
 }
 
-func (g *Gadget) readOnArguments(cmd string) {
+func (g *Gadget) readOnArguments(cmd string) *gogadgets.Value {
+	var val *gogadgets.Value
 	value, unit, err := g.getValue(cmd)
 	if err != nil {
 		log.Println("could not parse", cmd)
@@ -152,8 +157,13 @@ func (g *Gadget) readOnArguments(cmd string) {
 			go g.startTimer(value, unit, g.timerIn, g.timerOut)
 		} else if gadget == "volume" || gadget == "temperature" {
 			g.setCompare(value, unit, gadget)
+			val = &gogadgets.Value{
+				Value: value,
+				Units: unit,
+			}
 		}
 	}
+	return val
 }
 
 func (g *Gadget) setCompare(value float64, unit string, gadget string) {

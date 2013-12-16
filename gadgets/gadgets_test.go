@@ -2,20 +2,22 @@ package output
 
 import (
 	"fmt"
-	"time"
 	"testing"
 	"bitbucket.com/cswank/gogadgets/utils"
 	"bitbucket.com/cswank/gogadgets/devices"
 	"bitbucket.com/cswank/gogadgets"
 )
 
-
 type FakeOutput struct {
 	devices.OutputDevice
 	on bool
 }
 
-func (f *FakeOutput) On() error {
+func (f *FakeOutput) Update(msg *gogadgets.Message) {
+	
+}
+
+func (f *FakeOutput) On(val *gogadgets.Value) error {
 	f.on = true
 	return nil
 }
@@ -27,46 +29,6 @@ func (f *FakeOutput) Off() error {
 
 func (f *FakeOutput) Status() bool {
 	return f.on
-}
-
-
-func sendVolumeMessage(out chan<- gogadgets.Message, val float64) {
-	time.Sleep(10 * time.Millisecond)
-	msg := gogadgets.Message{
-		Sender: "tank volume",
-		Type: gogadgets.STATUS,
-		Location: "tank",
-		Name: "volume",
-		Value: gogadgets.Value{
-			Units: "liters",
-			Value: val,
-		},
-	}
-	out<- msg
-}
-
-func _TestVolume(t *testing.T) {
-	g := Gadget{
-		location: "tank",
-		name: "valve",
-		operator: ">=",
-		output: &FakeOutput{},
-		onCommand: "fill tank",
-		offCommand: "stop filling tank",
-	}
-	in := make(chan gogadgets.Message)
-	out := make(chan gogadgets.Message)
-	go g.Start(in, out)
-	msg := gogadgets.Message{
-		Type: gogadgets.COMMAND,
-		Body: "fill tank to 5 liters",
-	}
-	out<- msg
-	sendVolumeMessage(out, 5.0)
-	msg = <-in
-	if msg.Type != "status" {
-		t.Error(msg)
-	}
 }
 
 func TestStripCommand(t *testing.T) {
