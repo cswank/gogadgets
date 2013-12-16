@@ -12,6 +12,7 @@ type OutputDevice interface {
 
 type InputDevice interface {
 	Status() bool
+	Wait(value interface{})
 }
 
 func NewOutputDevice(pin *Pin) (OutputDevice, error) {

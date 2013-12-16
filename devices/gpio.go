@@ -71,3 +71,33 @@ func (g *GPIO) Off() error {
 func (g *GPIO) writeValue(path, value string) error {
 	return ioutil.WriteFile(path, []byte(value), os.ModeDevice)
 }
+
+/*
+fd_set exceptfds;
+int    res;    
+
+FD_ZERO(&exceptfds);
+FD_SET(gpioFileDesc, &exceptfds);
+
+res = select(gpioFileDesc+1, 
+             NULL,               // readfds - not needed
+             NULL,               // writefds - not needed
+             &exceptfds,
+             NULL);              // timeout (never)
+
+if (res > 0 && FD_ISSET(gpioFileDesc, &exceptfds))
+{
+     // GPIO line changed
+}
+*/
+func (g *GPIO) Wait(value interface{}) error {
+	// func Open(path string, mode int, perm uint32) (fd int, err error)
+	// func Select(nfd int, r *FdSet, w *FdSet, e *FdSet, timeout *Timeval) (n int, err error)
+	// fd, err := syscall.Open(g.valuePath, syscall.O_RDONLY, 0777)
+	// if err != nil {
+	// 	return err
+	// }
+	// fdSet = &syscall.FdSet{fd}
+	// n, err := syscall.Select(fd + 1, nil, nil, fdSet, nil)
+	return nil
+}

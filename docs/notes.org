@@ -1,0 +1,23 @@
+* structure
+** gadget
+*** output   
+    Starts as a goroutine, has an in and out Message chan
+    When is receives a valid command Message, it starts
+    a Trigger goroutine and passes all subsequent message
+    to the trigger via its in chan.  The Trigger turns on
+    its Device (eg. a GPIO).  The Trigger parses the mesages
+    it is given and decides if it should turn off it's 
+    device and exit.
+**** example: valve
+     A valve turns on.  If the command to turn it on has
+     arguments (fill tank to 3 liters as opposed to fill
+     tank) then it listens to all the messages looking for
+     one that indicates the tank volume is at 3 liters.
+*** input   
+    Starts as a goroutine and sends a Message whenever there
+    is a state change in its input Device (it may substitue
+    its physical input Device for a logical one, for example
+    one that calculates volume of a tank based on a valve
+    being open and how much time has passed).
+
+    
