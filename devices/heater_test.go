@@ -2,7 +2,8 @@ package devices
 
 import (
 	"time"
-	"bitbucket.com/cswank/gogadgets"
+	"bitbucket.com/cswank/gogadgets/models"
+	"bitbucket.com/cswank/gogadgets/utils"
 	"testing"
 )
 
@@ -11,11 +12,11 @@ type FakeOutput struct {
 	on bool
 }
 
-func (f *FakeOutput) Update(msg *gogadgets.Message) {
+func (f *FakeOutput) Update(msg *models.Message) {
 	
 }
 
-func (f *FakeOutput) On(val *gogadgets.Value) error {
+func (f *FakeOutput) On(val *models.Value) error {
 	f.on = true
 	return nil
 }
@@ -29,7 +30,6 @@ func (f *FakeOutput) Status() bool {
 	return f.on
 }
 
-
 func TestCreateHeater(t *testing.T) {
 	_ = Heater{
 		gpio: &FakeOutput{},
@@ -37,17 +37,20 @@ func TestCreateHeater(t *testing.T) {
 	}
 }
 
-func getMessage(val float64) *gogadgets.Message {
-	return &gogadgets.Message{
+func getMessage(val float64) *models.Message {
+	return &models.Message{
 		Name: "temperature",
-		Value: gogadgets.Value{
+		Value: models.Value{
 			Value: val,
 		},
 	}
 }
 
 func TestHeater(t *testing.T) {
-	g, err := NewGPIO(&Pin{Port:"9", Pin:"15", Direction:"out"})
+	if !utils.FileExists("/sys/class/gpio/export") {
+		return //not a beaglebone
+	}
+	g, err := NewGPIO(&models.Pin{Port:"9", Pin:"15", Direction:"out"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -55,7 +58,7 @@ func TestHeater(t *testing.T) {
 		gpio: g,
 		target: 100.0,
 	}
-	v := &gogadgets.Value{
+	v := &models.Value{
 		Value: 85.0,
 		Units: "C",
 	}

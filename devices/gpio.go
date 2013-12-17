@@ -3,7 +3,7 @@ package devices
 import (
 	"fmt"
 	"bitbucket.com/cswank/gogadgets/utils"
-	"bitbucket.com/cswank/gogadgets"
+	"bitbucket.com/cswank/gogadgets/models"
 	"os"
 	"errors"
 	"io/ioutil"
@@ -21,7 +21,7 @@ type GPIO struct {
 	edge string
 }
 
-func NewGPIO(pin *Pin) (*GPIO, error) {
+func NewGPIO(pin *models.Pin) (*GPIO, error) {
 	portMap, ok := Pins["gpio"][pin.Port]
 	if !ok {
 		return nil, errors.New(fmt.Sprintf("no such port: %s", pin.Port))
@@ -56,11 +56,11 @@ func (g *GPIO) Init() error {
 	return err
 }
 
-func (g *GPIO) Update(msg *gogadgets.Message) {
+func (g *GPIO) Update(msg *models.Message) {
 	
 }
 
-func (g *GPIO) On(val *gogadgets.Value) error {
+func (g *GPIO) On(val *models.Value) error {
 	return g.writeValue(g.valuePath, "1")
 }
 

@@ -2,26 +2,39 @@ package devices
 
 import (
 	"errors"
-	"bitbucket.com/cswank/gogadgets"
+	"bitbucket.com/cswank/gogadgets/models"
 )
 
 type OutputDevice interface {
-	On(val *gogadgets.Value) error
+	On(val *models.Value) error
 	Off() error
-	Update(msg *gogadgets.Message)
+	Update(msg *models.Message)
 	Status() bool
 }
 
 type InputDevice interface {
-	Status() bool
-	Wait(value interface{})
+	Start(<-chan models.Message)
 }
 
-func NewOutputDevice(pin *Pin) (OutputDevice, error) {
+func NewOutputDevice(pin *models.Pin) (dev OutputDevice, err error) {
 	if pin.Type == "gpio" {
-		return NewGPIO(pin)
+		dev, err = NewGPIO(pin)
+	} else if pin.Type == "heater" {
+		dev, err = NewHeater(pin)
 	} else {
-		return nil, errors.New("invalid pin type")
+		dev, err = nil, errors.New("invalid pin type")
 	}
+	return dev, err
+}
+
+func NewInputDevice(pin *models.Pin) (dev InputDevice, err error) {
+	if pin.Type == "thermometer" {
+		dev, err = NewThermometer(pin)
+	} else if pin.Type == "swtich" {
+		dev, err =  NewSwitch(pin)
+	} else {
+		dev, err = nil, errors.New("invalid pin type")
+	}
+	return dev, err
 }
 

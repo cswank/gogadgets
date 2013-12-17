@@ -1,4 +1,4 @@
-package gogadgets
+package models
 
 import (
 	"time"
@@ -15,6 +15,10 @@ type Gadget interface {
 	Start(input <-chan Message, output chan<- Message)
 }
 
+type Gadgets struct {
+	Gadgets []Gadget
+}
+
 type Value struct {
 	Value interface{} `json:"value"`
 	Units string      `json:"units"`
@@ -29,4 +33,18 @@ type Message struct {
 	Name        string      `json:"name"`
 	Location    string      `json:"location"`
 	Value       Value       `json:"value"`
+}
+
+type Pin struct {
+	Type string
+	Port string
+	Pin string
+	Direction string
+	Edge string
+}
+
+type Config struct {
+	Location string
+	Name string
+	Pin Pin
 }

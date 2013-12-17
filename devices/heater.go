@@ -3,7 +3,7 @@ package devices
 import (
 	"fmt"
 	"time"
-	"bitbucket.com/cswank/gogadgets"
+	"bitbucket.com/cswank/gogadgets/models"
 )
 
 type Heater struct {
@@ -13,11 +13,11 @@ type Heater struct {
 	duration time.Duration
 	status bool
 	gpio OutputDevice
-	update chan gogadgets.Message
+	update chan models.Message
 	stop chan bool
 }
 
-func NewHeater(pin *Pin) (h *Heater, err error) {
+func NewHeater(pin *models.Pin) (h *Heater, err error) {
 	g, err := NewGPIO(pin)
 	if err == nil {
 		h = &Heater{
@@ -29,13 +29,13 @@ func NewHeater(pin *Pin) (h *Heater, err error) {
 	return h, err
 }
 
-func (h *Heater) Update(msg *gogadgets.Message) {
+func (h *Heater) Update(msg *models.Message) {
 	if h.status && msg.Name == "temperature" {
 		h.update<- *msg
 	}
 }
 
-func (h *Heater) On(val *gogadgets.Value) error {
+func (h *Heater) On(val *models.Value) error {
 	if val != nil {
 		target, ok := val.Value.(float64)
 		if ok {
@@ -43,7 +43,7 @@ func (h *Heater) On(val *gogadgets.Value) error {
 		}
 	}
 	h.status = true
-	h.update = make(chan gogadgets.Message)
+	h.update = make(chan models.Message)
 	h.stop = make(chan bool)
 	go h.watchTemperature(h.update, h.stop)
 	return nil
@@ -60,7 +60,7 @@ func (h *Heater) Off() error {
 	return nil
 }
 
-func (h *Heater) watchTemperature(update <-chan gogadgets.Message, stop <-chan bool) {
+func (h *Heater) watchTemperature(update <-chan models.Message, stop <-chan bool) {
 	h.gpio.On(nil)
 	keepGoing := true
 	h.duration = time.Duration(60 * time.Second)

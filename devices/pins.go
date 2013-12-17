@@ -1,13 +1,5 @@
 package devices
 
-type Pin struct {
-	Type string
-	Port string
-	Pin string
-	Direction string
-	Edge string
-}
-
 var (
 	Pins = map[string]map[string]map[string]string{
 		"gpio": map[string]map[string]string{
@@ -32,7 +24,3 @@ var (
 		},
 	}
 )
-
-
-
-

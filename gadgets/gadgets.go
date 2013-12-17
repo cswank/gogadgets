@@ -4,9 +4,10 @@ import (
 	"log"
 	"time"
 	"fmt"
+	"errors"
 	"strings"
 	"strconv"
-	"bitbucket.com/cswank/gogadgets"
+	"bitbucket.com/cswank/gogadgets/models"
 	"bitbucket.com/cswank/gogadgets/devices"
 )
 
@@ -30,19 +31,14 @@ var (
 	}
 )
 
-type Comparitor func(msg *gogadgets.Message) bool
-
-type Config struct {
-	Location string
-	Name string
-	Pin *devices.Pin
-}
+type Comparitor func(msg *models.Message) bool
 
 type Gadget struct {
-	gogadgets.Gadget
+	models.Gadget
 	location string
 	name string
 	output devices.OutputDevice
+	input devices.InputDevice
 	onCommand string
 	offCommand string
 	uid string
@@ -51,37 +47,84 @@ type Gadget struct {
 	shutdown bool
 	units string
 	operator string
-	out chan<- gogadgets.Message
+	out chan<- models.Message
 	timerIn chan bool
 	timerOut chan bool
 }
 
-func NewOutputGadget(config *Config) (*Gadget, error) {
-	dev, err := devices.NewOutputDevice(config.Pin)
+func NewGadget(config *models.Config) (*Gadget, error) {
+	t := config.Pin.Type
+	if t == "heater" || t == "gpio" {
+		return NewOutputGadget(config)
+	} else if t == "thermometer" || t == "swich" {
+		return NewInputGadget(config)
+	}
+	err := errors.New(
+		fmt.Sprintf(
+			"couldn't build a gadget based on config: %s %s",
+			config.Location,
+			config.Name))
+	return nil, err
+}
+
+func NewInputGadget(config *models.Config) (gadget *Gadget, err error) {
+	dev, err := devices.NewInputDevice(&config.Pin)
 	if err == nil {
-		return &Gadget{
+		gadget = &Gadget{
+			location: config.Location,
+			name: config.Name,
+			input: dev,
+			uid: fmt.Sprintf("%s %s", config.Location, config.Name),
+		}
+	}
+	return gadget, err
+}
+
+func NewOutputGadget(config *models.Config) (gadget *Gadget, err error) {
+	dev, err := devices.NewOutputDevice(&config.Pin)
+	if err == nil {
+		gadget = &Gadget{
 			location: config.Location,
 			name: config.Name,
 			onCommand: fmt.Sprintf("turn on %s %s", config.Location, config.Name),
 			offCommand: fmt.Sprintf("turn off %s %s", config.Location, config.Name),
 			output: dev,
 			uid: fmt.Sprintf("%s %s", config.Location, config.Name),
-		}, err
+		}
 	}
-	return nil, err
+	return gadget, err
 }
 
-func (g *Gadget) isMyCommand(msg *gogadgets.Message) bool {
-	return msg.Type == gogadgets.COMMAND && 
+func (g *Gadget) isMyCommand(msg *models.Message) bool {
+	return msg.Type == models.COMMAND && 
 		(strings.Index(msg.Body, g.onCommand) == 0 ||
 		strings.Index(msg.Body, g.offCommand) == 0 ||
 		msg.Body == "shutdown")
 }
 
-func (g *Gadget) Start(in <-chan gogadgets.Message, out chan<- gogadgets.Message) {
+func (g *Gadget) Start(in <-chan models.Message, out chan<- models.Message) {
 	g.out = out
 	g.timerIn = make(chan bool)
 	g.timerOut = make(chan bool)
+	if g.output != nil {
+		g.doOutputLoop(in)
+	}
+}
+
+func (g *Gadget) doInputLoop(in <-chan models.Message) {
+	devOut := make(chan models.Message)
+	g.input.Start(devOut)
+	for !g.shutdown {
+		select {
+		case msg := <-in:
+			g.readMessage(&msg)
+		case msg := <-devOut:
+			g.out<- msg
+		}
+	}
+}
+
+func (g *Gadget) doOutputLoop(in <-chan models.Message) {
 	for !g.shutdown {
 		select {
 		case msg := <-in:
@@ -99,7 +142,7 @@ func (g *Gadget) off() {
 	g.sendStatus()
 }
 
-func (g *Gadget) on(val *gogadgets.Value) {
+func (g *Gadget) on(val *models.Value) {
 	g.output.On(val)
 	if !g.status {
 		g.status = true
@@ -107,15 +150,15 @@ func (g *Gadget) on(val *gogadgets.Value) {
 	}
 }
 
-func (g *Gadget) readMessage(msg *gogadgets.Message) {
-	if msg.Type == gogadgets.COMMAND && g.isMyCommand(msg) {
+func (g *Gadget) readMessage(msg *models.Message) {
+	if msg.Type == models.COMMAND && g.isMyCommand(msg) {
 		g.readCommand(msg)
-	} else if g.status && msg.Type == gogadgets.STATUS {
+	} else if g.status && msg.Type == models.STATUS {
 		g.readStatus(msg)
 	}
 }
 
-func (g *Gadget) readStatus(msg *gogadgets.Message) {
+func (g *Gadget) readStatus(msg *models.Message) {
 	if g.status && g.compare != nil && g.compare(msg) {
 		g.off()
 	} else if g.status && msg.Location == g.location {
@@ -123,7 +166,7 @@ func (g *Gadget) readStatus(msg *gogadgets.Message) {
 	}
 }
 
-func (g *Gadget) readCommand(msg *gogadgets.Message) {
+func (g *Gadget) readCommand(msg *models.Message) {
 	if msg.Body == "shutdown" {
 		g.shutdown = true
 		g.off()
@@ -134,8 +177,8 @@ func (g *Gadget) readCommand(msg *gogadgets.Message) {
 	}
 }
 
-func (g *Gadget) readOnCommand(msg *gogadgets.Message) {
-	var val *gogadgets.Value
+func (g *Gadget) readOnCommand(msg *models.Message) {
+	var val *models.Value
 	if len(strings.Trim(msg.Body, " ")) > len(g.onCommand) {
 		val = g.readOnArguments(msg.Body)
 	} else {
@@ -145,8 +188,8 @@ func (g *Gadget) readOnCommand(msg *gogadgets.Message) {
 	g.on(val)
 }
 
-func (g *Gadget) readOnArguments(cmd string) *gogadgets.Value {
-	var val *gogadgets.Value
+func (g *Gadget) readOnArguments(cmd string) *models.Value {
+	var val *models.Value
 	value, unit, err := g.getValue(cmd)
 	if err != nil {
 		log.Println("could not parse", cmd)
@@ -157,7 +200,7 @@ func (g *Gadget) readOnArguments(cmd string) *gogadgets.Value {
 			go g.startTimer(value, unit, g.timerIn, g.timerOut)
 		} else if gadget == "volume" || gadget == "temperature" {
 			g.setCompare(value, unit, gadget)
-			val = &gogadgets.Value{
+			val = &models.Value{
 				Value: value,
 				Units: unit,
 			}
@@ -168,7 +211,7 @@ func (g *Gadget) readOnArguments(cmd string) *gogadgets.Value {
 
 func (g *Gadget) setCompare(value float64, unit string, gadget string) {
 	if g.operator == "<=" {
-		g.compare = func(msg *gogadgets.Message) bool {
+		g.compare = func(msg *models.Message) bool {
 			val, ok := msg.Value.Value.(float64)
 			return msg.Location == g.location &&
 				ok &&
@@ -176,7 +219,7 @@ func (g *Gadget) setCompare(value float64, unit string, gadget string) {
 				val <= value
 		}
 	} else if g.operator == ">=" {
-		g.compare = func(msg *gogadgets.Message) bool {
+		g.compare = func(msg *models.Message) bool {
 			val, ok := msg.Value.Value.(float64)
 			return msg.Location == g.location &&
 				ok &&
@@ -222,19 +265,19 @@ func (g *Gadget) stripCommand(cmd string) string {
 	return strings.TrimPrefix(cmd, " to ")
 }
 
-func (g *Gadget) readOffCommand(msg *gogadgets.Message) {
+func (g *Gadget) readOffCommand(msg *models.Message) {
 	if g.status {
 		g.off()
 	}
 }
 
 func (g *Gadget) sendStatus() {
-	msg := gogadgets.Message{
+	msg := models.Message{
 		Sender: g.uid,
-		Type: gogadgets.STATUS,
+		Type: models.STATUS,
 		Location: g.location,
 		Name: g.name,
-		Value: gogadgets.Value{
+		Value: models.Value{
 			Units: g.units,
 			Value:g.status,
 		},

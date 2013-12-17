@@ -5,7 +5,7 @@ import (
 	"testing"
 	"bitbucket.com/cswank/gogadgets/utils"
 	"bitbucket.com/cswank/gogadgets/devices"
-	"bitbucket.com/cswank/gogadgets"
+	"bitbucket.com/cswank/gogadgets/models"
 )
 
 type FakeOutput struct {
@@ -13,11 +13,11 @@ type FakeOutput struct {
 	on bool
 }
 
-func (f *FakeOutput) Update(msg *gogadgets.Message) {
+func (f *FakeOutput) Update(msg *models.Message) {
 	
 }
 
-func (f *FakeOutput) On(val *gogadgets.Value) error {
+func (f *FakeOutput) On(val *models.Value) error {
 	f.on = true
 	return nil
 }
@@ -94,10 +94,10 @@ func TestStart(t *testing.T) {
 		output: &FakeOutput{},
 		uid: fmt.Sprintf("%s %s", location, name),
 	}
-	input := make(chan gogadgets.Message)
-	output := make(chan gogadgets.Message)
+	input := make(chan models.Message)
+	output := make(chan models.Message)
 	go g.Start(input, output)
-	msg := gogadgets.Message{
+	msg := models.Message{
 		Type: "command",
 		Body: "turn on lab led",
 	}
@@ -107,7 +107,7 @@ func TestStart(t *testing.T) {
 		t.Fatal("shoulda been on", status)
 	}
 	
-	msg = gogadgets.Message{
+	msg = models.Message{
 		Type: "command",
 		Body: "turn off lab led",
 	}
@@ -116,7 +116,7 @@ func TestStart(t *testing.T) {
 	if status.Value.Value != false {
 		t.Error("shoulda been off", status)
 	}
-	msg = gogadgets.Message{
+	msg = models.Message{
 		Type: "command",
 		Body: "shutdown",
 	}
@@ -136,10 +136,10 @@ func TestStartWithTrigger(t *testing.T) {
 		output: &FakeOutput{},
 		uid: fmt.Sprintf("%s %s", location, name),
 	}
-	input := make(chan gogadgets.Message)
-	output := make(chan gogadgets.Message)
+	input := make(chan models.Message)
+	output := make(chan models.Message)
 	go g.Start(input, output)
-	msg := gogadgets.Message{
+	msg := models.Message{
 		Type: "command",
 		Body: "fill tank to 4.4 liters",
 	}
@@ -149,12 +149,12 @@ func TestStartWithTrigger(t *testing.T) {
 		t.Error("shoulda been on", status)
 	}
 	//make a message that should trigger the trigger and stop the device
-	msg = gogadgets.Message{
+	msg = models.Message{
 		Sender: "tank volume",
-		Type: gogadgets.STATUS,
+		Type: models.STATUS,
 		Location: "tank",
 		Name: "volume",
-		Value: gogadgets.Value{
+		Value: models.Value{
 			Units: "liters",
 			Value: 4.4,
 		},
@@ -178,10 +178,10 @@ func TestStartWithTimeTrigger(t *testing.T) {
 		output: &FakeOutput{},
 		uid: fmt.Sprintf("%s %s", location, name),
 	}
-	input := make(chan gogadgets.Message)
-	output := make(chan gogadgets.Message)
+	input := make(chan models.Message)
+	output := make(chan models.Message)
 	go g.Start(input, output)
-	msg := gogadgets.Message{
+	msg := models.Message{
 		Type: "command",
 		Body: "turn on lab led for 0.01 seconds",
 	}
@@ -208,10 +208,10 @@ func TestStartWithTimeTriggerWithInterrupt(t *testing.T) {
 		output: &FakeOutput{},
 		uid: fmt.Sprintf("%s %s", location, name),
 	}
-	input := make(chan gogadgets.Message)
-	output := make(chan gogadgets.Message)
+	input := make(chan models.Message)
+	output := make(chan models.Message)
 	go g.Start(input, output)
-	msg := gogadgets.Message{
+	msg := models.Message{
 		Type: "command",
 		Body: "turn on lab led for 30 seconds",
 	}
@@ -221,19 +221,19 @@ func TestStartWithTimeTriggerWithInterrupt(t *testing.T) {
 		t.Error("shoulda been on", status)
 	}
 	
-	msg = gogadgets.Message{
+	msg = models.Message{
 		Type: "command",
 		Body: "turn on lab led",
 	}
 	input<- msg
 
-	msg = gogadgets.Message{
+	msg = models.Message{
 		Type: "status",
 		Body: "",
 	}
 	input<- msg
 
-	msg = gogadgets.Message{
+	msg = models.Message{
 		Type: "command",
 		Body: "turn off lab led",
 	}
@@ -248,7 +248,7 @@ func TestStartWithTimeTriggerForReals(t *testing.T) {
 	if !utils.FileExists("/sys/class/gpio/export") {
 		return //not a beaglebone
 	}
-	pin := &devices.Pin{Type:"gpio", Port: "9", Pin: "15"}
+	pin := &models.Pin{Type:"gpio", Port: "9", Pin: "15"}
 	gpio, err := devices.NewGPIO(pin)
 	if err != nil {
 		t.Fatal(err)
@@ -263,10 +263,10 @@ func TestStartWithTimeTriggerForReals(t *testing.T) {
 		output: gpio,
 		uid: fmt.Sprintf("%s %s", location, name),
 	}
-	input := make(chan gogadgets.Message)
-	output := make(chan gogadgets.Message)
+	input := make(chan models.Message)
+	output := make(chan models.Message)
 	go g.Start(input, output)
-	msg := gogadgets.Message{
+	msg := models.Message{
 		Type: "command",
 		Body: "turn on lab led for 0.1 seconds",
 	}
