@@ -13,7 +13,7 @@ type OutputDevice interface {
 }
 
 type InputDevice interface {
-	Start(<-chan models.Message, chan-> models.Message)
+	Start(<-chan models.Message, chan<- models.Message)
 }
 
 func NewOutputDevice(pin *models.Pin) (dev OutputDevice, err error) {

@@ -6,6 +6,7 @@ import (
 	"bitbucket.com/cswank/gogadgets/models"
 	"os"
 	"errors"
+	"syscall"
 	"io/ioutil"
 )
 
@@ -17,11 +18,12 @@ type GPIO struct {
 	exportPath string
 	directionPath string
 	valuePath string
+	edgePath string
 	direction string
 	edge string
 	fd int
-	fdSet syscall.FdSet
-	buf [64]byte
+	fdSet *syscall.FdSet
+	buf []byte
 }
 
 func NewGPIO(pin *models.Pin) (*GPIO, error) {
@@ -40,7 +42,6 @@ func NewGPIO(pin *models.Pin) (*GPIO, error) {
 		edgePath: fmt.Sprintf("/sys/class/gpio/gpio%s/edge", export),
 		valuePath: fmt.Sprintf("/sys/class/gpio/gpio%s/value", export),
 		direction: pin.Direction,
-		direction: pin.Edge,
 		edge: pin.Edge,
 	}
 	err := g.Init()
@@ -84,7 +85,7 @@ func (g *GPIO) writeValue(path, value string) error {
 	return ioutil.WriteFile(path, []byte(value), os.ModeDevice)
 }
 
-func (g *GPIO) Wait(value interface{}) (bool, error) {
+func (g *GPIO) Wait() (bool, error) {
 	if g.fd == 0 {
 		fd, err := syscall.Open(g.valuePath, syscall.O_RDONLY, 0666)
 		if err != nil {
@@ -93,16 +94,20 @@ func (g *GPIO) Wait(value interface{}) (bool, error) {
 		g.fd = fd
 		g.fdSet = new(syscall.FdSet)
 		FD_SET(g.fd, g.fdSet)
-		g.buf := make([]byte, 64)
-		syscall.Read(fd, buf)
+		g.buf = make([]byte, 64)
+		syscall.Read(g.fd, g.buf)
 	}
-	n, err := syscall.Select(g.fd + 1, nil, nil, g.fdSet, nil)
+	_, err := syscall.Select(g.fd + 1, nil, nil, g.fdSet, nil)
+	if err != nil {
+		return false, err
+	}
 	syscall.Seek(g.fd, 0, 0)
 	_, err = syscall.Read(g.fd, g.buf)
 	if err != nil {
 		return false, err
 	}
-	return string(g.buf) == "1\n", nil
+	fmt.Println(string(g.buf))
+	return string(g.buf[:2]) == "1\n", nil
 }
 
 func FD_SET(fd int, p *syscall.FdSet) {

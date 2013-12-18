@@ -1,6 +1,7 @@
 package devices
 
 import (
+	"fmt"
 	"testing"
 	"time"
 	"bitbucket.com/cswank/gogadgets/utils"
@@ -20,4 +21,27 @@ func TestGPIO(t *testing.T) {
 	g.Off()
 }
 
+
+func TestGPIOWait(t *testing.T) {
+	g, err := NewGPIO(&models.Pin{Port:"9", Pin:"16", Direction:"in", Edge:"rising"})
+	if err != nil {
+		t.Error(err)
+	}
+	gIn, _ := NewGPIO(&models.Pin{Port:"9", Pin:"15", Direction:"out"})
+	go func() {
+		gIn.Off()
+		time.Sleep(1 * time.Second)
+		fmt.Println("turning on gpio")
+		gIn.On(nil)
+	}()
+	fmt.Println("wait()")
+	val, err := g.Wait()
+	if err != nil {
+		t.Error(err)
+	}
+	if val != true {
+		t.Error("should have got true")
+	}
+	gIn.Off()
+}
 
