@@ -7,20 +7,20 @@ import (
 
 type Switch struct {
 	InputDevice
-	gpio Poller
+	GPIO Poller
 	units string
 }
 
 func NewSwitch(pin *models.Pin) (s *Switch, err error) {
 	gpio, err := NewGPIO(pin)
 	if err == nil {
-		s = &Switch{gpio:gpio}
+		s = &Switch{GPIO:gpio}
 	}
 	return s, err
 }
 
 func (s *Switch) wait(out chan<- bool, err chan<- error) {
-	val, e := s.gpio.Wait()
+	val, e := s.GPIO.Wait()
 	if e != nil {
 		err<- e
 	} else {

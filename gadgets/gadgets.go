@@ -108,13 +108,15 @@ func (g *Gadget) Start(in <-chan models.Message, out chan<- models.Message) {
 	g.timerOut = make(chan bool)
 	if g.output != nil {
 		g.doOutputLoop(in)
+	} else if g.input != nil {
+		g.doInputLoop(in)
 	}
 }
 
 func (g *Gadget) doInputLoop(in <-chan models.Message) {
 	devOut := make(chan models.Value)
 	stop := make(chan bool)
-	g.input.Start(stop, devOut)
+	go g.input.Start(stop, devOut)
 	for !g.shutdown {
 		select {
 		case msg := <-in:

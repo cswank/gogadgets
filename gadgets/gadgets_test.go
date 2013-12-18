@@ -2,6 +2,7 @@ package output
 
 import (
 	"fmt"
+	"time"
 	"testing"
 	"bitbucket.com/cswank/gogadgets/utils"
 	"bitbucket.com/cswank/gogadgets/devices"
@@ -30,6 +31,18 @@ func (f *FakeOutput) Off() error {
 func (f *FakeOutput) Status() interface{} {
 	return f.on
 }
+
+type FakePoller struct {
+	devices.Poller
+	val bool
+}
+
+func (f *FakePoller) Wait() (bool, error) {
+	time.Sleep(100 * time.Millisecond)
+	f.val = !f.val
+	return f.val, nil
+}
+
 
 func TestStripCommand(t *testing.T) {
 	tr := Gadget{
@@ -279,5 +292,32 @@ func TestStartWithTimeTriggerForReals(t *testing.T) {
 	status = <-output
 	if status.Value.Value != false {
 		t.Error("shoulda been off", status)
+	}
+}
+
+
+func TestInputStart(t *testing.T) {
+	location := "lab"
+	name := "switch"
+	poller := &FakePoller{}
+	s := &devices.Switch{
+		GPIO: poller,
+	}
+	g := Gadget{
+		location: location,
+		name: name,
+		input: s,
+		uid: fmt.Sprintf("%s %s", location, name),
+	}
+	input := make(chan models.Message)
+	output := make(chan models.Message)
+	go g.Start(input, output)
+	val := <-output
+	if val.Value.Value != true {
+		t.Error("should have been true")
+	}
+	val = <-output
+	if val.Value.Value != false {
+		t.Error("should have been false")
 	}
 }
