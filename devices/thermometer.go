@@ -14,6 +14,6 @@ func NewThermometer(pin *models.Pin) (*GPIO, error) {
 	return nil, nil
 }
 
-func (t *Thermometer) Start(out <-chan models.Message) {
+func (t *Thermometer) Start(in <-chan models.Message, out chan-> models.Message) {
 	
 }
