@@ -112,14 +112,19 @@ func (g *Gadget) Start(in <-chan models.Message, out chan<- models.Message) {
 }
 
 func (g *Gadget) doInputLoop(in <-chan models.Message) {
-	devOut := make(chan models.Message)
-	g.input.Start(devOut)
+	devOut := make(chan models.Value)
+	stop := make(chan bool)
+	g.input.Start(stop, devOut)
 	for !g.shutdown {
 		select {
 		case msg := <-in:
 			g.readMessage(&msg)
-		case msg := <-devOut:
-			g.out<- msg
+		case val := <-devOut:
+			g.out<- models.Message{
+				Location: g.location,
+				Name: g.name,
+				Value: val,
+			}
 		}
 	}
 }

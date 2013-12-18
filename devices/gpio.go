@@ -12,7 +12,7 @@ import (
 
 type GPIO struct {
 	OutputDevice
-	InputDevice
+	Poller
 	units string
 	export string
 	exportPath string
@@ -72,7 +72,7 @@ func (g *GPIO) On(val *models.Value) error {
 	return g.writeValue(g.valuePath, "1")
 }
 
-func (g *GPIO) Status() bool {
+func (g *GPIO) Status() interface{} {
 	data, err := ioutil.ReadFile(g.valuePath)
 	return err == nil && string(data) == "1\n"
 }
@@ -106,7 +106,6 @@ func (g *GPIO) Wait() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	fmt.Println(string(g.buf))
 	return string(g.buf[:2]) == "1\n", nil
 }
 

@@ -10,10 +10,10 @@ type Thermometer struct {
 	units string
 }
 
-func NewThermometer(pin *models.Pin) (*GPIO, error) {
+func NewThermometer(pin *models.Pin) (*Thermometer, error) {
 	return nil, nil
 }
 
-func (t *Thermometer) Start(in <-chan models.Message, out chan<- models.Message) {
+func (t *Thermometer) Start(stop <-chan bool, out chan<- models.Value) {
 	
 }

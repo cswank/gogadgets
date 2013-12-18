@@ -27,7 +27,7 @@ func (f *FakeOutput) Off() error {
 	return nil
 }
 
-func (f *FakeOutput) Status() bool {
+func (f *FakeOutput) Status() interface{} {
 	return f.on
 }
 

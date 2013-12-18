@@ -49,7 +49,7 @@ func (h *Heater) On(val *models.Value) error {
 	return nil
 }
 
-func (h *Heater) Status() bool {
+func (h *Heater) Status() interface{} {
 	return h.status
 }
 
@@ -84,7 +84,7 @@ func (h *Heater) watchTemperature(update <-chan models.Message, stop <-chan bool
 
 func (h *Heater) toggle() {
 	on, off := h.getDurations()
-	status := h.gpio.Status()
+	status := h.gpio.Status().(bool)
 	if on == 0 && off != 0 {
 		h.gpio.Off()
 		h.duration = off

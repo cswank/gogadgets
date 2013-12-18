@@ -9,11 +9,15 @@ type OutputDevice interface {
 	On(val *models.Value) error
 	Off() error
 	Update(msg *models.Message)
-	Status() bool
+	Status() interface{}
 }
 
 type InputDevice interface {
-	Start(<-chan models.Message, chan<- models.Message)
+	Start(<-chan bool, chan<- models.Value)
+}
+
+type Poller interface {
+	Wait() (bool, error)
 }
 
 func NewOutputDevice(pin *models.Pin) (dev OutputDevice, err error) {
