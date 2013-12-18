@@ -23,6 +23,9 @@ func TestGPIO(t *testing.T) {
 
 
 func TestGPIOWait(t *testing.T) {
+	if !utils.FileExists("/sys/class/gpio/export") {
+		return //not a beaglebone
+	}
 	g, err := NewGPIO(&models.Pin{Port:"9", Pin:"16", Direction:"in", Edge:"rising"})
 	if err != nil {
 		t.Error(err)

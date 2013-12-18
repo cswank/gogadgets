@@ -7,6 +7,7 @@ import (
 
 type Switch struct {
 	InputDevice
+	gpio GPIO
 	units string
 }
 
