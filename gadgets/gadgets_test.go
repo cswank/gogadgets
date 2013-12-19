@@ -295,7 +295,6 @@ func TestStartWithTimeTriggerForReals(t *testing.T) {
 	}
 }
 
-
 func TestInputStart(t *testing.T) {
 	location := "lab"
 	name := "switch"

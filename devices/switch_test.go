@@ -20,7 +20,7 @@ func (f *FakePoller) Wait() (bool, error) {
 func TestSwitch(t *testing.T) {
 	poller := &FakePoller{}
 	s := &Switch{
-		gpio: poller,
+		GPIO: poller,
 	}
 	stop := make(chan bool)
 	in := make(chan models.Value)
