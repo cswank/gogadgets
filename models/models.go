@@ -6,6 +6,7 @@ import (
 
 var (
 	COMMAND = "command"
+	METHOD = "method"
 	DONE = "done"
 	UPDATE = "update"
 	STATUS = "status"
@@ -29,6 +30,7 @@ type Message struct {
 	Sender      string      `json:"sender"`
 	Type        string      `json:"type"`
 	Body        string      `json:"body"`
+	Method      []string    `json:"method"`
 	Timestamp   time.Time   `json:"timestamp"`
 	Name        string      `json:"name"`
 	Location    string      `json:"location"`
