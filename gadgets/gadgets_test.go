@@ -317,6 +317,8 @@ func TestRealInput(t *testing.T) {
 			Type: "switch",
 			Port: "9",
 			Pin: "16",
+			Edge: "both",
+			Direction: "in",
 			Value: 5.0,
 			Units: "liters",
 		},
@@ -336,11 +338,11 @@ func TestRealInput(t *testing.T) {
 		gpio.Off()
 	}()
 	val := <-output
-	if val.Value.Value.(float32) != 5.0 {
+	if val.Value.Value.(float64) != 5.0 {
 		t.Error("should have been 5.0", val.Value)
 	}
 	val = <-output
-	if val.Value.Value.(float32) != 0.0 {
+	if val.Value.Value.(float64) != 0.0 {
 		t.Error("should have been 0.0", val.Value)
 	}
 }
@@ -364,11 +366,11 @@ func TestInputStart(t *testing.T) {
 	output := make(chan models.Message)
 	go g.Start(input, output)
 	val := <-output
-	if val.Value.Value.(float32) != 5.0 {
+	if val.Value.Value.(float64) != 5.0 {
 		t.Error("should have been 5.0", val.Value)
 	}
 	val = <-output
-	if val.Value.Value.(float32) != 0.0 {
+	if val.Value.Value.(float64) != 0.0 {
 		t.Error("should have been 0.0", val.Value)
 	}
 }

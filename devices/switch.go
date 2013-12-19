@@ -8,7 +8,7 @@ import (
 type Switch struct {
 	InputDevice
 	GPIO Poller
-	Value float32
+	Value float64
 	Units string
 }
 
@@ -17,14 +17,14 @@ func NewSwitch(pin *models.Pin) (s *Switch, err error) {
 	if err == nil {
 		s = &Switch{
 			GPIO:gpio,
-			Value: pin.Value.(float32),
+			Value: pin.Value.(float64),
 			Units: pin.Units,
 		}
 	}
 	return s, err
 }
 
-func (s *Switch) wait(out chan<- float32, err chan<- error) {
+func (s *Switch) wait(out chan<- float64, err chan<- error) {
 	val, e := s.GPIO.Wait()
 	if e != nil {
 		err<- e
@@ -38,7 +38,7 @@ func (s *Switch) wait(out chan<- float32, err chan<- error) {
 }
 
 func (s *Switch) Start(stop <-chan bool, out chan<- models.Value) {
-	value := make(chan float32)
+	value := make(chan float64)
 	err := make(chan error)
 	for {
 		go s.wait(value, err)
