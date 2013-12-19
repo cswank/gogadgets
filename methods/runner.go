@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	timeExp = regexp.MustCompile(`for (\d*\.?\d*) (seconds|minutes|hours)`)
+	timeExp = regexp.MustCompile(`for (\d*\.?\d*) (second|seconds|minute|minutes|hour|hours)`)
 )
 
 type stepChecker func(msg *models.Message) bool
@@ -86,9 +86,9 @@ func (m *Methods) readWaitCommand(cmd string) (d time.Duration, err error) {
 		if err != nil {
 			err = errors.New(fmt.Sprintf("could not parse command", cmd))
 		} else {
-			if units == "minutes" {
+			if units == "minutes" || units == "minute" {
 				t *= 60.0
-			} else if units == "hours" {
+			} else if units == "hours" || units == "hour" {
 				t *= 3600.0
 			}
 			d = time.Duration(t * float64(time.Second))
