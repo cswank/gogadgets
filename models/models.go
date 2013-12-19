@@ -42,6 +42,8 @@ type Pin struct {
 	Direction string
 	Edge string
 	OneWireId string
+	Value interface{}
+	Units string
 }
 
 type Config struct {

@@ -301,6 +301,8 @@ func TestInputStart(t *testing.T) {
 	poller := &FakePoller{}
 	s := &devices.Switch{
 		GPIO: poller,
+		Value: 5.0,
+		Units: "liters",
 	}
 	g := Gadget{
 		location: location,
@@ -312,11 +314,11 @@ func TestInputStart(t *testing.T) {
 	output := make(chan models.Message)
 	go g.Start(input, output)
 	val := <-output
-	if val.Value.Value != true {
-		t.Error("should have been true")
+	if val.Value.Value.(float32) != 5.0 {
+		t.Error("should have been 5.0", val.Value)
 	}
 	val = <-output
-	if val.Value.Value != false {
-		t.Error("should have been false")
+	if val.Value.Value.(float32) != 0.0 {
+		t.Error("should have been 0.0", val.Value)
 	}
 }

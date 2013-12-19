@@ -286,7 +286,7 @@ func (g *Gadget) sendStatus() {
 		Name: g.name,
 		Value: models.Value{
 			Units: g.units,
-			Value:g.status,
+			Value: g.status,
 		},
 	}
 	g.out<- msg

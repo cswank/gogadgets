@@ -21,17 +21,19 @@ func TestSwitch(t *testing.T) {
 	poller := &FakePoller{}
 	s := &Switch{
 		GPIO: poller,
+		Value: 5.0,
+		Units: "liters",
 	}
 	stop := make(chan bool)
 	in := make(chan models.Value)
 	go s.Start(stop, in)
 	val := <-in
-	if val.Value != true {
-		t.Error("should have been true")
+	if val.Value.(float32) != 5.0 {
+		t.Error("should have been 5.0", val)
 	}
 	val = <-in
-	if val.Value != false {
-		t.Error("should have been false")
+	if val.Value.(float32) != 0.0 {
+		t.Error("should have been 0.0", val)
 	}
 	stop<- true
 }
