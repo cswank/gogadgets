@@ -28,11 +28,11 @@ func TestSwitch(t *testing.T) {
 	in := make(chan models.Value)
 	go s.Start(stop, in)
 	val := <-in
-	if val.Value.(float32) != 5.0 {
+	if val.Value.(float64) != 5.0 {
 		t.Error("should have been 5.0", val)
 	}
 	val = <-in
-	if val.Value.(float32) != 0.0 {
+	if val.Value.(float64) != 0.0 {
 		t.Error("should have been 0.0", val)
 	}
 	stop<- true
