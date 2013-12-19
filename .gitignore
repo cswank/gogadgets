@@ -1,0 +1,25 @@
+*.pyc
+.emacs.desktop.lock
+.emacs.desktop
+*.egg-info
+.DS_Store
+*~
+*.pt.py
+.coverage
+.noseids
+
+# Exclude the build directory
+build/*
+ 
+# Exclude temp nibs and swap files
+*~.nib
+*.swp
+ 
+*.mode1
+*.mode1v3
+*.mode2v3
+*.perspective
+*.perspectivev3
+*.pbxuser
+*.xcworkspace
+xcuserdata

@@ -1,4 +1,4 @@
-package output
+package gadgets
 
 import (
 	"fmt"
@@ -46,11 +46,11 @@ func (f *FakePoller) Wait() (bool, error) {
 
 func TestStripCommand(t *testing.T) {
 	tr := Gadget{
-		location: "tank",
-		name: "valve",
-		operator: ">=",
-		onCommand: "fill tank",
-		offCommand: "stop filling tank",
+		Location: "tank",
+		Name: "valve",
+		Operator: ">=",
+		OnCommand: "fill tank",
+		OffCommand: "stop filling tank",
 	}
 	cmd := tr.stripCommand("fill tank to 5 liters")
 	if cmd != "5 liters" {
@@ -60,10 +60,10 @@ func TestStripCommand(t *testing.T) {
 
 func TestGetValue(t *testing.T) {
 	g := Gadget{
-		location: "tank",
-		name: "valve",
-		operator: ">=",
-		offCommand: "stop filling tank",
+		Location: "tank",
+		Name: "valve",
+		Operator: ">=",
+		OffCommand: "stop filling tank",
 	}
 	val, unit, err := g.getValue("5 liters")
 	if err != nil {
@@ -79,10 +79,10 @@ func TestGetValue(t *testing.T) {
 
 func TestGetTimeValue(t *testing.T) {
 	g := Gadget{
-		location: "tank",
-		name: "valve",
-		operator: ">=",
-		offCommand: "stop filling tank",
+		Location: "tank",
+		Name: "valve",
+		Operator: ">=",
+		OffCommand: "stop filling tank",
 	}
 	val, unit, err := g.getValue("1.1 minutes")
 	if err != nil {
@@ -100,12 +100,12 @@ func TestStart(t *testing.T) {
 	location := "lab"
 	name := "led"
 	g := Gadget{
-		location: location,
-		name: name,
-		onCommand: fmt.Sprintf("turn on %s %s", location, name),
-		offCommand: fmt.Sprintf("turn off %s %s", location, name),
-		output: &FakeOutput{},
-		uid: fmt.Sprintf("%s %s", location, name),
+		Location: location,
+		Name: name,
+		OnCommand: fmt.Sprintf("turn on %s %s", location, name),
+		OffCommand: fmt.Sprintf("turn off %s %s", location, name),
+		Output: &FakeOutput{},
+		UID: fmt.Sprintf("%s %s", location, name),
 	}
 	input := make(chan models.Message)
 	output := make(chan models.Message)
@@ -141,13 +141,13 @@ func TestStartWithTrigger(t *testing.T) {
 	location := "tank"
 	name := "valve"
 	g := Gadget{
-		location: location,
-		name: name,
-		operator: ">=",
-		onCommand: fmt.Sprintf("fill %s", location),
-		offCommand: fmt.Sprintf("stop filling %s", location),
-		output: &FakeOutput{},
-		uid: fmt.Sprintf("%s %s", location, name),
+		Location: location,
+		Name: name,
+		Operator: ">=",
+		OnCommand: fmt.Sprintf("fill %s", location),
+		OffCommand: fmt.Sprintf("stop filling %s", location),
+		Output: &FakeOutput{},
+		UID: fmt.Sprintf("%s %s", location, name),
 	}
 	input := make(chan models.Message)
 	output := make(chan models.Message)
@@ -183,13 +183,13 @@ func TestStartWithTimeTrigger(t *testing.T) {
 	location := "lab"
 	name := "led"
 	g := Gadget{
-		location: location,
-		name: name,
-		onCommand: "turn on lab led",
-		operator: ">=",
-		offCommand: "turn off lab led",
-		output: &FakeOutput{},
-		uid: fmt.Sprintf("%s %s", location, name),
+		Location: location,
+		Name: name,
+		OnCommand: "turn on lab led",
+		Operator: ">=",
+		OffCommand: "turn off lab led",
+		Output: &FakeOutput{},
+		UID: fmt.Sprintf("%s %s", location, name),
 	}
 	input := make(chan models.Message)
 	output := make(chan models.Message)
@@ -214,12 +214,12 @@ func TestStartWithTimeTriggerWithInterrupt(t *testing.T) {
 	location := "lab"
 	name := "led"
 	g := Gadget{
-		location: location,
-		name: name,
-		onCommand: "turn on lab led",
-		offCommand: "turn off lab led",
-		output: &FakeOutput{},
-		uid: fmt.Sprintf("%s %s", location, name),
+		Location: location,
+		Name: name,
+		OnCommand: "turn on lab led",
+		OffCommand: "turn off lab led",
+		Output: &FakeOutput{},
+		UID: fmt.Sprintf("%s %s", location, name),
 	}
 	input := make(chan models.Message)
 	output := make(chan models.Message)
@@ -269,12 +269,12 @@ func TestStartWithTimeTriggerForReals(t *testing.T) {
 	location := "lab"
 	name := "led"
 	g := Gadget{
-		location: location,
-		name: name,
-		onCommand: "turn on lab led",
-		offCommand: "turn off lab led",
-		output: gpio,
-		uid: fmt.Sprintf("%s %s", location, name),
+		Location: location,
+		Name: name,
+		OnCommand: "turn on lab led",
+		OffCommand: "turn off lab led",
+		Output: gpio,
+		UID: fmt.Sprintf("%s %s", location, name),
 	}
 	input := make(chan models.Message)
 	output := make(chan models.Message)
@@ -357,10 +357,10 @@ func TestInputStart(t *testing.T) {
 		Units: "liters",
 	}
 	g := Gadget{
-		location: location,
-		name: name,
-		input: s,
-		uid: fmt.Sprintf("%s %s", location, name),
+		Location: location,
+		Name: name,
+		Input: s,
+		UID: fmt.Sprintf("%s %s", location, name),
 	}
 	input := make(chan models.Message)
 	output := make(chan models.Message)
