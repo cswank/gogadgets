@@ -24,6 +24,8 @@ func TestThermometer(t *testing.T) {
 	if val.Units != "C" {
 		t.Error("units should have been 'C'", val)
 	}
+	fmt.Println("the temperature is:" val.Value)
+	stop<- true
 }
 
 func TestThermometerParseValue(t *testing.T) {
