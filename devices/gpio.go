@@ -97,12 +97,9 @@ func (g *GPIO) Wait() (bool, error) {
 		g.buf = make([]byte, 64)
 		syscall.Read(g.fd, g.buf)
 	}
-	_, err := syscall.Select(g.fd + 1, nil, nil, g.fdSet, nil)
-	if err != nil {
-		return false, err
-	}
+	syscall.Select(g.fd + 1, nil, nil, g.fdSet, nil)
 	syscall.Seek(g.fd, 0, 0)
-	_, err = syscall.Read(g.fd, g.buf)
+	_, err := syscall.Read(g.fd, g.buf)
 	if err != nil {
 		return false, err
 	}
