@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	timeExp = regexp.MustCompile(`for (\d*\.?\d*) (second|seconds|minute|minutes|hour|hours)`)
+	timeExp = regexp.MustCompile(`for (\d*\.?\d*) (seconds?|minutes?|hours?)`)
 )
 
 type stepChecker func(msg *models.Message) bool

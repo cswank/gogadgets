@@ -46,7 +46,7 @@ func TestReadWaitCommand(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if d != time.Duration(1.1 * 60.0 * float64(time.Second)) {
+	if d != time.Duration(66.0 * float64(time.Second)) {
 		t.Error("incorrect time", d)
 	}
 }
