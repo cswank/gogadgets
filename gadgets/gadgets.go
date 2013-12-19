@@ -56,7 +56,7 @@ func NewGadget(config *models.Config) (*Gadget, error) {
 	t := config.Pin.Type
 	if t == "heater" || t == "gpio" {
 		return NewOutputGadget(config)
-	} else if t == "thermometer" || t == "swich" {
+	} else if t == "thermometer" || t == "switch" {
 		return NewInputGadget(config)
 	}
 	err := errors.New(

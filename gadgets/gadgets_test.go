@@ -295,6 +295,56 @@ func TestStartWithTimeTriggerForReals(t *testing.T) {
 	}
 }
 
+func TestRealInput(t *testing.T) {
+	if !utils.FileExists("/sys/class/gpio/export") {
+		return //not a beaglebone
+	}
+
+	gpioConfig := &models.Pin{
+		Type: "gpio",
+		Port: "9",
+		Pin: "15",
+	}
+	gpio, err := devices.NewGPIO(gpioConfig)
+	if err != nil {
+		t.Fatal(err)
+	}
+	
+	config := &models.Config{
+		Location: "lab",
+		Name: "switch",
+		Pin: models.Pin{
+			Type: "switch",
+			Port: "9",
+			Pin: "16",
+			Value: 5.0,
+			Units: "liters",
+		},
+	}
+	s, err := NewGadget(config)
+	if err != nil {
+		t.Fatal(err)
+	}
+	input := make(chan models.Message)
+	output := make(chan models.Message)
+	
+	go s.Start(input, output)
+	go func() {
+		time.Sleep(100 * time.Millisecond)
+		gpio.On(nil)
+		time.Sleep(100 * time.Millisecond)
+		gpio.Off()
+	}()
+	val := <-output
+	if val.Value.Value.(float32) != 5.0 {
+		t.Error("should have been 5.0", val.Value)
+	}
+	val = <-output
+	if val.Value.Value.(float32) != 0.0 {
+		t.Error("should have been 0.0", val.Value)
+	}
+}
+
 func TestInputStart(t *testing.T) {
 	location := "lab"
 	name := "switch"
