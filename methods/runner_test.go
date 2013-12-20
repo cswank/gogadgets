@@ -27,24 +27,30 @@ func TestReadWaitCommand(t *testing.T) {
 }
 
 func TestStepExp(t *testing.T) {
-	cmd := "wait for tank volume is 5.4"
+	cmd := "wait for tank volume <= 5.4"
 	result := stepExp.FindStringSubmatch(cmd)
-	if len(result) != 3 {
+	if len(result) != 4 {
 		t.Fatal(result)
 	}
-	if result[2] != "5.4" {
+	if result[3] != "5.4" {
+		t.Error(result)
+	}
+	if result[2] != "<=" {
 		t.Error(result)
 	}
 	if result[1] != "tank volume" {
 		t.Error(result)
 	}
 
-	cmd = "wait for fish tank temperature is 31"
+	cmd = "wait for fish tank temperature > 31"
 	result = stepExp.FindStringSubmatch(cmd)
-	if len(result) != 3 {
+	if len(result) != 4 {
 		t.Fatal(result)
 	}
-	if result[2] != "31" {
+	if result[2] != ">" {
+		t.Error(result)
+	}
+	if result[3] != "31" {
 		t.Error(result)
 	}
 	if result[1] != "fish tank temperature" {
@@ -54,7 +60,7 @@ func TestStepExp(t *testing.T) {
 
 func TestSetStepChecker(t *testing.T) {
 	m := Methods{}
-	cmd := "wait for tank volume is 5.4"
+	cmd := "wait for tank volume >= 5.4"
 	m.setStepChecker(cmd)
 	msg := &models.Message{
 		Sender: "tank volume",
@@ -79,8 +85,8 @@ func TestSetStepChecker(t *testing.T) {
 
 func TestParseWaitCommand(t *testing.T) {
 	m := Methods{}
-	cmd := "wait for tank volume is 5.4"
-	uid, value, err := m.parseWaitCommand(cmd)
+	cmd := "wait for tank volume >= 5.4"
+	uid, operator, value, err := m.parseWaitCommand(cmd)
 	if err != nil {
 		t.Error(err)
 	}
@@ -90,8 +96,11 @@ func TestParseWaitCommand(t *testing.T) {
 	if uid != "tank volume" {
 		t.Error(uid)
 	}
-	cmd = "wait for fish tank temperature is 31"
-	uid, value, err = m.parseWaitCommand(cmd)
+	if operator != ">=" {
+		t.Error(operator)
+	}
+	cmd = "wait for fish tank temperature > 31"
+	uid, operator, value, err = m.parseWaitCommand(cmd)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -100,6 +109,9 @@ func TestParseWaitCommand(t *testing.T) {
 	}
 	if uid != "fish tank temperature" {
 		t.Error(uid)
+	}
+	if operator != ">" {
+		t.Error(operator)
 	}
 }
 
@@ -113,7 +125,7 @@ func TestRunMethod(t *testing.T) {
 		Method: []string{
 			"fill boiler to 3.3 gallons",
 			"heat boiler to 95 C",
-			"wait for boiler temperature is 95",
+			"wait for boiler temperature >= 95",
 			"stop heating boiler",
 		},
 	}

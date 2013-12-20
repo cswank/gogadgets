@@ -2,7 +2,9 @@ package methods
 
 import (
 	"log"
+	"fmt"
 	"time"
+	"errors"
 	"regexp"
 	"strings"
 	"strconv"
@@ -11,10 +13,11 @@ import (
 
 var (
 	timeExp = regexp.MustCompile(`for (\d*\.?\d*) (seconds?|minutes?|hours?)`)
-	stepExp = regexp.MustCompile(`for (.+) is (\d*\.?\d*)`)
+	stepExp = regexp.MustCompile(`for (.+) (>=|>|==|<=|<) (\d*\.?\d*)`)
 )
 
 type stepChecker func(msg *models.Message) bool
+type comparitor func(value float64) bool
 
 type Methods struct {
 	models.Gadget
@@ -99,23 +102,47 @@ func (m *Methods) readWaitCommand(cmd string) {
 }
 
 func (m *Methods) setStepChecker(cmd string) {
-	uid, value, err := m.parseWaitCommand(cmd)
+	uid, operator, value, err := m.parseWaitCommand(cmd)
 	if err == nil {
-		m.stepChecker = func(msg *models.Message) bool {
-			val, ok := msg.Value.Value.(float64)
-			return ok && msg.Sender == uid &&
-				val >= value
+		compare, err := m.getCompare(operator, value)
+		if err == nil {
+			m.stepChecker = func(msg *models.Message) bool {
+				val, ok := msg.Value.Value.(float64)
+				return ok &&
+					msg.Sender == uid &&
+					compare(val)
+			}
+		} else {
+			log.Println(err)
 		}
 	}
 }
 
-func (m *Methods) parseWaitCommand(cmd string) (uid string, value float64, err error) {
-	result := stepExp.FindStringSubmatch(cmd)
-	if len(result) == 3 {
-		uid = result[1]
-		value, err = strconv.ParseFloat(result[2], 64)
+func (m *Methods) getCompare(operator string, value float64) (cmp comparitor, err error) {
+	if operator == "<=" {
+		cmp = func(x float64) bool {return x <= value}
+	} else if operator == "<" {
+		cmp = func(x float64) bool {return x < value}
+	} else if operator == "==" {
+		cmp = func(x float64) bool {return x == value}
+	} else if operator == ">=" {
+		cmp = func(x float64) bool {return x >= value}
+	} else if operator == ">" {
+		cmp = func(x float64) bool {return x > value}
+	} else {
+		err = errors.New(fmt.Sprintf("invalid operator: %s", operator))
 	}
-	return uid, value, err
+	return cmp, err
+}
+
+func (m *Methods) parseWaitCommand(cmd string) (uid string, operator string, value float64, err error) {
+	result := stepExp.FindStringSubmatch(cmd)
+	if len(result) == 4 {
+		uid = result[1]
+		operator = result[2]
+		value, err = strconv.ParseFloat(result[3], 64)
+	}
+	return uid, operator, value, err
 }
 
 func (m *Methods) setWaitTime(cmd []string) {
