@@ -1,8 +1,7 @@
 package methods
 
 import (
-	"fmt"
-	"errors"
+	"log"
 	"time"
 	"regexp"
 	"strings"
@@ -12,6 +11,7 @@ import (
 
 var (
 	timeExp = regexp.MustCompile(`for (\d*\.?\d*) (seconds?|minutes?|hours?)`)
+	stepExp = regexp.MustCompile(`for (.+) is (\d*\.?\d*)`)
 )
 
 type stepChecker func(msg *models.Message) bool
@@ -26,30 +26,41 @@ type Methods struct {
 }
 
 func (m *Methods) Start(in <-chan models.Message, out chan<- models.Message) {
-	shutdown := false
+	m.waitTime = time.Duration(10000 * time.Hour)
 	m.out = out
+	shutdown := false
 	for !shutdown {
 		select {
 		case msg := <-in:
-			m.readMessage(&msg)
+			shutdown = m.readMessage(&msg)
 		case <-time.After(m.waitTime):
-			
+			m.waitTime = time.Duration(10000 * time.Hour)
+			m.runNextStep()
 		}
 	}
+	m.out<- models.Message{}
 }
 
-func (m *Methods) readMessage(msg *models.Message) {
+func (m *Methods) readMessage(msg *models.Message) (shutdown bool) {
 	if msg.Type == models.METHOD {
 		m.method = msg.Method
 		m.step = -1
 		m.runNextStep()
+		shutdown = false
 	} else if len(m.method) != 0 && msg.Type == models.UPDATE {
 		m.checkUpdate(msg)
+		shutdown = false
+	} else if msg.Type == models.COMMAND && msg.Body == "shutdown" {
+		shutdown = true
+	} else {
+		shutdown = false
 	}
+	return shutdown
 }
 
 func (m *Methods) checkUpdate(msg *models.Message) {
 	if m.stepChecker != nil && m.stepChecker(msg) {
+		m.stepChecker = nil
 		m.runNextStep()
 	}
 }
@@ -78,23 +89,46 @@ func (m *Methods) sendCommand(cmd string) {
 	m.out<- msg
 }
 
-func (m *Methods) readWaitCommand(cmd string) (d time.Duration, err error) {
+func (m *Methods) readWaitCommand(cmd string) {
 	result := timeExp.FindStringSubmatch(cmd)
 	if len(result) == 3 {
-		units := result[2]
-		t, err := strconv.ParseFloat(result[1], 64)
-		if err != nil {
-			err = errors.New(fmt.Sprintf("could not parse command", cmd))
-		} else {
-			if units == "minutes" || units == "minute" {
-				t *= 60.0
-			} else if units == "hours" || units == "hour" {
-				t *= 3600.0
-			}
-			d = time.Duration(t * float64(time.Second))
-		}
+		m.setWaitTime(result)
 	} else {
-		err = errors.New(fmt.Sprintf("could not parse command", cmd))
+		m.setStepChecker(cmd)
 	}
-	return d, err
+}
+
+func (m *Methods) setStepChecker(cmd string) {
+	uid, value, err := m.parseWaitCommand(cmd)
+	if err == nil {
+		m.stepChecker = func(msg *models.Message) bool {
+			val, ok := msg.Value.Value.(float64)
+			return ok && msg.Sender == uid &&
+				val >= value
+		}
+	}
+}
+
+func (m *Methods) parseWaitCommand(cmd string) (uid string, value float64, err error) {
+	result := stepExp.FindStringSubmatch(cmd)
+	if len(result) == 3 {
+		uid = result[1]
+		value, err = strconv.ParseFloat(result[2], 64)
+	}
+	return uid, value, err
+}
+
+func (m *Methods) setWaitTime(cmd []string) {
+	units := cmd[2]
+	t, err := strconv.ParseFloat(cmd[1], 64)
+	if err != nil {
+		log.Println("could not parse command", cmd)
+	} else {
+		if units == "minutes" || units == "minute" {
+			t *= 60.0
+		} else if units == "hours" || units == "hour" {
+			t *= 3600.0
+		}
+		m.waitTime = time.Duration(t * float64(time.Second))
+	}
 }

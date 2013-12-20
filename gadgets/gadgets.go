@@ -279,6 +279,9 @@ func (g *Gadget) readOffCommand(msg *models.Message) {
 }
 
 func (g *Gadget) sendStatus() {
+	if g.UID == "" {
+		g.UID = fmt.Sprintf("%s %s", g.Location, g.Name)
+	}
 	msg := models.Message{
 		Sender: g.UID,
 		Type: models.STATUS,
