@@ -26,6 +26,7 @@ func TestGPIOWait(t *testing.T) {
 		return //not a beaglebone
 	}
 	g, err := NewGPIO(&Pin{Port:"9", Pin:"16", Direction:"in", Edge:"rising"})
+	p := g.(Poller)
 	if err != nil {
 		t.Error(err)
 	}
@@ -37,7 +38,7 @@ func TestGPIOWait(t *testing.T) {
 		gIn.On(nil)
 	}()
 	fmt.Println("wait()")
-	val, err := g.Wait()
+	val, err := p.Wait()
 	if err != nil {
 		t.Error(err)
 	}

@@ -25,7 +25,7 @@ type GPIO struct {
 	buf []byte
 }
 
-func NewGPIO(pin *Pin) (*GPIO, error) {
+func NewGPIO(pin *Pin) (OutputDevice, error) {
 	portMap, ok := Pins["gpio"][pin.Port]
 	if !ok {
 		return nil, errors.New(fmt.Sprintf("no such port: %s", pin.Port))

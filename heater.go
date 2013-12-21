@@ -16,7 +16,9 @@ type Heater struct {
 	stop chan bool
 }
 
-func NewHeater(pin *Pin) (h *Heater, err error) {
+func NewHeater(pin *Pin) (OutputDevice, error) {
+	var h *Heater
+	var err error
 	g, err := NewGPIO(pin)
 	if err == nil {
 		h = &Heater{

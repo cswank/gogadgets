@@ -11,11 +11,13 @@ type Switch struct {
 	Units string
 }
 
-func NewSwitch(pin *Pin) (s *Switch, err error) {
+func NewSwitch(pin *Pin) (InputDevice, error) {
+	var err error
+	var s *Switch
 	gpio, err := NewGPIO(pin)
 	if err == nil {
 		s = &Switch{
-			GPIO:gpio,
+			GPIO:gpio.(Poller),
 			Value: pin.Value.(float64),
 			Units: pin.Units,
 		}

@@ -43,6 +43,10 @@ func (a *App) Start(stop <-chan bool) {
 	}
 }
 
+func (a *App) AddGadget(gadget GoGadget) {
+	a.gadgets = append(a.gadgets, gadget)
+}
+
 func GatGadgets(configs []*Config) *App {
 	g := make([]GoGadget, len(configs))
 	for i, config := range configs {
@@ -54,5 +58,3 @@ func GatGadgets(configs []*Config) *App {
 	}
 	return &App{gadgets:g}
 }
-
-

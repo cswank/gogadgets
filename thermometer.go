@@ -17,7 +17,9 @@ type Thermometer struct {
 	units string
 }
 
-func NewThermometer(pin *Pin) (therm *Thermometer, err error) {
+func NewThermometer(pin *Pin) (InputDevice, error) {
+	var therm *Thermometer
+	var err error
 	path := fmt.Sprintf("/sys/bus/w1/devices/%s/w1_slave", pin.OneWireId)
 	if pin.OneWireId == "" || !utils.FileExists(path) {
 		err = errors.New(fmt.Sprintf("invalid one-wire device path: %s", pin.OneWireId))

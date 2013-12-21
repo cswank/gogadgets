@@ -12,12 +12,12 @@ var (
 	STATUS = "status"
 )
 
+type InputDeviceFactory func(pin *Pin) (InputDevice, error)
+
+type OutputDeviceFactory func(pin *Pin) (OutputDevice, error)
+
 type GoGadget interface {
 	Start(input <-chan Message, output chan<- Message)
-}
-
-type Gadgets struct {
-	Gadgets []Gadget
 }
 
 type Value struct {
