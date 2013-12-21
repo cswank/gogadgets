@@ -1,37 +1,36 @@
-package main
+package gogadgets
 
 import (
-	//"log"
-	"fmt"
-	"bitbucket.com/cswank/gogadgets/models"
-	//"bitbucket.com/cswank/gogadgets/gadgets"
+	"log"
 )
 
 type App struct {
-	gadgets []models.Gadget
-	channels []chan models.Message
+	gadgets []GoGadget
+	channels []chan Message
 }
 
 func (a *App) Start(stop <-chan bool) {
-	in := make(chan models.Message)
-	a.channels = make([]chan models.Message, len(a.gadgets))
-	for _, gadget := range a.gadgets {
-		out := make(chan models.Message)
+	in := make(chan Message)
+	n := len(a.gadgets) + 1
+	a.channels = make([]chan Message, n)
+	a.channels[0] = make(chan Message)
+	runner := Runner{}
+	go runner.Start(a.channels[0], in)
+	for i, gadget := range a.gadgets {
+		out := make(chan Message)
 		go gadget.Start(out, in)
-		a.channels = append(a.channels, out)
+		a.channels[i + 1] = out
 	}
 	keepRunning := true
-	fmt.Println("loop")
 	for keepRunning {
 		select {
 		case msg := <-in:
-			//fmt.Println("msg", msg)
 			for _, channel := range a.channels {
 				channel<- msg
 			}
 		case keepRunning = <-stop:
-			stopMessage := models.Message{
-				Type: models.COMMAND,
+			stopMessage := Message{
+				Type: COMMAND,
 				Body: "shutdown",
 			}
 			for _, channel := range a.channels {
@@ -44,19 +43,16 @@ func (a *App) Start(stop <-chan bool) {
 	}
 }
 
-// func GadgetsFactory(configs []models.Config) []models.Gadget {
-// 	g := make([]models.Gadget, len(configs))
-// 	for i, config := range configs {
-// 		gadget, err := gadgets.NewGadget(config)
-// 		if err != nil {
-// 			log.Println(err)
-// 		}
-// 		g[i] = gadget
-// 	}
-// 	return g
-// }
-
-func main() {
-	
+func GatGadgets(configs []*Config) *App {
+	g := make([]GoGadget, len(configs))
+	for i, config := range configs {
+		gadget, err := NewGadget(config)
+		if err != nil {
+			log.Println(err)
+		}
+		g[i] = gadget
+	}
+	return &App{gadgets:g}
 }
+
 

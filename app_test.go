@@ -1,24 +1,21 @@
-package main
+package gogadgets
 
 import (
 	"fmt"
 	"time"
-	"bitbucket.com/cswank/gogadgets/gadgets"
-	"bitbucket.com/cswank/gogadgets/models"
-	"bitbucket.com/cswank/gogadgets/devices"
 	"testing"
 )
 
 type FakeOutput struct {
-	devices.OutputDevice
+	OutputDevice
 	on bool
 }
 
-func (f *FakeOutput) Update(msg *models.Message) {
+func (f *FakeOutput) Update(msg *Message) {
 	
 }
 
-func (f *FakeOutput) On(val *models.Value) error {
+func (f *FakeOutput) On(val *Value) error {
 	f.on = true
 	return nil
 }
@@ -33,7 +30,7 @@ func (f *FakeOutput) Status() interface{} {
 }
 
 type FakePoller struct {
-	devices.Poller
+	Poller
 	val bool
 }
 
@@ -43,8 +40,36 @@ func (f *FakePoller) Wait() (bool, error) {
 	return f.val, nil
 }
 
+func TestGetGadgets(t *testing.T) {
+	// if !utils.FileExists("/sys/class/gpio/export") {
+	// 	return //not a beaglebone
+	// }
+	// configs := []*Config{
+	// 	&Config{
+	// 		Type: "gpio",
+	// 		Location: "tank",
+	// 		Name: "pump",
+	// 		Pin: Pin{
+	// 			Port: "9",
+	// 			Pin: "15",
+	// 		},
+	// 	},
+	// 	&Config{
+	// 		Type: "switch",
+	// 		Location: "tank",
+	// 		Name: "switch",
+	// 		Pin: Pin{
+	// 			Port: "9",
+	// 			Pin: "16",
+	// 			Value: "7.5",
+	// 			Units: "liters",
+	// 		},
+	// 	},
+	// }
+}
+
 func TestGadgets(t *testing.T) {
-	p := &gadgets.Gadget{
+	p := &Gadget{
 		Location: "tank",
 		Name: "pump",
 		OnCommand: fmt.Sprintf("turn on %s %s", "tank", "pump"),
@@ -55,10 +80,10 @@ func TestGadgets(t *testing.T) {
 	location := "tank"
 	name := "switch"
 	poller := &FakePoller{}
-	s := &gadgets.Gadget{
+	s := &Gadget{
 		Location: location,
 		Name: name,
-		Input: &devices.Switch{
+		Input: &Switch{
 			GPIO: poller,
 			Value: 5.0,
 			Units: "liters",
@@ -66,7 +91,7 @@ func TestGadgets(t *testing.T) {
 		UID: fmt.Sprintf("%s %s", location, name),
 	}
 	a := App{
-		gadgets: []models.Gadget{p, s},
+		gadgets: []GoGadget{p, s},
 	}
 	stop := make(chan bool)
 	go a.Start(stop)
