@@ -4,7 +4,6 @@ import (
 
 )
 
-
 type AppFactory struct {
 	inputFactories map[string] InputDeviceFactory
 	outputFactories map[string] OutputDeviceFactory
