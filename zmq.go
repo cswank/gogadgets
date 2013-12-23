@@ -1,6 +1,15 @@
+/*
+       board (master)         board 2 
+   sub  pub  reply        sub  pub  reply
+    |    |                 |    |
+    |    -------------------    |
+    -----------------------------
+*/
+
 package gogadgets
 
 import (
+	"fmt"
 	"log"
 	"encoding/json"
 	"github.com/vaughan0/go-zmq"
@@ -8,10 +17,16 @@ import (
 
 type Sockets struct {
 	GoGadget
+	masterHost string
+	isMaster bool
 	ctx *zmq.Context
 	reply *zmq.Channels
 	sub *zmq.Channels
 	pub *zmq.Socket
+}
+
+func (s *Sockets) GetUID() string {
+	return "zmq sockets"
 }
 
 func (s *Sockets) Start(in <-chan Message, out chan<- Message) {
@@ -36,7 +51,6 @@ func (s *Sockets) Start(in <-chan Message, out chan<- Message) {
 			out<- *msg
 		case msg := <-in:
 			if msg.Type == COMMAND && msg.Body == "shutdown" {
-				
 				keepGoing = false
 			}
 			b, err := json.Marshal(msg)
@@ -55,6 +69,16 @@ func (s *Sockets) Start(in <-chan Message, out chan<- Message) {
 }
 
 func (s *Sockets) getSockets() (err error) {
+	if s.masterHost == "localhost" || s.masterHost == "" {
+		s.isMaster = true
+		err = s.getMasterSockets()
+	} else {
+		err = s.getClientSockets()
+	}
+	return err
+}
+
+func (s *Sockets) getMasterSockets() (err error) {
 	s.ctx, err = zmq.NewContext()
 	if err != nil {
 		return err
@@ -82,6 +106,41 @@ func (s *Sockets) getSockets() (err error) {
 		return err
 	}
 	if err = sub.Bind("tcp://*:6112"); err != nil {
+		return err
+	}
+	sub.Subscribe([]byte(""))
+	s.sub = sub.Channels()
+	return err
+}
+
+func (s *Sockets) getClientSockets() (err error) {
+	s.ctx, err = zmq.NewContext()
+	if err != nil {
+		return err
+	}
+	reply, err := s.ctx.Socket(zmq.Rep)
+	if err != nil {
+		return err
+	}
+	if err = reply.Connect(fmt.Sprintf("tcp://%s:6113", s.masterHost)); err != nil {
+		return err
+	}
+	s.reply = reply.Channels()
+	
+	s.pub, err = s.ctx.Socket(zmq.Pub)
+	if err != nil {
+		return err
+	}
+	if err = s.pub.Connect(fmt.Sprintf("tcp://*:6112", s.masterHost)); err != nil {
+		return err
+	}
+
+	sub, err := s.ctx.Socket(zmq.Sub)
+	
+	if err != nil {
+		return err
+	}
+	if err = sub.Connect(fmt.Sprintf("tcp://*:6111", s.masterHost)); err != nil {
 		return err
 	}
 	sub.Subscribe([]byte(""))

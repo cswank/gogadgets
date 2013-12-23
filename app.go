@@ -6,27 +6,28 @@ import (
 
 type App struct {
 	gadgets []GoGadget
-	channels []chan Message
+	MasterHost string
+	channels map[string]chan Message
 }
 
 func (a *App) Start(stop <-chan bool) {
+	a.gadgets = append(a.gadgets, &Runner{})
+	//a.gadgets = append(a.gadgets, &Sockets{masterHost: a.MasterHost})
 	in := make(chan Message)
-	n := len(a.gadgets) + 1
-	a.channels = make([]chan Message, n)
-	a.channels[0] = make(chan Message)
-	runner := Runner{}
-	go runner.Start(a.channels[0], in)
-	for i, gadget := range a.gadgets {
+	a.channels = make(map[string]chan Message)
+	for _, gadget := range a.gadgets {
 		out := make(chan Message)
+		a.channels[gadget.GetUID()] = out
 		go gadget.Start(out, in)
-		a.channels[i + 1] = out
 	}
 	keepRunning := true
 	for keepRunning {
 		select {
 		case msg := <-in:
-			for _, channel := range a.channels {
-				channel<- msg
+			for uid, channel := range a.channels {
+				if uid != msg.Sender {
+					channel<- msg
+				}
 			}
 		case keepRunning = <-stop:
 			stopMessage := Message{

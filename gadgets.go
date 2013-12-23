@@ -276,10 +276,14 @@ func (g *Gadget) readOffCommand(msg *Message) {
 	}
 }
 
-func (g *Gadget) sendStatus() {
+func (g *Gadget) GetUID() string {
 	if g.UID == "" {
 		g.UID = fmt.Sprintf("%s %s", g.Location, g.Name)
 	}
+	return g.UID
+}
+
+func (g *Gadget) sendStatus() {
 	msg := Message{
 		Sender: g.UID,
 		Type: STATUS,

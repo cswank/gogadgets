@@ -92,6 +92,7 @@ func TestGadgets(t *testing.T) {
 	}
 	a := App{
 		gadgets: []GoGadget{p, s},
+		MasterHost: "localhost",
 	}
 	stop := make(chan bool)
 	go a.Start(stop)

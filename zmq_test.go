@@ -8,7 +8,7 @@ import (
 )
 
 func TestSockets(t *testing.T) {
-	s := Sockets{}
+	s := Sockets{masterHost:"localhost"}
 	input := make(chan Message)
 	output := make(chan Message)
 	go s.Start(input, output)

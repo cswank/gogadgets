@@ -24,10 +24,16 @@ type Runner struct {
 	waitTime time.Duration
 	stepChecker stepChecker
 	step int
+	uid string
 	out chan<- Message
 }
 
+func (m *Runner) GetUID() string {
+	return "method runner"
+}
+
 func (m *Runner) Start(in <-chan Message, out chan<- Message) {
+	m.uid = m.GetUID()
 	m.waitTime = time.Duration(10000 * time.Hour)
 	m.out = out
 	shutdown := false
@@ -85,6 +91,7 @@ func (m *Runner) runNextStep() {
 
 func (m *Runner) sendCommand(cmd string) {
 	msg := Message{
+		Sender: m.uid,
 		Type: COMMAND,
 		Body: cmd,
 	}
