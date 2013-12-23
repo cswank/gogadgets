@@ -1,7 +1,6 @@
 package gogadgets
 
 import (
-	"fmt"
 	"log"
 	"encoding/json"
 	"github.com/vaughan0/go-zmq"
@@ -24,29 +23,34 @@ func (s *Sockets) Start(in <-chan Message, out chan<- Message) {
 	if err != nil {
 		log.Println("zmq sockets had a problem", err)
 	}
-	fmt.Println("select")
-	select {
-	case data := <-s.sub.In():
-		msg := &Message{}
-		json.Unmarshal(data[1], msg)
-		fmt.Println("sockets got", msg)
-		out<- *msg
-	case data := <-s.reply.In():
-		msg := &Message{}
-		json.Unmarshal(data[1], msg)
-		out<- *msg
-	case msg := <-in:
-		b, err := json.Marshal(msg)
-		if err != nil {
-			log.Println("zmq sockets had a problem", err)
-		} else {
-			s.pub.Send([][]byte{
-				[]byte(msg.Type),
-				b,
-			})
+	keepGoing := true
+	for keepGoing {
+		select {
+		case data := <-s.sub.In():
+			msg := &Message{}
+			json.Unmarshal(data[1], msg)
+			out<- *msg
+		case data := <-s.reply.In():
+			msg := &Message{}
+			json.Unmarshal(data[1], msg)
+			out<- *msg
+		case msg := <-in:
+			if msg.Type == COMMAND && msg.Body == "shutdown" {
+				
+				keepGoing = false
+			}
+			b, err := json.Marshal(msg)
+			if err != nil {
+				log.Println("zmq sockets had a problem", err)
+			} else {
+				s.pub.Send([][]byte{
+					[]byte(msg.Type),
+					b,
+				})
+			}
+		case err = <-s.sub.Errors():
+			log.Println(err)
 		}
-	case err = <-s.sub.Errors():
-		log.Println(err)
 	}
 }
 
