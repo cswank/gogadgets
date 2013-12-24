@@ -1,19 +1,18 @@
 package main
 
 import (
-	"fmt"
 	"bitbucket.com/cswank/gogadgets"
 )
 
 func main() {
 	cfg := &gogadgets.Config{
 		MasterHost: "localhost",
-		Gadgets: []gogagets.GadgetConfig{
+		Gadgets: []gogadgets.GadgetConfig{
 			gogadgets.GadgetConfig{
-				Type: "switch",
 				Location: "tank",
 				Name: "volume",
 				Pin: gogadgets.Pin{
+					Type: "switch",
 					Port: "9",
 					Pin: "16",
 					Value: 5.0,
@@ -21,28 +20,29 @@ func main() {
 				},
 			},
 			gogadgets.GadgetConfig{
-				Type: "gpio",
 				Location: "tank",
 				Name: "water",
 				Pin: gogadgets.Pin{
+					Type: "gpio",
 					Port: "9",
 					Pin: "15",
 				},
 			},
 			gogadgets.GadgetConfig{
-				Type: "gpio",
+				
 				Location: "lab",
 				Name: "led",
 				Pin: gogadgets.Pin{
+					Type: "gpio",
 					Port: "9",
 					Pin: "14",
 				},
 			},
 			gogadgets.GadgetConfig{
-				Type: "temperature",
 				Location: "tank",
 				Name: "temperature",
 				Pin: gogadgets.Pin{
+					Type: "thermometer",
 					OneWireId: "28-0000047ade8f",
 					Units: "C",
 				},

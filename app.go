@@ -30,6 +30,7 @@ func GetGadgets(configs []GadgetConfig) []GoGadget {
 	g := make([]GoGadget, len(configs))
 	for i, config := range configs {
 		gadget, err := NewGadget(&config)
+		log.Println(gadget.Name, gadget.Output)
 		if err != nil {
 			log.Println(err)
 		}

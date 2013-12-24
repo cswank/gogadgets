@@ -71,6 +71,8 @@ func NewInputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
 			Location: config.Location,
 			Name: config.Name,
 			Input: dev,
+			OnCommand: "n/a",
+			OffCommand: "n/a",
 			UID: fmt.Sprintf("%s %s", config.Location, config.Name),
 		}
 	}
@@ -88,6 +90,8 @@ func NewOutputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
 			Output: dev,
 			UID: fmt.Sprintf("%s %s", config.Location, config.Name),
 		}
+	} else {
+		panic(err)
 	}
 	return gadget, err
 }
@@ -190,7 +194,6 @@ func (g *Gadget) readOnCommand(msg *Message) {
 		val = g.readOnArguments(msg.Body)
 	} else {
 		g.compare = nil
-		
 	}
 	g.on(val)
 }
