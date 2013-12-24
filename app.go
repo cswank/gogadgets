@@ -15,8 +15,8 @@ type App struct {
 func NewApp(config *Config) *App {
 	gadgets := GetGadgets(config.Gadgets)
 	if  config.PubPort == 0 {
-		config.PubPort = 6111
-		config.SubPort = 6112
+		config.SubPort = 6111
+		config.PubPort = 6112
 	}
 	return &App{
 		masterHost: config.MasterHost,
