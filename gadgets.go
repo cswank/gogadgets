@@ -9,7 +9,6 @@ import (
 	"strconv"
 )
 
-
 var (
 	units = map[string]string{
 		"liters": "volume",
@@ -50,7 +49,7 @@ type Gadget struct {
 	timerOut chan bool
 }
 
-func NewGadget(config *Config) (*Gadget, error) {
+func NewGadget(config *GadgetConfig) (*Gadget, error) {
 	t := config.Pin.Type
 	if t == "heater" || t == "gpio" {
 		return NewOutputGadget(config)
@@ -65,7 +64,7 @@ func NewGadget(config *Config) (*Gadget, error) {
 	return nil, err
 }
 
-func NewInputGadget(config *Config) (gadget *Gadget, err error) {
+func NewInputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
 	dev, err := NewInputDevice(&config.Pin)
 	if err == nil {
 		gadget = &Gadget{
@@ -78,7 +77,7 @@ func NewInputGadget(config *Config) (gadget *Gadget, err error) {
 	return gadget, err
 }
 
-func NewOutputGadget(config *Config) (gadget *Gadget, err error) {
+func NewOutputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
 	dev, err := NewOutputDevice(&config.Pin)
 	if err == nil {
 		gadget = &Gadget{
@@ -97,6 +96,7 @@ func (g *Gadget) isMyCommand(msg *Message) bool {
 	return msg.Type == COMMAND && 
 		(strings.Index(msg.Body, g.OnCommand) == 0 ||
 		strings.Index(msg.Body, g.OffCommand) == 0 ||
+		msg.Body == "status" ||
 		msg.Body == "shutdown")
 }
 
@@ -175,6 +175,8 @@ func (g *Gadget) readCommand(msg *Message) {
 	if msg.Body == "shutdown" {
 		g.shutdown = true
 		g.off()
+	} else if msg.Body == "status" {
+		g.sendStatus()
 	} else if strings.Index(msg.Body, g.OnCommand) == 0 {
 		g.readOnCommand(msg)
 	} else if strings.Index(msg.Body, g.OffCommand) == 0 {

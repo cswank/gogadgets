@@ -1,14 +1,22 @@
 package gogadgets
 
 import (
+	"fmt"
 	"time"
+	"math/rand"
 	"testing"
 	"encoding/json"
 	"github.com/vaughan0/go-zmq"
 )
 
 func TestSockets(t *testing.T) {
-	s := Sockets{masterHost:"localhost"}
+	pubPort := 1024 + rand.Intn(65535 - 1024)
+	subPort := pubPort + 1
+	s := Sockets{
+		masterHost:"localhost",
+		pubPort: pubPort,
+		subPort: subPort,
+	}
 	input := make(chan Message)
 	output := make(chan Message)
 	go s.Start(input, output)
@@ -24,7 +32,7 @@ func TestSockets(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = pub.Connect("tcp://localhost:6112")
+	err = pub.Connect(fmt.Sprintf("tcp://localhost:%d", subPort))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -36,7 +44,7 @@ func TestSockets(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = sub.Connect("tcp://localhost:6111"); err != nil {
+	if err = sub.Connect(fmt.Sprintf("tcp://localhost:%d", pubPort)); err != nil {
 		t.Fatal(err)
 	}
 	sub.Subscribe([]byte(""))

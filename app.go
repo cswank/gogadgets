@@ -6,13 +6,46 @@ import (
 
 type App struct {
 	gadgets []GoGadget
-	MasterHost string
+	masterHost string
+	pubPort int
+	subPort int
 	channels map[string]chan Message
+}
+
+func NewApp(config *Config) *App {
+	gadgets := GetGadgets(config.Gadgets)
+	if  config.PubPort == 0 {
+		config.PubPort = 6111
+		config.SubPort = 6112
+	}
+	return &App{
+		masterHost: config.MasterHost,
+		pubPort: config.PubPort,
+		subPort: config.SubPort,
+		gadgets: gadgets,
+	}
+}
+
+func GetGadgets(configs []GadgetConfig) []GoGadget {	
+	g := make([]GoGadget, len(configs))
+	for i, config := range configs {
+		gadget, err := NewGadget(&config)
+		if err != nil {
+			log.Println(err)
+		}
+		g[i] = gadget
+	}
+	return g
 }
 
 func (a *App) Start(stop <-chan bool) {
 	a.gadgets = append(a.gadgets, &Runner{})
-	//a.gadgets = append(a.gadgets, &Sockets{masterHost: a.MasterHost})
+	s := &Sockets{
+		masterHost: a.masterHost,
+		pubPort: a.pubPort,
+		subPort: a.subPort,
+	}
+	a.gadgets = append(a.gadgets, s)
 	in := make(chan Message)
 	a.channels = make(map[string]chan Message)
 	for _, gadget := range a.gadgets {
@@ -48,14 +81,3 @@ func (a *App) AddGadget(gadget GoGadget) {
 	a.gadgets = append(a.gadgets, gadget)
 }
 
-func GatGadgets(configs []*Config) *App {
-	g := make([]GoGadget, len(configs))
-	for i, config := range configs {
-		gadget, err := NewGadget(config)
-		if err != nil {
-			log.Println(err)
-		}
-		g[i] = gadget
-	}
-	return &App{gadgets:g}
-}

@@ -49,8 +49,16 @@ type Pin struct {
 	Units string
 }
 
-type Config struct {
+type GadgetConfig struct {
 	Location string
 	Name string
 	Pin Pin
 }
+
+type Config struct {
+	MasterHost string
+	PubPort int
+	SubPort int
+	Gadgets []GadgetConfig
+}
+

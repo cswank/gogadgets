@@ -273,7 +273,7 @@ func TestRealInput(t *testing.T) {
 		t.Fatal(err)
 	}
 	
-	config := &Config{
+	config := &GadgetConfig{
 		Location: "lab",
 		Name: "switch",
 		Pin: Pin{

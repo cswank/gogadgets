@@ -18,9 +18,10 @@ import (
 type Sockets struct {
 	GoGadget
 	masterHost string
+	pubPort int
+	subPort int
 	isMaster bool
 	ctx *zmq.Context
-	reply *zmq.Channels
 	sub *zmq.Channels
 	pub *zmq.Socket
 }
@@ -34,7 +35,6 @@ func (s *Sockets) Start(in <-chan Message, out chan<- Message) {
 	defer s.ctx.Close()
 	defer s.sub.Close()
 	defer s.pub.Close()
-	defer s.reply.Close()
 	if err != nil {
 		log.Println("zmq sockets had a problem", err)
 	}
@@ -42,10 +42,6 @@ func (s *Sockets) Start(in <-chan Message, out chan<- Message) {
 	for keepGoing {
 		select {
 		case data := <-s.sub.In():
-			msg := &Message{}
-			json.Unmarshal(data[1], msg)
-			out<- *msg
-		case data := <-s.reply.In():
 			msg := &Message{}
 			json.Unmarshal(data[1], msg)
 			out<- *msg
@@ -83,20 +79,12 @@ func (s *Sockets) getMasterSockets() (err error) {
 	if err != nil {
 		return err
 	}
-	reply, err := s.ctx.Socket(zmq.Rep)
-	if err != nil {
-		return err
-	}
-	if err = reply.Bind("tcp://*:6113"); err != nil {
-		return err
-	}
-	s.reply = reply.Channels()
 	
 	s.pub, err = s.ctx.Socket(zmq.Pub)
 	if err != nil {
 		return err
 	}
-	if err = s.pub.Bind("tcp://*:6111"); err != nil {
+	if err = s.pub.Bind(fmt.Sprintf("tcp://*:%d", s.pubPort)); err != nil {
 		return err
 	}
 
@@ -105,7 +93,7 @@ func (s *Sockets) getMasterSockets() (err error) {
 	if err != nil {
 		return err
 	}
-	if err = sub.Bind("tcp://*:6112"); err != nil {
+	if err = sub.Bind(fmt.Sprintf("tcp://*:%d", s.subPort)); err != nil {
 		return err
 	}
 	sub.Subscribe([]byte(""))
@@ -118,20 +106,12 @@ func (s *Sockets) getClientSockets() (err error) {
 	if err != nil {
 		return err
 	}
-	reply, err := s.ctx.Socket(zmq.Rep)
-	if err != nil {
-		return err
-	}
-	if err = reply.Connect(fmt.Sprintf("tcp://%s:6113", s.masterHost)); err != nil {
-		return err
-	}
-	s.reply = reply.Channels()
 	
 	s.pub, err = s.ctx.Socket(zmq.Pub)
 	if err != nil {
 		return err
 	}
-	if err = s.pub.Connect(fmt.Sprintf("tcp://*:6112", s.masterHost)); err != nil {
+	if err = s.pub.Connect(fmt.Sprintf("tcp://*:%d", s.masterHost, s.pubPort)); err != nil {
 		return err
 	}
 
@@ -140,7 +120,7 @@ func (s *Sockets) getClientSockets() (err error) {
 	if err != nil {
 		return err
 	}
-	if err = sub.Connect(fmt.Sprintf("tcp://*:6111", s.masterHost)); err != nil {
+	if err = sub.Connect(fmt.Sprintf("tcp://*:%d", s.masterHost, s.subPort)); err != nil {
 		return err
 	}
 	sub.Subscribe([]byte(""))

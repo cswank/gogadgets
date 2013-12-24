@@ -1,6 +1,7 @@
 package gogadgets
 
 import (
+	"math/rand"
 	"fmt"
 	"time"
 	"testing"
@@ -69,6 +70,7 @@ func TestGetGadgets(t *testing.T) {
 }
 
 func TestGadgets(t *testing.T) {
+	port := 1024 + rand.Intn(65535 - 1024)
 	p := &Gadget{
 		Location: "tank",
 		Name: "pump",
@@ -92,7 +94,9 @@ func TestGadgets(t *testing.T) {
 	}
 	a := App{
 		gadgets: []GoGadget{p, s},
-		MasterHost: "localhost",
+		masterHost: "localhost",
+		subPort: port,
+		pubPort: port + 1,
 	}
 	stop := make(chan bool)
 	go a.Start(stop)
