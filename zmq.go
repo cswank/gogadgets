@@ -16,14 +16,15 @@ import (
 )
 
 type Sockets struct {
-	GoGadget
 	masterHost string
 	pubPort int
 	subPort int
 	isMaster bool
 	ctx *zmq.Context
-	sub *zmq.Channels
+	sub *zmq.Socket
+	subChan *zmq.Channels
 	pub *zmq.Socket
+	pubChan *zmq.Channels
 }
 
 func (s *Sockets) GetUID() string {
@@ -35,15 +36,18 @@ func (s *Sockets) Start(in <-chan Message, out chan<- Message) {
 	defer s.ctx.Close()
 	defer s.sub.Close()
 	defer s.pub.Close()
+	defer s.subChan.Close()
+	defer s.pubChan.Close()
 	if err != nil {
 		log.Println("zmq sockets had a problem", err)
 	}
 	keepGoing := true
 	for keepGoing {
 		select {
-		case data := <-s.sub.In():
+		case data := <-s.subChan.In():
 			msg := &Message{}
 			json.Unmarshal(data[1], msg)
+			msg.Sender = "zmq sockets"
 			out<- *msg
 		case msg := <-in:
 			if msg.Type == COMMAND && msg.Body == "shutdown" {
@@ -53,12 +57,12 @@ func (s *Sockets) Start(in <-chan Message, out chan<- Message) {
 			if err != nil {
 				log.Println("zmq sockets had a problem", err)
 			} else {
-				s.pub.Send([][]byte{
+				s.pubChan.Out()<- [][]byte{
 					[]byte(msg.Type),
 					b,
-				})
+				}
 			}
-		case err = <-s.sub.Errors():
+		case err = <-s.subChan.Errors():
 			log.Println(err)
 		}
 	}
@@ -87,17 +91,18 @@ func (s *Sockets) getMasterSockets() (err error) {
 	if err = s.pub.Bind(fmt.Sprintf("tcp://*:%d", s.pubPort)); err != nil {
 		return err
 	}
+	s.pubChan = s.pub.Channels()
 
 	sub, err := s.ctx.Socket(zmq.Sub)
-	
 	if err != nil {
 		return err
 	}
-	if err = sub.Bind(fmt.Sprintf("tcp://*:%d", s.subPort)); err != nil {
+	s.sub = sub
+	if err = s.sub.Bind(fmt.Sprintf("tcp://*:%d", s.subPort)); err != nil {
 		return err
 	}
-	sub.Subscribe([]byte(""))
-	s.sub = sub.Channels()
+	s.sub.Subscribe([]byte(""))
+	s.subChan = s.sub.Channels()
 	return err
 }
 
@@ -124,6 +129,7 @@ func (s *Sockets) getClientSockets() (err error) {
 		return err
 	}
 	sub.Subscribe([]byte(""))
-	s.sub = sub.Channels()
+	s.subChan = sub.Channels()
+	s.sub = sub
 	return err
 }

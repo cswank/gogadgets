@@ -17,7 +17,7 @@ func TestThermometer(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	stop := make(chan bool)
+	out := make(chan Message)
 	in := make(chan Value)
 	go therm.Start(stop, in)
 	val := <-in
@@ -25,7 +25,10 @@ func TestThermometer(t *testing.T) {
 		t.Error("units should have been 'C'", val)
 	}
 	fmt.Println("the temperature is:", val.Value)
-	stop<- true
+	out<- Message{
+		Type: "command",
+		Body: "shutdown",
+	}
 }
 
 func TestThermometerParseValue(t *testing.T) {

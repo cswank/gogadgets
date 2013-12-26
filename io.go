@@ -12,7 +12,8 @@ type OutputDevice interface {
 }
 
 type InputDevice interface {
-	Start(<-chan bool, chan<- Value)
+	Start(<-chan Message, chan<- Value)
+	GetValue() *Value
 }
 
 type Poller interface {

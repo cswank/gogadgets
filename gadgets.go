@@ -32,19 +32,21 @@ type Comparitor func(msg *Message) bool
 
 type Gadget struct {
 	GoGadget
-	Location string
-	Name string
-	Output OutputDevice
-	Input InputDevice
-	OnCommand string
-	OffCommand string
-	UID string
+	Location string `json:"location"`
+	Name string `json:"name"`
+	Output OutputDevice `json:"-"`
+	Input InputDevice `json:"-"`
+	Direction string `json:"direction"`
+	OnCommand string `json:"on"`
+	OffCommand string `json:"off"`
+	UID string `json:"uid"`
 	status bool
 	compare Comparitor
 	shutdown bool
 	units string
 	Operator string
 	out chan<- Message
+	devIn chan Message
 	timerIn chan bool
 	timerOut chan bool
 }
@@ -71,6 +73,7 @@ func NewInputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
 			Location: config.Location,
 			Name: config.Name,
 			Input: dev,
+			Direction: "input",
 			OnCommand: "n/a",
 			OffCommand: "n/a",
 			UID: fmt.Sprintf("%s %s", config.Location, config.Name),
@@ -85,6 +88,7 @@ func NewOutputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
 		gadget = &Gadget{
 			Location: config.Location,
 			Name: config.Name,
+			Direction: "output",
 			OnCommand: fmt.Sprintf("turn on %s %s", config.Location, config.Name),
 			OffCommand: fmt.Sprintf("turn off %s %s", config.Location, config.Name),
 			Output: dev,
@@ -117,14 +121,16 @@ func (g *Gadget) Start(in <-chan Message, out chan<- Message) {
 
 func (g *Gadget) doInputLoop(in <-chan Message) {
 	devOut := make(chan Value)
-	stop := make(chan bool)
-	go g.Input.Start(stop, devOut)
+	g.devIn = make(chan Message)
+	go g.Input.Start(g.devIn, devOut)
 	for !g.shutdown {
 		select {
 		case msg := <-in:
 			g.readMessage(&msg)
 		case val := <-devOut:
 			g.out<- Message{
+				Sender: g.UID,
+				Type: "update",
 				Location: g.Location,
 				Name: g.Name,
 				Value: val,
@@ -148,14 +154,14 @@ func (g *Gadget) off() {
 	g.status = false
 	g.Output.Off()
 	g.compare = nil
-	g.sendStatus()
+	go g.sendStatus()
 }
 
 func (g *Gadget) on(val *Value) {
 	g.Output.On(val)
 	if !g.status {
 		g.status = true
-		g.sendStatus()
+		go g.sendStatus()
 	}
 }
 
@@ -180,7 +186,7 @@ func (g *Gadget) readCommand(msg *Message) {
 		g.shutdown = true
 		g.off()
 	} else if msg.Body == "status" {
-		g.sendStatus()
+		go g.sendStatus()
 	} else if strings.Index(msg.Body, g.OnCommand) == 0 {
 		g.readOnCommand(msg)
 	} else if strings.Index(msg.Body, g.OffCommand) == 0 {
@@ -289,14 +295,25 @@ func (g *Gadget) GetUID() string {
 }
 
 func (g *Gadget) sendStatus() {
+	var value *Value
+	if g.Input != nil {
+		value = g.Input.GetValue()
+	} else {
+		value = &Value{
+			Units: g.units,
+			Value: g.status,
+		}
+	}
 	msg := Message{
 		Sender: g.UID,
 		Type: STATUS,
 		Location: g.Location,
 		Name: g.Name,
-		Value: Value{
-			Units: g.units,
-			Value: g.status,
+		Value: *value,
+		Info: Info{
+			Direction: g.Direction,
+			On: g.OnCommand,
+			Off: g.OffCommand,
 		},
 	}
 	g.out<- msg

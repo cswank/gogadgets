@@ -30,7 +30,6 @@ func GetGadgets(configs []GadgetConfig) []GoGadget {
 	g := make([]GoGadget, len(configs))
 	for i, config := range configs {
 		gadget, err := NewGadget(&config)
-		log.Println(gadget.Name, gadget.Output)
 		if err != nil {
 			log.Println(err)
 		}
@@ -41,12 +40,12 @@ func GetGadgets(configs []GadgetConfig) []GoGadget {
 
 func (a *App) Start(stop <-chan bool) {
 	a.gadgets = append(a.gadgets, &Runner{})
-	s := &Sockets{
+	sockets := &Sockets{
 		masterHost: a.masterHost,
 		pubPort: a.pubPort,
 		subPort: a.subPort,
 	}
-	a.gadgets = append(a.gadgets, s)
+	a.gadgets = append(a.gadgets, sockets)
 	in := make(chan Message)
 	a.channels = make(map[string]chan Message)
 	for _, gadget := range a.gadgets {
@@ -58,11 +57,7 @@ func (a *App) Start(stop <-chan bool) {
 	for keepRunning {
 		select {
 		case msg := <-in:
-			for uid, channel := range a.channels {
-				if uid != msg.Sender {
-					channel<- msg
-				}
-			}
+			a.sendMessage(msg)
 		case keepRunning = <-stop:
 			stopMessage := Message{
 				Type: COMMAND,
@@ -78,7 +73,14 @@ func (a *App) Start(stop <-chan bool) {
 	}
 }
 
+func (a *App) sendMessage(msg Message) {
+	for uid, channel := range a.channels {
+		if uid != msg.Sender {
+			channel<- msg
+		}
+	}
+}
+
 func (a *App) AddGadget(gadget GoGadget) {
 	a.gadgets = append(a.gadgets, gadget)
 }
-

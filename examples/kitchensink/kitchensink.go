@@ -29,7 +29,6 @@ func main() {
 				},
 			},
 			gogadgets.GadgetConfig{
-				
 				Location: "lab",
 				Name: "led",
 				Pin: gogadgets.Pin{

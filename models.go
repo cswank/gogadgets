@@ -27,6 +27,12 @@ type Value struct {
 	ID    string      `json:"id"`
 }
 
+type Info struct {
+	Direction string      `json:"direction"`
+	On string             `json:"on"`
+	Off string            `json:"off"`
+}
+
 type Message struct {
 	Sender      string      `json:"sender"`
 	Type        string      `json:"type"`
@@ -36,6 +42,7 @@ type Message struct {
 	Name        string      `json:"name"`
 	Location    string      `json:"location"`
 	Value       Value       `json:"value"`
+	Info        Info        `json:"info"`
 }
 
 type Pin struct {
