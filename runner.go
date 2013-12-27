@@ -42,7 +42,6 @@ func (m *Runner) Start(in <-chan Message, out chan<- Message) {
 		case msg := <-in:
 			shutdown = m.readMessage(&msg)
 		case <-m.timeOut:
-			fmt.Println("time out")
 			m.runNextStep()
 		}
 	}
@@ -170,37 +169,39 @@ func (m *Runner) setWaitTime(cmd []string) {
 			t *= 3600.0
 		}
 		waitTime := time.Duration(t * float64(time.Second))
-		go func() {
-			t1 := time.Now()
-			sleepTime := time.Duration(1 * time.Second)
-			i := 0.0
-			m.out<- Message{
-					Sender: m.uid,
-					Type: METHOD,
-					Method: Method{
-						Time: int(waitTime.Seconds()),
-						Step: m.step,
-					},
-				}
-			for {
-				time.Sleep(sleepTime)
-				i += 1.0
-				t2 := time.Now()
-				d := t2.Sub(t1)
-				sleepTime = time.Duration((1 - (d.Seconds() - i)) * float64(time.Second))
-				m.out<- Message{
-					Sender: m.uid,
-					Type: METHOD,
-					Method: Method{
-						Time: int(1 + waitTime.Seconds() - d.Seconds()),
-						Step: m.step,
-					},
-				}
-				if d > waitTime {
-					m.timeOut<- true
-					return
-				}
-			}
-		}()
+		go m.doCountdown(waitTime)
+	}
+}
+
+func (m *Runner) doCountdown(waitTime time.Duration) {
+	t1 := time.Now()
+	sleepTime := time.Duration(1 * time.Second)
+	i := 0.0
+	m.out<- Message{
+		Sender: m.uid,
+		Type: METHOD,
+		Method: Method{
+			Time: int(waitTime.Seconds()),
+			Step: m.step,
+		},
+	}
+	for {
+		time.Sleep(sleepTime)
+		i += 1.0
+		t2 := time.Now()
+		d := t2.Sub(t1)
+		sleepTime = time.Duration((1 - (d.Seconds() - i)) * float64(time.Second))
+		m.out<- Message{
+			Sender: m.uid,
+			Type: METHOD,
+			Method: Method{
+				Time: int(1 + waitTime.Seconds() - d.Seconds()),
+				Step: m.step,
+			},
+		}
+		if d > waitTime {
+			m.timeOut<- true
+			return
+		}
 	}
 }
