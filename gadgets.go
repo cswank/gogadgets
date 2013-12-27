@@ -1,7 +1,6 @@
 package gogadgets
 
 import (
-	"log"
 	"time"
 	"fmt"
 	"errors"
@@ -113,6 +112,7 @@ func (g *Gadget) Start(in <-chan Message, out chan<- Message) {
 	g.timerIn = make(chan bool)
 	g.timerOut = make(chan bool)
 	if g.Output != nil {
+		g.off()
 		g.doOutputLoop(in)
 	} else if g.Input != nil {
 		g.doInputLoop(in)
@@ -197,18 +197,21 @@ func (g *Gadget) readCommand(msg *Message) {
 func (g *Gadget) readOnCommand(msg *Message) {
 	var val *Value
 	if len(strings.Trim(msg.Body, " ")) > len(g.OnCommand) {
-		val = g.readOnArguments(msg.Body)
+		val, err := g.readOnArguments(msg.Body)
+		if err == nil {
+			g.on(val)
+		}
 	} else {
 		g.compare = nil
+		g.on(val)
 	}
-	g.on(val)
 }
 
-func (g *Gadget) readOnArguments(cmd string) *Value {
+func (g *Gadget) readOnArguments(cmd string) (*Value, error) {
 	var val *Value
 	value, unit, err := g.getValue(cmd)
 	if err != nil {
-		log.Println("could not parse", cmd)
+		return val, errors.New(fmt.Sprintf("could not parse %s", cmd))
 	}
 	gadget, ok := units[unit]
 	if ok {
@@ -222,7 +225,7 @@ func (g *Gadget) readOnArguments(cmd string) *Value {
 			}
 		}
 	}
-	return val
+	return val, nil
 }
 
 func (g *Gadget) setCompare(value float64, unit string, gadget string) {

@@ -20,12 +20,12 @@ type comparitor func(value float64) bool
 
 type Runner struct {
 	Gadget
-	method []string
-	waitTime time.Duration
+	method Method
 	stepChecker stepChecker
 	step int
 	uid string
 	out chan<- Message
+	timeOut chan bool
 }
 
 func (m *Runner) GetUID() string {
@@ -34,15 +34,15 @@ func (m *Runner) GetUID() string {
 
 func (m *Runner) Start(in <-chan Message, out chan<- Message) {
 	m.uid = m.GetUID()
-	m.waitTime = time.Duration(10000 * time.Hour)
 	m.out = out
 	shutdown := false
+	m.timeOut = make(chan bool)
 	for !shutdown {
 		select {
 		case msg := <-in:
 			shutdown = m.readMessage(&msg)
-		case <-time.After(m.waitTime):
-			m.waitTime = time.Duration(10000 * time.Hour)
+		case <-m.timeOut:
+			fmt.Println("time out")
 			m.runNextStep()
 		}
 	}
@@ -55,7 +55,7 @@ func (m *Runner) readMessage(msg *Message) (shutdown bool) {
 		m.step = -1
 		m.runNextStep()
 		shutdown = false
-	} else if len(m.method) != 0 && msg.Type == UPDATE {
+	} else if len(m.method.Steps) != 0 && msg.Type == UPDATE {
 		m.checkUpdate(msg)
 		shutdown = false
 	} else if msg.Type == COMMAND && msg.Body == "shutdown" {
@@ -75,12 +75,19 @@ func (m *Runner) checkUpdate(msg *Message) {
 
 func (m *Runner) runNextStep() {
 	m.step += 1
-	if len(m.method) <= m.step {
-		m.method = []string{}
+	m.out<- Message{
+		Sender: m.uid,
+		Type: METHOD,
+		Method: Method{
+			Step: m.step,
+		},
+	}
+	if len(m.method.Steps) <= m.step {
+		m.method = Method{}
 		m.step = -1
 		return
 	}
-	cmd := m.method[m.step]
+	cmd := m.method.Steps[m.step]
 	if strings.Index(cmd, "wait") == 0 {
 		m.readWaitCommand(cmd)
 	} else {
@@ -162,6 +169,38 @@ func (m *Runner) setWaitTime(cmd []string) {
 		} else if units == "hours" || units == "hour" {
 			t *= 3600.0
 		}
-		m.waitTime = time.Duration(t * float64(time.Second))
+		waitTime := time.Duration(t * float64(time.Second))
+		go func() {
+			t1 := time.Now()
+			sleepTime := time.Duration(1 * time.Second)
+			i := 0.0
+			m.out<- Message{
+					Sender: m.uid,
+					Type: METHOD,
+					Method: Method{
+						Time: int(waitTime.Seconds()),
+						Step: m.step,
+					},
+				}
+			for {
+				time.Sleep(sleepTime)
+				i += 1.0
+				t2 := time.Now()
+				d := t2.Sub(t1)
+				sleepTime = time.Duration((1 - (d.Seconds() - i)) * float64(time.Second))
+				m.out<- Message{
+					Sender: m.uid,
+					Type: METHOD,
+					Method: Method{
+						Time: int(1 + waitTime.Seconds() - d.Seconds()),
+						Step: m.step,
+					},
+				}
+				if d > waitTime {
+					m.timeOut<- true
+					return
+				}
+			}
+		}()
 	}
 }

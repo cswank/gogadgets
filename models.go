@@ -9,6 +9,7 @@ var (
 	METHOD = "method"
 	DONE = "done"
 	UPDATE = "update"
+	METHODUPDATE = "method update"
 	STATUS = "status"
 )
 
@@ -33,11 +34,17 @@ type Info struct {
 	Off string            `json:"off"`
 }
 
+type Method struct {
+	Step int        `json:"step"`
+	Steps []string  `json:"steps"`
+	Time int        `json:"time"`
+}
+
 type Message struct {
 	Sender      string      `json:"sender"`
 	Type        string      `json:"type"`
 	Body        string      `json:"body"`
-	Method      []string    `json:"method"`
+	Method      Method      `json:"method"`
 	Timestamp   time.Time   `json:"timestamp"`
 	Name        string      `json:"name"`
 	Location    string      `json:"location"`
