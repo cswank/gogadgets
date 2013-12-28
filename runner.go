@@ -76,7 +76,7 @@ func (m *Runner) runNextStep() {
 	m.step += 1
 	m.out<- Message{
 		Sender: m.uid,
-		Type: METHOD,
+		Type: METHODUPDATE,
 		Method: Method{
 			Step: m.step,
 		},
@@ -105,9 +105,9 @@ func (m *Runner) sendCommand(cmd string) {
 }
 
 func (m *Runner) readWaitCommand(cmd string) {
-	result := timeExp.FindStringSubmatch(cmd)
-	if len(result) == 3 {
-		m.setWaitTime(result)
+	waitTime, err := m.getWaitTime(cmd)
+	if err == nil {
+		go m.doCountdown(waitTime)
 	} else {
 		m.setStepChecker(cmd)
 	}
@@ -157,20 +157,26 @@ func (m *Runner) parseWaitCommand(cmd string) (uid string, operator string, valu
 	return uid, operator, value, err
 }
 
-func (m *Runner) setWaitTime(cmd []string) {
-	units := cmd[2]
-	t, err := strconv.ParseFloat(cmd[1], 64)
+func (m *Runner) getWaitTime(cmd string) (waitTime time.Duration, err error) {
+	result := timeExp.FindStringSubmatch(cmd)
+	if len(result) != 3 {
+		err = errors.New(fmt.Sprintf("could not parse command %s", cmd))
+		return waitTime, err
+	}
+	units := result[2]
+	t, err := strconv.ParseFloat(result[1], 64)
 	if err != nil {
-		log.Println("could not parse command", cmd)
+		err = errors.New(fmt.Sprintf("could not parse command %s", cmd))
+		return waitTime, err
 	} else {
 		if units == "minutes" || units == "minute" {
 			t *= 60.0
 		} else if units == "hours" || units == "hour" {
 			t *= 3600.0
 		}
-		waitTime := time.Duration(t * float64(time.Second))
-		go m.doCountdown(waitTime)
+		waitTime = time.Duration(t * float64(time.Second))
 	}
+	return waitTime, err
 }
 
 func (m *Runner) doCountdown(waitTime time.Duration) {
@@ -179,7 +185,7 @@ func (m *Runner) doCountdown(waitTime time.Duration) {
 	i := 0.0
 	m.out<- Message{
 		Sender: m.uid,
-		Type: METHOD,
+		Type: METHODUPDATE,
 		Method: Method{
 			Time: int(waitTime.Seconds()),
 			Step: m.step,
@@ -193,7 +199,7 @@ func (m *Runner) doCountdown(waitTime time.Duration) {
 		sleepTime = time.Duration((1 - (d.Seconds() - i)) * float64(time.Second))
 		m.out<- Message{
 			Sender: m.uid,
-			Type: METHOD,
+			Type: METHODUPDATE,
 			Method: Method{
 				Time: int(1 + waitTime.Seconds() - d.Seconds()),
 				Step: m.step,

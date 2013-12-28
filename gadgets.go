@@ -150,12 +150,6 @@ func (g *Gadget) doOutputLoop(in <-chan Message) {
 	}
 }
 
-func (g *Gadget) off() {
-	g.status = false
-	g.Output.Off()
-	g.compare = nil
-	go g.sendStatus()
-}
 
 func (g *Gadget) on(val *Value) {
 	g.Output.On(val)
@@ -164,6 +158,15 @@ func (g *Gadget) on(val *Value) {
 		go g.sendStatus()
 	}
 }
+
+func (g *Gadget) off() {
+	fmt.Println("turning off")
+	g.status = false
+	g.Output.Off()
+	g.compare = nil
+	go g.sendStatus()
+}
+
 
 func (g *Gadget) readMessage(msg *Message) {
 	if msg.Type == COMMAND && g.isMyCommand(msg) {

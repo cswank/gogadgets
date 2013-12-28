@@ -19,7 +19,7 @@ func TestThermometer(t *testing.T) {
 	}
 	out := make(chan Message)
 	in := make(chan Value)
-	go therm.Start(stop, in)
+	go therm.Start(out, in)
 	val := <-in
 	if val.Units != "C" {
 		t.Error("units should have been 'C'", val)

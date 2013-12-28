@@ -13,7 +13,7 @@ func TestSwitch(t *testing.T) {
 	}
 	out := make(chan Message)
 	in := make(chan Value)
-	go s.Start(stop, in)
+	go s.Start(out, in)
 	val := <-in
 	if val.Value.(float64) != 5.0 {
 		t.Error("should have been 5.0", val)

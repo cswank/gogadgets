@@ -65,6 +65,7 @@ func TestStart(t *testing.T) {
 	g := Gadget{
 		Location: location,
 		Name: name,
+		Direction: "output",
 		OnCommand: fmt.Sprintf("turn on %s %s", location, name),
 		OffCommand: fmt.Sprintf("turn off %s %s", location, name),
 		Output: &FakeOutput{},
@@ -73,12 +74,16 @@ func TestStart(t *testing.T) {
 	input := make(chan Message)
 	output := make(chan Message)
 	go g.Start(input, output)
+	status := <-output
+	if status.Value.Value != false {
+		t.Error("shoulda been off", status.Value.Value)
+	}
 	msg := Message{
 		Type: "command",
 		Body: "turn on lab led",
 	}
 	input<- msg
-	status := <-output
+	status = <-output
 	if status.Value.Value != true {
 		t.Fatal("shoulda been on", status)
 	}
@@ -90,7 +95,7 @@ func TestStart(t *testing.T) {
 	input<- msg
 	status = <-output
 	if status.Value.Value != false {
-		t.Error("shoulda been off", status)
+		t.Error("shoulda been off", status.Value.Value)
 	}
 	msg = Message{
 		Type: "command",
@@ -115,12 +120,16 @@ func TestStartWithTrigger(t *testing.T) {
 	input := make(chan Message)
 	output := make(chan Message)
 	go g.Start(input, output)
+	status := <-output
+	if status.Value.Value != false {
+		t.Error("shoulda been off", status.Value.Value)
+	}
 	msg := Message{
 		Type: "command",
 		Body: "fill tank to 4.4 liters",
 	}
 	input<- msg
-	status := <-output
+	status = <-output
 	if status.Value.Value != true {
 		t.Error("shoulda been on", status)
 	}
@@ -157,12 +166,16 @@ func TestStartWithTimeTrigger(t *testing.T) {
 	input := make(chan Message)
 	output := make(chan Message)
 	go g.Start(input, output)
+	status := <-output
+	if status.Value.Value != false {
+		t.Error("shoulda been off", status.Value.Value)
+	}
 	msg := Message{
 		Type: "command",
 		Body: "turn on lab led for 0.01 seconds",
 	}
 	input<- msg
-	status := <-output
+	status = <-output
 	if status.Value.Value != true {
 		t.Error("shoulda been on", status)
 	}
@@ -187,12 +200,16 @@ func TestStartWithTimeTriggerWithInterrupt(t *testing.T) {
 	input := make(chan Message)
 	output := make(chan Message)
 	go g.Start(input, output)
+	status := <-output
+	if status.Value.Value != false {
+		t.Error("shoulda been off", status.Value.Value)
+	}
 	msg := Message{
 		Type: "command",
 		Body: "turn on lab led for 30 seconds",
 	}
 	input<- msg
-	status := <-output
+	status = <-output
 	if status.Value.Value != true {
 		t.Error("shoulda been on", status)
 	}
@@ -242,12 +259,16 @@ func TestStartWithTimeTriggerForReals(t *testing.T) {
 	input := make(chan Message)
 	output := make(chan Message)
 	go g.Start(input, output)
+	status := <-output
+	if status.Value.Value != false {
+		t.Error("shoulda been off", status.Value.Value)
+	}
 	msg := Message{
 		Type: "command",
 		Body: "turn on lab led for 0.1 seconds",
 	}
 	input<- msg
-	status := <-output
+	status = <-output
 	if status.Value.Value != true {
 		t.Error("shoulda been on", status)
 	}
@@ -294,6 +315,10 @@ func TestRealInput(t *testing.T) {
 	output := make(chan Message)
 	
 	go s.Start(input, output)
+	status := <-output
+	if status.Value.Value != false {
+		t.Error("shoulda been off", status.Value.Value)
+	}
 	go func() {
 		time.Sleep(100 * time.Millisecond)
 		gpio.On(nil)

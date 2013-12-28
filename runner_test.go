@@ -1,27 +1,40 @@
 package gogadgets
 
 import (
+	"fmt"
 	"testing"
 	"time"
 )
 
 func TestReadWaitCommand(t *testing.T) {
 	m := Runner{}
-	m.readWaitCommand("wait for 3.3 seconds")
-	if m.waitTime != time.Duration(3.3 * float64(time.Second)) {
-		t.Error("incorrect time", m.waitTime)
+	waitTime, err := m.getWaitTime("wait for 3.3 seconds")
+	if err != nil {
+		t.Error(err)
 	}
-	m.readWaitCommand("wait for 1 second")
-	if m.waitTime != time.Duration(1.0 * float64(time.Second)) {
-		t.Error("incorrect time", m.waitTime)
+	if waitTime != time.Duration(3.3 * float64(time.Second)) {
+		t.Error("incorrect time", waitTime)
 	}
-	m.readWaitCommand("wait for 10 hours")
-	if m.waitTime != time.Duration(36000.0 * float64(time.Second)) {
-		t.Error("incorrect time", m.waitTime)
+	waitTime, err = m.getWaitTime("wait for 1 second")
+	if err != nil {
+		t.Error(err)
 	}
-	m.readWaitCommand("wait for 1.1 minutes")
-	if m.waitTime != time.Duration(66.0 * float64(time.Second)) {
-		t.Error("incorrect time", m.waitTime)
+	if waitTime != time.Duration(1.0 * float64(time.Second)) {
+		t.Error("incorrect time", waitTime)
+	}
+	waitTime, err = m.getWaitTime("wait for 10 hours")
+	if err != nil {
+		t.Error(err)
+	}
+	if waitTime != time.Duration(36000.0 * float64(time.Second)) {
+		t.Error("incorrect time", waitTime)
+	}
+	waitTime, err = m.getWaitTime("wait for 1.1 minutes")
+	if err != nil {
+		t.Error(err)
+	}
+	if waitTime != time.Duration(66.0 * float64(time.Second)) {
+		t.Error("incorrect time", waitTime)
 	}
 }
 
@@ -121,18 +134,22 @@ func TestRunMethod(t *testing.T) {
 	go m.Start(out, in)
 	msg := Message{
 		Type: METHOD,
-		Method: []string{
-			"fill boiler to 3.3 gallons",
-			"heat boiler to 95 C",
-			"wait for boiler temperature >= 95",
-			"stop heating boiler",
+		Method: Method{
+			Steps: []string{
+				"fill boiler to 3.3 gallons",
+				"heat boiler to 95 C",
+				"wait for boiler temperature >= 95",
+				"stop heating boiler",
+			},
 		},
 	}
 	out<- msg
+	<-in
 	msg = <-in
 	if msg.Type != "command" && msg.Body != "fill boiler to 3.3 gallons" {
 		t.Error(msg)
 	}
+	<-in
 	msg = <-in
 	if msg.Type != "command" && msg.Body != "heat boiler to 95 C" {
 		t.Error(msg)
@@ -145,7 +162,9 @@ func TestRunMethod(t *testing.T) {
 			Units: "C",
 		},
 	}
+	<-in
 	out<- msg
+	<-in
 	msg = <-in
 	if msg.Type != "command" && msg.Body != "stop heating boiler" {
 		t.Error(msg)
@@ -154,6 +173,7 @@ func TestRunMethod(t *testing.T) {
 		Type: "command",
 		Body: "shutdown",
 	}
+	<-in
 	out<- msg
 	<-in
 }
@@ -165,22 +185,36 @@ func TestRunAnotherMethod(t *testing.T) {
 	go m.Start(out, in)
 	msg := Message{
 		Type: METHOD,
-		Method: []string{
-			"turn on lab led",
-			"wait for 0.1 seconds",
-			"turn off lab led",
-			"shutdown",
+		Method: Method{
+			Steps:[]string{
+				"turn on lab led",
+				"wait for 0.1 seconds",
+				"turn off lab led",
+				"shutdown",
+			},
 		},
 	}
 	out<- msg
+	<-in
 	msg = <-in
 	if msg.Type != "command" && msg.Body != "turn on lab led" {
 		t.Error(msg)
 	}
 	msg = <-in
+	fmt.Println("1", msg)
+	msg = <-in
+	fmt.Println("2", msg)
+	msg = <-in
+	
+	msg = <-in
+	fmt.Println("3", msg)
+	msg = <-in
+	fmt.Println("4", msg)
 	if msg.Type != "command" && msg.Body != "turn off lab led" {
 		t.Error(msg)
 	}
+	msg = <-in
+	fmt.Println("5", msg)
 	msg = <-in
 	if msg.Type != "command" && msg.Body != "shutdown" {
 		t.Error(msg)
