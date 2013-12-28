@@ -54,6 +54,7 @@ func (a *App) Start(stop <-chan bool) {
 		go gadget.Start(out, in)
 	}
 	keepRunning := true
+	log.Println("started gagdgets")
 	for keepRunning {
 		select {
 		case msg := <-in:
