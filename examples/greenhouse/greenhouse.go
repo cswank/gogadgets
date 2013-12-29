@@ -1,11 +1,13 @@
 package main
 
 import (
+	//"syscall"
 	"fmt"
 	"time"
 	"io/ioutil"
 	"encoding/json"
 	"bitbucket.com/cswank/gogadgets"
+	"bitbucket.com/cswank/gogadgets/utils"
 )
 
 type Greenhouse struct {
@@ -69,7 +71,6 @@ func (g *Greenhouse)Start(in <-chan gogadgets.Message, out chan<- gogadgets.Mess
 			cmd := g.getMessage("off", msg.Location)
 			g.pumps[msg.Location] = false
 			go func() {
-				fmt.Println("off!!!", cmd)
 				out<- cmd
 			}()
 			if g.temperature >= 12.0 {
@@ -87,7 +88,11 @@ func (g *Greenhouse)Start(in <-chan gogadgets.Message, out chan<- gogadgets.Mess
 }
 
 func main() {
-	b, err := ioutil.ReadFile("config.json")
+	if !utils.FileExists("/sys/bus/w1/devices") {
+		ioutil.WriteFile("/sys/devices/bone_capemgr.9/slots", []byte("echo BB-W1:00A0"), 0666)
+		//syscall.Exec(" > )
+	}
+	b, err := ioutil.ReadFile("test_config.json")
 	if err != nil {
 		panic(err)
 	}
@@ -95,9 +100,9 @@ func main() {
 	err = json.Unmarshal(b, cfg)
 	a := gogadgets.NewApp(cfg)
 	sleepTimes := map[string]time.Duration{
-		"bed 1": 10 * time.Second,
-		"bed 2": 10 * time.Second,
-		"bed 3": 10 * time.Second,
+		"bed 1": 300 * time.Second,
+		"bed 2": 300 * time.Second,
+		"bed 3": 300 * time.Second,
 	}
 	g := &Greenhouse{sleepTimes: sleepTimes}
 	a.AddGadget(g)

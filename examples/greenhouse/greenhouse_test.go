@@ -27,23 +27,37 @@ func TestGreenhouse(t *testing.T) {
 	}
 	out<- msg
 
+	msg = <-in
+	if msg.Body != "turn on bed 1 pump" {
+		t.Error("pump should be on", msg.Body)
+	}
+	msg = <-in
+	if msg.Body != "turn on bed 2 pump" {
+		t.Error("pump should be on", msg.Body)
+	}
+	msg = <-in
+	if msg.Body != "turn on bed 3 pump" {
+		t.Error("pump should be on", msg.Body)
+	}
+
 	msg = gogadgets.Message{
 		Type: "update",
 		Location: "bed 1",
 		Name: "switch",
 		Value: gogadgets.Value{
-			Value: false,
+			Value: 0.0,
 		},
 	}
-
-	out<- msg
+	go func() {
+		time.Sleep(10 * time.Millisecond)
+		out<- msg
+	}()
 	msg = <-in
 	if msg.Body != "turn off bed 1 pump" {
 		t.Error("pump should be off", msg.Body)
 	}
 	msg = <-in
 	if msg.Body != "turn on bed 1 pump" {
-		t.Error("pump should be off", msg.Body)
+		t.Error("pump should be on", msg.Body)
 	}
-	
 }
