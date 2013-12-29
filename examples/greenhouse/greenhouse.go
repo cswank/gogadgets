@@ -6,6 +6,33 @@ import (
 	"bitbucket.com/cswank/gogadgets"
 )
 
+var (
+	cfg := &gogadgets.Config{
+		gogadgets.GadgetConfig{
+			gogadgets.GadgetConfig{
+				Location: "fish tank",
+				Name: "temperature",
+				Pin: gogadgets.Pin{
+					Type: "thermometer",
+					OneWireId: "28-0000025ed133",
+					Units: "C",
+				},
+			},
+		},
+		gogadgets.GadgetConfig{
+			gogadgets.GadgetConfig{
+				Location: "greenhouse",
+				Name: "temperature",
+				Pin: gogadgets.Pin{
+					Type: "thermometer",
+					OneWireId: "28-00000479f8c6",
+					Units: "C",
+				},
+			},
+		},
+	}
+)
+
 type Greenhouse struct {
 	gogadgets.GoGadget
 	temperature float64
@@ -13,7 +40,7 @@ type Greenhouse struct {
 	out chan<- gogadgets.Message
 }
 
-func (g *Greenhouse) getMessage(cmd, location string) gogadgets.Message {
+func (g *Greenhouse)getMessage(cmd, location string) gogadgets.Message {
 	return gogadgets.Message{
 		Sender: "greenhouse watcher",
 		Type: "command",
@@ -21,13 +48,13 @@ func (g *Greenhouse) getMessage(cmd, location string) gogadgets.Message {
 	}
 }
 
-func (g *Greenhouse) wait(location string) {
+func (g *Greenhouse)wait(location string) {
 	time.Sleep(g.sleepTimes[location])
 	offCmd := g.getMessage("on", location)
 	g.out<- offCmd
 }
 
-func (g *Greenhouse) Start(in <-chan gogadgets.Message, out chan<- gogadgets.Message) {
+func (g *Greenhouse)Start(in <-chan gogadgets.Message, out chan<- gogadgets.Message) {
 	g.out = out
 	for {
 		msg := <-in

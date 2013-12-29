@@ -13,8 +13,8 @@ func main() {
 				Name: "volume",
 				Pin: gogadgets.Pin{
 					Type: "switch",
-					Port: "9",
-					Pin: "16",
+					Port: "8",
+					Pin: "9",
 					Value: 5.0,
 					Units: "liters",
 				},
@@ -24,8 +24,8 @@ func main() {
 				Name: "water",
 				Pin: gogadgets.Pin{
 					Type: "gpio",
-					Port: "9",
-					Pin: "15",
+					Port: "8",
+					Pin: "10",
 				},
 			},
 			gogadgets.GadgetConfig{
@@ -33,8 +33,8 @@ func main() {
 				Name: "led",
 				Pin: gogadgets.Pin{
 					Type: "gpio",
-					Port: "9",
-					Pin: "14",
+					Port: "8",
+					Pin: "11",
 				},
 			},
 			gogadgets.GadgetConfig{
