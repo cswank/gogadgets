@@ -3,34 +3,9 @@ package main
 import (
 	"fmt"
 	"time"
+	"io/ioutil"
+	"encoding/json"
 	"bitbucket.com/cswank/gogadgets"
-)
-
-var (
-	cfg := &gogadgets.Config{
-		gogadgets.GadgetConfig{
-			gogadgets.GadgetConfig{
-				Location: "fish tank",
-				Name: "temperature",
-				Pin: gogadgets.Pin{
-					Type: "thermometer",
-					OneWireId: "28-0000025ed133",
-					Units: "C",
-				},
-			},
-		},
-		gogadgets.GadgetConfig{
-			gogadgets.GadgetConfig{
-				Location: "greenhouse",
-				Name: "temperature",
-				Pin: gogadgets.Pin{
-					Type: "thermometer",
-					OneWireId: "28-00000479f8c6",
-					Units: "C",
-				},
-			},
-		},
-	}
 )
 
 type Greenhouse struct {
@@ -78,8 +53,15 @@ func (g *Greenhouse)Start(in <-chan gogadgets.Message, out chan<- gogadgets.Mess
 }
 
 func main() {
-	a := gogadgets.App{}
+	b, err := ioutil.ReadFile("config.json")
+	if err != nil {
+		panic(err)
+	}
+	cfg := &gogadgets.Config{}
+	err = json.Unmarshal(b, cfg)
+	a := gogadgets.NewApp(cfg)
 	g := &Greenhouse{}
 	a.AddGadget(g)
-	fmt.Println(a)
+	stop := make(chan bool)
+	a.Start(stop)
 }

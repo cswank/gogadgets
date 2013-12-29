@@ -1,0 +1,119 @@
+{
+    "MasterHost": "localhost",
+    "SubPort": 6111,
+    "PubPort": 6112,
+    "Gadgets": [
+        {
+            "Location": "fish tank",
+            "Name": "temperature",
+            "Pin": {
+                "Type": "thermometer",
+                "Port": "",
+                "Pin": "",
+                "Direction": "",
+                "Edge": "",
+                "OneWireId": "28-0000025ed133",
+                "Value": null,
+                "Units": "C"
+            }
+        },
+        {
+            "Location": "greenhouse",
+            "Name": "temperature",
+            "Pin": {
+                "Type": "thermometer",
+                "Port": "",
+                "Pin": "",
+                "Direction": "",
+                "Edge": "",
+                "OneWireId": "28-00000479f8c6",
+                "Value": null,
+                "Units": "C"
+            }
+        },
+        {
+            "Location": "bed 1",
+            "Name": "switch",
+            "Pin": {
+                "Type": "switch",
+                "Port": "8",
+                "Pin": "9",
+                "Direction": "in",
+                "Edge": "both",
+                "OneWireId": "",
+                "Value": 1,
+                "Units": ""
+            }
+        },
+        {
+            "Location": "bed 2",
+            "Name": "switch",
+            "Pin": {
+                "Type": "switch",
+                "Port": "8",
+                "Pin": "10",
+                "Direction": "in",
+                "Edge": "both",
+                "OneWireId": "",
+                "Value": 1,
+                "Units": ""
+            }
+        },
+        {
+            "Location": "bed 3",
+            "Name": "switch",
+            "Pin": {
+                "Type": "switch",
+                "Port": "8",
+                "Pin": "11",
+                "Direction": "in",
+                "Edge": "both",
+                "OneWireId": "",
+                "Value": 1,
+                "Units": ""
+            }
+        },
+        {
+            "Location": "bed 1",
+            "Name": "pump",
+            "Pin": {
+                "Type": "gpio",
+                "Port": "8",
+                "Pin": "12",
+                "Direction": "out",
+                "Edge": "",
+                "OneWireId": "",
+                "Value": null,
+                "Units": ""
+            }
+        },
+        {
+            "Location": "bed 2",
+            "Name": "pump",
+            "Pin": {
+                "Type": "gpio",
+                "Port": "8",
+                "Pin": "14",
+                "Direction": "out",
+                "Edge": "",
+                "OneWireId": "",
+                "Value": null,
+                "Units": ""
+            }
+        },
+        {
+            "Location": "bed 3",
+            "Name": "pump",
+            "Pin": {
+                "Type": "gpio",
+                "Port": "8",
+                "Pin": "15",
+                "Direction": "out",
+                "Edge": "",
+                "OneWireId": "",
+                "Value": null,
+                "Units": ""
+            }
+        }
+    ]
+}
