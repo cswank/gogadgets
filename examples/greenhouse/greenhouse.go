@@ -13,6 +13,7 @@ type Greenhouse struct {
 	temperature float64
 	sleepTimes map[string]time.Duration
 	out chan<- gogadgets.Message
+	status bool
 }
 
 func (g *Greenhouse)getMessage(cmd, location string) gogadgets.Message {
@@ -29,6 +30,13 @@ func (g *Greenhouse)wait(location string) {
 	g.out<- offCmd
 }
 
+func (g *Greenhouse)startPumps(location string) {
+	for key, _ := range g.sleepTimes {
+		msg := g.getMessage("on", key)
+		g.out<- msg
+	}
+}
+
 func (g *Greenhouse)Start(in <-chan gogadgets.Message, out chan<- gogadgets.Message) {
 	g.out = out
 	for {
@@ -37,6 +45,10 @@ func (g *Greenhouse)Start(in <-chan gogadgets.Message, out chan<- gogadgets.Mess
 			msg.Location == "greenhouse" &&
 			msg.Name == "temperature" {
 			g.temperature = msg.Value.Value.(float64)
+			if g.temperature >= 12.0 && !g.status {
+				g.status = true
+				g.startPumps()
+			}
 		} else if msg.Type == "update" &&
 			msg.Name == "switch" &&
 			msg.Value.Value == false {
@@ -44,6 +56,8 @@ func (g *Greenhouse)Start(in <-chan gogadgets.Message, out chan<- gogadgets.Mess
 			out<- cmd
 			if g.temperature >= 12.0 {
 				go g.wait(msg.Location)
+			} else {
+				g.status = false
 			}
 		} else if msg.Type == "command" && msg.Body == "shutdown" {
 			out<- gogadgets.Message{}
