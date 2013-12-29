@@ -29,6 +29,10 @@ func (g *Greenhouse)wait(location string) {
 	g.out<- offCmd
 }
 
+func (g *Greenhouse)GetUID() string {
+	return "greenhouse watcher"
+}
+
 func (g *Greenhouse)Start(in <-chan gogadgets.Message, out chan<- gogadgets.Message) {
 	g.out = out
 	for {
