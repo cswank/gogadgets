@@ -2,12 +2,16 @@ package main
 
 import (
 	//"syscall"
+	"flag"
 	"fmt"
 	"time"
 	"io/ioutil"
 	"encoding/json"
 	"bitbucket.com/cswank/gogadgets"
 	"bitbucket.com/cswank/gogadgets/utils"
+)
+var (
+	configFlag = flag.String("c", "", "Path to the config json file")
 )
 
 type Greenhouse struct {
@@ -88,10 +92,11 @@ func (g *Greenhouse)Start(in <-chan gogadgets.Message, out chan<- gogadgets.Mess
 }
 
 func main() {
+	flag.Parse()
 	if !utils.FileExists("/sys/bus/w1/devices/28-0000047ade8f") {
 		ioutil.WriteFile("/sys/devices/bone_capemgr.9/slots", []byte("BB-W1:00A0"), 0666)
 	}
-	b, err := ioutil.ReadFile("test_config.json")
+	b, err := ioutil.ReadFile(*configFlag)
 	if err != nil {
 		panic(err)
 	}
