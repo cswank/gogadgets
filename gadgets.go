@@ -160,7 +160,6 @@ func (g *Gadget) on(val *Value) {
 }
 
 func (g *Gadget) off() {
-	fmt.Println("turning off")
 	g.status = false
 	g.Output.Off()
 	g.compare = nil

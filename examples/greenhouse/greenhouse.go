@@ -88,9 +88,8 @@ func (g *Greenhouse)Start(in <-chan gogadgets.Message, out chan<- gogadgets.Mess
 }
 
 func main() {
-	if !utils.FileExists("/sys/bus/w1/devices") {
-		ioutil.WriteFile("/sys/devices/bone_capemgr.9/slots", []byte("echo BB-W1:00A0"), 0666)
-		//syscall.Exec(" > )
+	if !utils.FileExists("/sys/bus/w1/devices/28-0000047ade8f") {
+		ioutil.WriteFile("/sys/devices/bone_capemgr.9/slots", []byte("BB-W1:00A0"), 0666)
 	}
 	b, err := ioutil.ReadFile("test_config.json")
 	if err != nil {
