@@ -10,7 +10,6 @@ var (
 	DONE = "done"
 	UPDATE = "update"
 	METHODUPDATE = "method update"
-	STATUS = "status"
 )
 
 type InputDeviceFactory func(pin *Pin) (InputDevice, error)
@@ -42,6 +41,7 @@ type Method struct {
 
 type Message struct {
 	Sender      string      `json:"sender"`
+	Target      string      `json:"target"`
 	Type        string      `json:"type"`
 	Body        string      `json:"body"`
 	Method      Method      `json:"method"`

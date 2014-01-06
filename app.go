@@ -75,8 +75,15 @@ func (a *App) Start(stop <-chan bool) {
 }
 
 func (a *App) sendMessage(msg Message) {
-	for uid, channel := range a.channels {
-		if uid != msg.Sender {
+	if msg.Target != "" {
+		for uid, channel := range a.channels {
+			if uid != msg.Sender {
+				channel<- msg
+			}
+		}
+	} else {
+		channel, ok := a.channels[msg.Target]
+		if ok {
 			channel<- msg
 		}
 	}

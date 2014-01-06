@@ -9,7 +9,7 @@ type Switch struct {
 	GPIO Poller
 	Value float64
 	Units string
-	value float64
+	out chan<- Value
 }
 
 func NewSwitch(pin *Pin) (InputDevice, error) {
@@ -39,35 +39,26 @@ func (s *Switch) wait(out chan<- float64, err chan<- error) {
 	}
 }
 
-func (s *Switch) GetValue() *Value {
-	return &Value{
-		Value: s.value,
+func (s *Switch) SendValue() {
+	s.out<- Value{
+		Value: s.Value,
 		Units: s.Units,
 	}
 }
 
-
 func (s *Switch) Start(in <-chan Message, out chan<- Value) {
+	s.out = out
 	value := make(chan float64)
 	err := make(chan error)
-	for {
+	keepGoing := true
+	for keepGoing {
 		go s.wait(value, err)
 		select {
-		case msg := <- in:
-			if msg.Type == "command" && msg.Body == "shutdown" {
-				return
-			} else if msg.Type == "command" && msg.Body == "status" {
-				out<- Value{
-					Value: s.value,
-					Units: s.Units,
-				}
-			}
+		case <- in:
+			//do nothing
 		case val := <-value:
-			s.value = val
-			out<- Value{
-				Value: val,
-				Units: s.Units,
-			}
+			s.Value = val
+			s.SendValue()
 		case e := <-err:
 			log.Println(e)
 		}

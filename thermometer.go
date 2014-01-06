@@ -67,19 +67,14 @@ func (t *Thermometer) parseValue(val string) (v *Value, err error) {
 }
 
 func (t *Thermometer) Start(in <-chan Message, out chan<- Value) {
+	val, err := t.getValue()
+	if err == nil {
+		out<- *val
+	}
 	for {
 		select {
-		case msg := <-in:
-			if msg.Type == "command" && msg.Body == "shutdown" {
-				return
-			} else if msg.Type == "command" && msg.Body == "status" {
-				val, err := t.getValue()
-				if err == nil {
-					out<- *val
-				} else {
-					log.Println(fmt.Sprintf("error reading thermometer %s", t.devicePath))
-				}
-			}
+		case <-in:
+			// do nothing
 		case <-time.After(5 * time.Second):
 			val, err := t.getValue()
 			if err == nil {
@@ -87,7 +82,6 @@ func (t *Thermometer) Start(in <-chan Message, out chan<- Value) {
 			} else {
 				log.Println(fmt.Sprintf("error reading thermometer %s", t.devicePath))
 			}
-			
 		}
 	}
 }
