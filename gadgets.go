@@ -329,8 +329,9 @@ func stripCommand(cmd string) string {
 		return cmd[i + 5:]
 	}
 	i = strings.Index(cmd, " to ")
+	fmt.Println("index is", i)
 	if i != -1 {
-		return cmd[i + 5:]
+		return cmd[i + 4:]
 	}
 	return ""
 }

@@ -12,9 +12,13 @@ func TestStripCommand(t *testing.T) {
 	if cmd != "5 liters" {
 		t.Error(cmd)
 	}
+	cmd = stripCommand("turn on lab led for 2.3 minutes")
+	if cmd != "2.3 minutes" {
+		t.Error(cmd)
+	}
 }
 
-func _TestParseCommand(t *testing.T) {
+func TestParseCommand(t *testing.T) {
 	val, unit, err := ParseCommand("fill tank to 5 liters")
 	if err != nil {
 		t.Error(err)
@@ -27,8 +31,8 @@ func _TestParseCommand(t *testing.T) {
 	}
 }
 
-func _TestGetTimeValue(t *testing.T) {
-	val, unit, err := ParseCommand("1.1 minutes")
+func TestGetTimeValue(t *testing.T) {
+	val, unit, err := ParseCommand("turn on lab led for 1.1 minutes")
 	if err != nil {
 		t.Error(err)
 	}
