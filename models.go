@@ -66,6 +66,8 @@ type Pin struct {
 type GadgetConfig struct {
 	Location string
 	Name string
+	OnCommand string
+	OffCommand string
 	Pin Pin
 }
 

@@ -83,13 +83,19 @@ func NewInputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
 
 func NewOutputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
 	dev, err := NewOutputDevice(&config.Pin)
+	if config.OnCommand == "" {
+		config.OnCommand = fmt.Sprintf("turn on %s %s", config.Location, config.Name)
+	}
+	if config.OffCommand == "" {
+		config.OffCommand = fmt.Sprintf("turn off %s %s", config.Location, config.Name)
+	}
 	if err == nil {
 		gadget = &Gadget{
 			Location: config.Location,
 			Name: config.Name,
 			Direction: "output",
-			OnCommand: fmt.Sprintf("turn on %s %s", config.Location, config.Name),
-			OffCommand: fmt.Sprintf("turn off %s %s", config.Location, config.Name),
+			OnCommand: config.OnCommand,
+			OffCommand: config.OffCommand,
 			Output: dev,
 			UID: fmt.Sprintf("%s %s", config.Location, config.Name),
 		}
@@ -149,7 +155,6 @@ func (g *Gadget) doOutputLoop(in <-chan Message) {
 		}
 	}
 }
-
 
 func (g *Gadget) on(val *Value) {
 	g.Output.On(val)
