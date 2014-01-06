@@ -18,6 +18,7 @@ func NewAppFactory() *AppFactory {
 		outputFactories: map[string] OutputDeviceFactory{
 			"gpio": NewGPIO,
 			"heater": NewHeater,
+			"cooler": NewCooler,
 		},
 	}
 	return a

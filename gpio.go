@@ -34,6 +34,9 @@ func NewGPIO(pin *Pin) (OutputDevice, error) {
 	if !ok {
 		return nil, errors.New(fmt.Sprintf("no such pin: %s", pin.Pin))
 	}
+	if pin.Direction == "" {
+		pin.Direction = "out"
+	}
 	g := &GPIO{
 		export: export,
 		exportPath: "/sys/class/gpio/export",

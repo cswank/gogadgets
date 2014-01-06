@@ -25,6 +25,8 @@ func NewOutputDevice(pin *Pin) (dev OutputDevice, err error) {
 		dev, err = NewGPIO(pin)
 	} else if pin.Type == "heater" {
 		dev, err = NewHeater(pin)
+	} else if pin.Type == "cooler" {
+		dev, err = NewCooler(pin)
 	} else {
 		dev, err = nil, errors.New("invalid pin type")
 	}

@@ -52,7 +52,7 @@ type Gadget struct {
 
 func NewGadget(config *GadgetConfig) (*Gadget, error) {
 	t := config.Pin.Type
-	if t == "heater" || t == "gpio" {
+	if t == "heater" || t == "cooler" || t == "gpio" {
 		return NewOutputGadget(config)
 	} else if t == "thermometer" || t == "switch" {
 		return NewInputGadget(config)
@@ -83,13 +83,19 @@ func NewInputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
 
 func NewOutputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
 	dev, err := NewOutputDevice(&config.Pin)
+	if config.OnCommand == "" {
+		config.OnCommand = fmt.Sprintf("turn on %s %s", config.Location, config.Name)
+	}
+	if config.OffCommand == "" {
+		config.OffCommand = fmt.Sprintf("turn off %s %s", config.Location, config.Name)
+	}
 	if err == nil {
 		gadget = &Gadget{
 			Location: config.Location,
 			Name: config.Name,
 			Direction: "output",
-			OnCommand: fmt.Sprintf("turn on %s %s", config.Location, config.Name),
-			OffCommand: fmt.Sprintf("turn off %s %s", config.Location, config.Name),
+			OnCommand: config.OnCommand,
+			OffCommand: config.OffCommand,
 			Output: dev,
 			UID: fmt.Sprintf("%s %s", config.Location, config.Name),
 		}
@@ -149,7 +155,6 @@ func (g *Gadget) doOutputLoop(in <-chan Message) {
 		}
 	}
 }
-
 
 func (g *Gadget) on(val *Value) {
 	g.Output.On(val)
@@ -215,7 +220,7 @@ func (g *Gadget) readOnCommand(msg *Message) {
 
 func (g *Gadget) readOnArguments(cmd string) (*Value, error) {
 	var val *Value
-	value, unit, err := g.getValue(cmd)
+	value, unit, err := ParseCommand(cmd)
 	if err != nil {
 		return val, errors.New(fmt.Sprintf("could not parse %s", cmd))
 	}
@@ -254,16 +259,6 @@ func (g *Gadget) setCompare(value float64, unit string, gadget string) {
 	}
 }
 
-func (g *Gadget) getValue(cmd string) (float64, string, error) {
-	cmd = g.stripCommand(cmd)
-	value, unit, err := g.splitCommand(cmd)
-	var v float64
-	if err == nil {
-		v, err = strconv.ParseFloat(value, 64)
-	}
-	return v, unit, err
-}
-
 func (g *Gadget) startTimer(value float64, unit string, in <-chan bool, out chan<- bool) {
 	d := time.Duration(value * float64(time.Second))
 	keepGoing := true
@@ -276,18 +271,6 @@ func (g *Gadget) startTimer(value float64, unit string, in <-chan bool, out chan
 			out<- true
 		}
 	}
-}
-
-func (g *Gadget) splitCommand(cmd string) (string, string, error) {
-	parts := strings.Split(cmd, " ")
-	return parts[0], parts[1], nil
-}
-
-func (g *Gadget) stripCommand(cmd string) string {
-	cmd = strings.Trim(cmd, " ")
-	cmd = strings.TrimPrefix(cmd, g.OnCommand)
-	cmd = strings.TrimPrefix(cmd, " for ")
-	return strings.TrimPrefix(cmd, " to ")
 }
 
 func (g *Gadget) readOffCommand(msg *Message) {
@@ -328,3 +311,31 @@ func (g *Gadget) sendUpdate() {
 	g.out<- msg
 }
 
+func ParseCommand(cmd string) (float64, string, error) {
+	cmd = stripCommand(cmd)
+	value, unit, err := splitCommand(cmd)
+	var v float64
+	if err == nil {
+		v, err = strconv.ParseFloat(value, 64)
+	}
+	return v, unit, err
+}
+
+func splitCommand(cmd string) (string, string, error) {
+	parts := strings.Split(cmd, " ")
+	return parts[0], parts[1], nil
+}
+
+func stripCommand(cmd string) string {
+	cmd = strings.Trim(cmd, " ")
+	i := strings.Index(cmd, " for ")
+	if i != -1 {
+		return cmd[i + 5:]
+	}
+	i = strings.Index(cmd, " to ")
+	fmt.Println("index is", i)
+	if i != -1 {
+		return cmd[i + 4:]
+	}
+	return ""
+}

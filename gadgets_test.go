@@ -8,27 +8,18 @@ import (
 )
 
 func TestStripCommand(t *testing.T) {
-	tr := Gadget{
-		Location: "tank",
-		Name: "valve",
-		Operator: ">=",
-		OnCommand: "fill tank",
-		OffCommand: "stop filling tank",
-	}
-	cmd := tr.stripCommand("fill tank to 5 liters")
+	cmd := stripCommand("fill tank to 5 liters")
 	if cmd != "5 liters" {
+		t.Error(cmd)
+	}
+	cmd = stripCommand("turn on lab led for 2.3 minutes")
+	if cmd != "2.3 minutes" {
 		t.Error(cmd)
 	}
 }
 
-func TestGetValue(t *testing.T) {
-	g := Gadget{
-		Location: "tank",
-		Name: "valve",
-		Operator: ">=",
-		OffCommand: "stop filling tank",
-	}
-	val, unit, err := g.getValue("5 liters")
+func TestParseCommand(t *testing.T) {
+	val, unit, err := ParseCommand("fill tank to 5 liters")
 	if err != nil {
 		t.Error(err)
 	}
@@ -41,13 +32,7 @@ func TestGetValue(t *testing.T) {
 }
 
 func TestGetTimeValue(t *testing.T) {
-	g := Gadget{
-		Location: "tank",
-		Name: "valve",
-		Operator: ">=",
-		OffCommand: "stop filling tank",
-	}
-	val, unit, err := g.getValue("1.1 minutes")
+	val, unit, err := ParseCommand("turn on lab led for 1.1 minutes")
 	if err != nil {
 		t.Error(err)
 	}
