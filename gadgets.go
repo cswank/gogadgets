@@ -52,7 +52,7 @@ type Gadget struct {
 
 func NewGadget(config *GadgetConfig) (*Gadget, error) {
 	t := config.Pin.Type
-	if t == "heater" || t == "gpio" {
+	if t == "heater" || t == "cooler" || t == "gpio" {
 		return NewOutputGadget(config)
 	} else if t == "thermometer" || t == "switch" {
 		return NewInputGadget(config)
@@ -216,7 +216,7 @@ func (g *Gadget) readOnCommand(msg *Message) {
 
 func (g *Gadget) readOnArguments(cmd string) (*Value, error) {
 	var val *Value
-	value, unit, err := g.getValue(cmd)
+	value, unit, err := ParseCommand(cmd)
 	if err != nil {
 		return val, errors.New(fmt.Sprintf("could not parse %s", cmd))
 	}
@@ -255,16 +255,6 @@ func (g *Gadget) setCompare(value float64, unit string, gadget string) {
 	}
 }
 
-func (g *Gadget) getValue(cmd string) (float64, string, error) {
-	cmd = g.stripCommand(cmd)
-	value, unit, err := g.splitCommand(cmd)
-	var v float64
-	if err == nil {
-		v, err = strconv.ParseFloat(value, 64)
-	}
-	return v, unit, err
-}
-
 func (g *Gadget) startTimer(value float64, unit string, in <-chan bool, out chan<- bool) {
 	d := time.Duration(value * float64(time.Second))
 	keepGoing := true
@@ -277,18 +267,6 @@ func (g *Gadget) startTimer(value float64, unit string, in <-chan bool, out chan
 			out<- true
 		}
 	}
-}
-
-func (g *Gadget) splitCommand(cmd string) (string, string, error) {
-	parts := strings.Split(cmd, " ")
-	return parts[0], parts[1], nil
-}
-
-func (g *Gadget) stripCommand(cmd string) string {
-	cmd = strings.Trim(cmd, " ")
-	cmd = strings.TrimPrefix(cmd, g.OnCommand)
-	cmd = strings.TrimPrefix(cmd, " for ")
-	return strings.TrimPrefix(cmd, " to ")
 }
 
 func (g *Gadget) readOffCommand(msg *Message) {
@@ -329,3 +307,30 @@ func (g *Gadget) sendStatus() {
 	g.out<- msg
 }
 
+func ParseCommand(cmd string) (float64, string, error) {
+	cmd = stripCommand(cmd)
+	value, unit, err := splitCommand(cmd)
+	var v float64
+	if err == nil {
+		v, err = strconv.ParseFloat(value, 64)
+	}
+	return v, unit, err
+}
+
+func splitCommand(cmd string) (string, string, error) {
+	parts := strings.Split(cmd, " ")
+	return parts[0], parts[1], nil
+}
+
+func stripCommand(cmd string) string {
+	cmd = strings.Trim(cmd, " ")
+	i := strings.Index(cmd, " for ")
+	if i != -1 {
+		return cmd[i + 5:]
+	}
+	i = strings.Index(cmd, " to ")
+	if i != -1 {
+		return cmd[i + 5:]
+	}
+	return ""
+}
