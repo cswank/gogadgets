@@ -2,6 +2,7 @@ package gogadgets
 
 import (
 	"log"
+	"time"
 )
 
 type Switch struct {
@@ -37,6 +38,7 @@ func (s *Switch) wait(out chan<- float64, err chan<- error) {
 			out<- 0.0
 		}
 	}
+	time.Sleep(200 * time.Millisecond)
 }
 
 func (s *Switch) SendValue() {

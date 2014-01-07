@@ -2,6 +2,7 @@ package gogadgets
 
 import (
 	"log"
+	"fmt"
 )
 
 type App struct {
@@ -46,10 +47,10 @@ func (a *App) Start(stop <-chan bool) {
 		subPort: a.subPort,
 	}
 	a.gadgets = append(a.gadgets, sockets)
-	in := make(chan Message)
+	in := make(chan Message, 100)
 	a.channels = make(map[string]chan Message)
 	for _, gadget := range a.gadgets {
-		out := make(chan Message)
+		out := make(chan Message, 100)
 		a.channels[gadget.GetUID()] = out
 		go gadget.Start(out, in)
 	}
@@ -75,10 +76,12 @@ func (a *App) Start(stop <-chan bool) {
 }
 
 func (a *App) sendMessage(msg Message) {
-	if msg.Target != "" {
+	if msg.Target == "" {
 		for uid, channel := range a.channels {
 			if uid != msg.Sender {
+				fmt.Println(uid)
 				channel<- msg
+				fmt.Println(uid)
 			}
 		}
 	} else {

@@ -160,7 +160,7 @@ func (g *Gadget) on(val *Value) {
 	g.Output.On(val)
 	if !g.status {
 		g.status = true
-		go g.sendUpdate()
+		go g.sendUpdate(val)
 	}
 }
 
@@ -168,14 +168,14 @@ func (g *Gadget) off() {
 	g.status = false
 	g.Output.Off()
 	g.compare = nil
-	go g.sendUpdate()
+	go g.sendUpdate(nil)
 }
 
-
 func (g *Gadget) readMessage(msg *Message) {
-	if g.Input != nil {
-		fmt.Println("sending msg to input dev")
+	if g.devIn != nil {
+		//fmt.Println("sending to", g.Location, g.Name, "sender", msg.Sender)
 		g.devIn<- *msg
+		//fmt.Println("sent to", g.Location, g.Name)
 	}
 	if msg.Type == COMMAND && g.isMyCommand(msg) {
 		g.readCommand(msg)
@@ -197,7 +197,7 @@ func (g *Gadget) readCommand(msg *Message) {
 		g.shutdown = true
 		g.off()
 	} else if msg.Body == "update" {
-		go g.sendUpdate()
+		go g.sendUpdate(nil)
 	} else if strings.Index(msg.Body, g.OnCommand) == 0 {
 		g.readOnCommand(msg)
 	} else if strings.Index(msg.Body, g.OffCommand) == 0 {
@@ -286,7 +286,7 @@ func (g *Gadget) GetUID() string {
 	return g.UID
 }
 
-func (g *Gadget) sendUpdate() {
+func (g *Gadget) sendUpdate(val *Value) {
 	var value *Value
 	if g.Input != nil {
 		value = g.Input.GetValue()
@@ -302,6 +302,7 @@ func (g *Gadget) sendUpdate() {
 		Location: g.Location,
 		Name: g.Name,
 		Value: *value,
+		TargetValue: val,
 		Info: Info{
 			Direction: g.Direction,
 			On: g.OnCommand,

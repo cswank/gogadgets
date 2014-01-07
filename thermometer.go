@@ -40,12 +40,24 @@ func (t *Thermometer) GetValue() *Value {
 	}
 }
 
-func (t *Thermometer) getValue() (v *Value, err error) {
-	b, err := ioutil.ReadFile(t.devicePath)
-	if err == nil {
-		return t.parseValue(string(b))
+func (t *Thermometer) getValue(out chan Value, err chan error) {
+	for {
+		val, e := t.readFile()
+		if e == nil {
+			out<- *val
+		} else {
+			err<- e
+		}
+		time.Sleep(5 * time.Second)
 	}
-	return v, err
+}
+
+func (t *Thermometer) readFile() (v *Value, err error) {
+	b, err := ioutil.ReadFile(t.devicePath)
+	if err != nil {
+		return v, err
+	}
+	return t.parseValue(string(b))
 }
 
 func (t *Thermometer) parseValue(val string) (v *Value, err error) {
@@ -67,21 +79,17 @@ func (t *Thermometer) parseValue(val string) (v *Value, err error) {
 }
 
 func (t *Thermometer) Start(in <-chan Message, out chan<- Value) {
-	val, err := t.getValue()
-	if err == nil {
-		out<- *val
-	}
+	temperature := make(chan Value)
+	e := make(chan error)
+	go t.getValue(temperature, e)
 	for {
 		select {
 		case <-in:
 			// do nothing
-		case <-time.After(5 * time.Second):
-			val, err := t.getValue()
-			if err == nil {
-				out<- *val
-			} else {
-				log.Println(fmt.Sprintf("error reading thermometer %s", t.devicePath))
-			}
+		case val := <-temperature:
+			out<- val
+		case err := <-e:
+			log.Println(fmt.Sprintf("error reading thermometer %s", t.devicePath), err)
 		}
 	}
 }

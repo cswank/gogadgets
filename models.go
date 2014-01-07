@@ -49,6 +49,7 @@ type Message struct {
 	Name        string      `json:"name"`
 	Location    string      `json:"location"`
 	Value       Value       `json:"value"`
+	TargetValue *Value       `json:"targetValue"`
 	Info        Info        `json:"info"`
 }
 
