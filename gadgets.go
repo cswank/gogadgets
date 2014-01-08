@@ -97,6 +97,7 @@ func NewOutputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
 			OnCommand: config.OnCommand,
 			OffCommand: config.OffCommand,
 			Output: dev,
+			Operator: ">=",
 			UID: fmt.Sprintf("%s %s", config.Location, config.Name),
 		}
 	} else {
@@ -126,8 +127,8 @@ func (g *Gadget) Start(in <-chan Message, out chan<- Message) {
 }
 
 func (g *Gadget) doInputLoop(in <-chan Message) {
-	devOut := make(chan Value)
-	g.devIn = make(chan Message)
+	devOut := make(chan Value, 10)
+	g.devIn = make(chan Message, 10)
 	go g.Input.Start(g.devIn, devOut)
 	for !g.shutdown {
 		select {
@@ -160,7 +161,7 @@ func (g *Gadget) on(val *Value) {
 	g.Output.On(val)
 	if !g.status {
 		g.status = true
-		go g.sendUpdate(val)
+		g.sendUpdate(val)
 	}
 }
 
@@ -168,7 +169,7 @@ func (g *Gadget) off() {
 	g.status = false
 	g.Output.Off()
 	g.compare = nil
-	go g.sendUpdate(nil)
+	g.sendUpdate(nil)
 }
 
 func (g *Gadget) readMessage(msg *Message) {
@@ -197,7 +198,7 @@ func (g *Gadget) readCommand(msg *Message) {
 		g.shutdown = true
 		g.off()
 	} else if msg.Body == "update" {
-		go g.sendUpdate(nil)
+		g.sendUpdate(nil)
 	} else if strings.Index(msg.Body, g.OnCommand) == 0 {
 		g.readOnCommand(msg)
 	} else if strings.Index(msg.Body, g.OffCommand) == 0 {
@@ -240,6 +241,7 @@ func (g *Gadget) readOnArguments(cmd string) (*Value, error) {
 }
 
 func (g *Gadget) setCompare(value float64, unit string, gadget string) {
+	fmt.Println("setting compare", g.Operator)
 	if g.Operator == "<=" {
 		g.compare = func(msg *Message) bool {
 			val, ok := msg.Value.Value.(float64)

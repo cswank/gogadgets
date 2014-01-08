@@ -2,7 +2,7 @@ package gogadgets
 
 import (
 	"log"
-	"fmt"
+	//"fmt"
 	"time"
 )
 
@@ -54,7 +54,7 @@ func (a *App) Start(stop <-chan bool) {
 	a.channels = make(map[string]chan Message)
 	a.queue = NewQueue()
 	for _, gadget := range a.gadgets {
-		out := make(chan Message, 100)
+		out := make(chan Message)
 		a.channels[gadget.GetUID()] = out
 		go gadget.Start(out, collect)
 	}
@@ -90,9 +90,9 @@ func (a *App) sendMessage(msg Message) {
 	if msg.Target == "" {
 		for uid, channel := range a.channels {
 			if uid != msg.Sender {
-				fmt.Println(uid)
+				//fmt.Println(uid)
 				channel<- msg
-				fmt.Println(uid)
+				//fmt.Println(uid)
 			}
 		}
 	} else {

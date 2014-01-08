@@ -40,7 +40,7 @@ func (t *Thermometer) GetValue() *Value {
 	}
 }
 
-func (t *Thermometer) getValue(out chan Value, err chan error) {
+func (t *Thermometer) getTemperature(out chan Value, err chan error) {
 	for {
 		val, e := t.readFile()
 		if e == nil {
@@ -81,7 +81,7 @@ func (t *Thermometer) parseValue(val string) (v *Value, err error) {
 func (t *Thermometer) Start(in <-chan Message, out chan<- Value) {
 	temperature := make(chan Value)
 	e := make(chan error)
-	go t.getValue(temperature, e)
+	go t.getTemperature(temperature, e)
 	for {
 		select {
 		case <-in:
