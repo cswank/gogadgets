@@ -47,31 +47,19 @@ func (a *App) Start(stop <-chan bool) {
 		subPort: a.subPort,
 	}
 	a.gadgets = append(a.gadgets, sockets)
-	in := make(chan Message, 100)
+	in := make(chan Message)
 	a.channels = make(map[string]chan Message)
 	for _, gadget := range a.gadgets {
 		out := make(chan Message, 100)
 		a.channels[gadget.GetUID()] = out
-		go gadget.Start(out, in)
+		go gadget.Start(out, collector)
 	}
 	keepRunning := true
 	log.Println("started gagdgets")
+	time.Sleep(100 * time.Millisecond)
 	for keepRunning {
-		select {
-		case msg := <-in:
-			a.sendMessage(msg)
-		case keepRunning = <-stop:
-			stopMessage := Message{
-				Type: COMMAND,
-				Body: "shutdown",
-			}
-			for _, channel := range a.channels {
-				channel<- stopMessage
-			}
-			for _, _  = range a.channels {
-				<-in
-			}
-		}
+		msg := <-in:
+		go a.sendMessage(msg)
 	}
 }
 
