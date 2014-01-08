@@ -52,13 +52,12 @@ func (a *App) Start(stop <-chan bool) {
 	for _, gadget := range a.gadgets {
 		out := make(chan Message, 100)
 		a.channels[gadget.GetUID()] = out
-		go gadget.Start(out, collector)
+		go gadget.Start(out, in)
 	}
 	keepRunning := true
 	log.Println("started gagdgets")
-	time.Sleep(100 * time.Millisecond)
 	for keepRunning {
-		msg := <-in:
+		msg := <-in
 		go a.sendMessage(msg)
 	}
 }
