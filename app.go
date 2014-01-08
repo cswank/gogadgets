@@ -3,6 +3,7 @@ package gogadgets
 import (
 	"log"
 	"fmt"
+	"time"
 )
 
 type App struct {
@@ -11,6 +12,7 @@ type App struct {
 	pubPort int
 	subPort int
 	channels map[string]chan Message
+	queue *Queue
 }
 
 func NewApp(config *Config) *App {
@@ -48,17 +50,39 @@ func (a *App) Start(stop <-chan bool) {
 	}
 	a.gadgets = append(a.gadgets, sockets)
 	in := make(chan Message)
+	collect := make(chan Message)
 	a.channels = make(map[string]chan Message)
+	a.queue = NewQueue()
 	for _, gadget := range a.gadgets {
 		out := make(chan Message, 100)
 		a.channels[gadget.GetUID()] = out
-		go gadget.Start(out, in)
+		go gadget.Start(out, collect)
 	}
+	go a.collectMessages(collect)
+	go a.dispenseMessages(in)
 	keepRunning := true
 	log.Println("started gagdgets")
 	for keepRunning {
 		msg := <-in
-		go a.sendMessage(msg)
+		a.sendMessage(msg)
+	}
+}
+
+func (a *App) collectMessages(in <-chan Message) {
+	for {
+		msg := <-in
+		a.queue.Push(&msg)
+	}
+}
+
+func (a *App) dispenseMessages(out chan<- Message) {
+	for {
+		if a.queue.Len() == 0 {
+			time.Sleep(100 * time.Millisecond)
+		} else {
+			msg := a.queue.Get()
+			out<- *msg
+		}
 	}
 }
 
