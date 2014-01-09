@@ -178,6 +178,22 @@ func TestRunMethod(t *testing.T) {
 	<-in
 }
 
+func TestUserStepChecker(t *testing.T) {
+	m := Runner{}
+	m.setUserStepChecker("wait for user to laugh")
+	msg := &Message{
+		Type: "update",
+		Body: "wait for user to cry",
+	}
+	if m.stepChecker(msg) {
+		t.Error("should have returned false")
+	}
+	msg.Body = "wait for user to laugh"
+	if !m.stepChecker(msg) {
+		t.Error("should have returned true")
+	}
+}
+
 func TestRunAnotherMethod(t *testing.T) {
 	in := make(chan Message)
 	out := make(chan Message)

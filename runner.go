@@ -66,7 +66,7 @@ func (m *Runner) readMessage(msg *Message) (shutdown bool) {
 }
 
 func (m *Runner) checkUpdate(msg *Message) {
-	if m.stepChecker != nil && m.stepChecker(msg) {
+	if (m.stepChecker != nil && m.stepChecker(msg)) {
 		m.stepChecker = nil
 		m.runNextStep()
 	}
@@ -106,10 +106,27 @@ func (m *Runner) sendCommand(cmd string) {
 
 func (m *Runner) readWaitCommand(cmd string) {
 	waitTime, err := m.getWaitTime(cmd)
-	if err == nil {
+	if strings.Index(cmd, "wait for user to") == 0 {
+		m.setUserStepChecker(cmd)
+		m.promptUser(cmd)
+	} else if err == nil {
 		go m.doCountdown(waitTime)
 	} else {
 		m.setStepChecker(cmd)
+	}
+}
+
+func (m *Runner) setUserStepChecker(cmd string) {
+	m.stepChecker = func(msg *Message) bool {
+		return msg.Body == cmd
+	}
+}
+
+func (m *Runner) promptUser(cmd string) {
+	m.out<- Message{
+		Sender: m.uid,
+		Type: "command",
+		Body: cmd,
 	}
 }
 
