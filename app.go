@@ -92,7 +92,7 @@ func (a *App) sendMessage(msg Message) {
 			if uid != msg.Sender {
 				//fmt.Println(uid)
 				channel<- msg
-				//fmt.Println(uid)
+				//fmt.Println(uid) 
 			}
 		}
 	} else {
