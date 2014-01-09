@@ -241,7 +241,6 @@ func (g *Gadget) readOnArguments(cmd string) (*Value, error) {
 }
 
 func (g *Gadget) setCompare(value float64, unit string, gadget string) {
-	fmt.Println("setting compare", g.Operator)
 	if g.Operator == "<=" {
 		g.compare = func(msg *Message) bool {
 			val, ok := msg.Value.Value.(float64)
@@ -336,7 +335,6 @@ func stripCommand(cmd string) string {
 		return cmd[i + 5:]
 	}
 	i = strings.Index(cmd, " to ")
-	fmt.Println("index is", i)
 	if i != -1 {
 		return cmd[i + 4:]
 	}

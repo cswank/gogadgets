@@ -1,7 +1,6 @@
 package gogadgets
 
 import (
-	"fmt"
 	"testing"
 	"time"
 )
@@ -206,6 +205,7 @@ func TestRunAnotherMethod(t *testing.T) {
 				"turn on lab led",
 				"wait for 0.1 seconds",
 				"turn off lab led",
+				"wait for user to turn off power",
 				"shutdown",
 			},
 		},
@@ -216,21 +216,24 @@ func TestRunAnotherMethod(t *testing.T) {
 	if msg.Type != "command" && msg.Body != "turn on lab led" {
 		t.Error(msg)
 	}
+	<-in
+	<-in
+	<-in
+	<-in
 	msg = <-in
-	fmt.Println("1", msg)
-	msg = <-in
-	fmt.Println("2", msg)
-	msg = <-in
-	
-	msg = <-in
-	fmt.Println("3", msg)
-	msg = <-in
-	fmt.Println("4", msg)
 	if msg.Type != "command" && msg.Body != "turn off lab led" {
 		t.Error(msg)
 	}
+	<-in
 	msg = <-in
-	fmt.Println("5", msg)
+	if msg.Type != "command" && msg.Body != "wait for user to turn off power" {
+		t.Error(msg)
+	}
+	out<- Message{
+		Type: "update",
+		Body: "wait for user to turn off power",
+	}
+	<-in
 	msg = <-in
 	if msg.Type != "command" && msg.Body != "shutdown" {
 		t.Error(msg)
