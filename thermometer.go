@@ -41,15 +41,28 @@ func (t *Thermometer) GetValue() *Value {
 }
 
 func (t *Thermometer) getTemperature(out chan Value, err chan error) {
+	var previousTemperature *Value
 	for {
 		val, e := t.readFile()
-		if e == nil {
+		if e == nil && t.isValid(val, previousTemperature) {
+			previousTemperature = val
 			out<- *val
 		} else {
 			err<- e
 		}
 		time.Sleep(5 * time.Second)
 	}
+}
+
+func (t *Thermometer) isValid(value, previous *Value) (isValid bool) {
+	if previous == nil {
+		isValid = true
+	} else if value.Value.(float64) < 0.0 { //the 1-wire craps out once in a while and a value less than zero is a sign
+		isValid = false
+	} else {
+		isValid = true
+	}
+	return isValid
 }
 
 func (t *Thermometer) readFile() (v *Value, err error) {
