@@ -54,6 +54,8 @@ func (m *Runner) readMessage(msg *Message) (shutdown bool) {
 		m.step = -1
 		m.runNextStep()
 		shutdown = false
+	} else if msg.Type == COMMAND && msg.Body == "update" {
+		m.sendUpdate()
 	} else if len(m.method.Steps) != 0 && msg.Type == UPDATE {
 		m.checkUpdate(msg)
 		shutdown = false
@@ -63,6 +65,16 @@ func (m *Runner) readMessage(msg *Message) (shutdown bool) {
 		shutdown = false
 	}
 	return shutdown
+}
+
+func (m *Runner) sendUpdate() {
+	m.method.Step = m.step
+	msg := Message{
+		Sender: m.GetUID(),
+		Type: UPDATE,
+		Method: m.method,
+	}
+	m.out<- msg
 }
 
 func (m *Runner) checkUpdate(msg *Message) {
