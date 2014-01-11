@@ -27,6 +27,16 @@ type Value struct {
 	ID    string      `json:"id"`
 }
 
+func (v *Value) ToFloat() (f float64, ok bool) {
+	f, ok = v.Value.(float64)
+	if v.Units == "F" || v.Units == "F" {
+		f = (f - 32.0) / 1.8
+	} else if v.Units == "Gallons" || v.Units == "gallons" || v.Units == "gal" {
+		f = f * 3.78541
+	}
+	return f, ok
+}
+
 type Info struct {
 	Direction string      `json:"direction"`
 	On string             `json:"on"`

@@ -38,7 +38,7 @@ func (h *Heater) Update(msg *Message) {
 
 func (h *Heater) On(val *Value) error {
 	if val != nil {
-		target, ok := val.Value.(float64)
+		target, ok := val.ToFloat()
 		if ok {
 			h.target = target
 		}
@@ -68,11 +68,10 @@ func (h *Heater) watchTemperature(update <-chan Message, stop <-chan bool) {
 	for keepGoing {
 		select {
 		case msg := <-update:
-			current, ok := msg.Value.Value.(float64)
+			current, ok := msg.Value.ToFloat()
 			if ok {
 				h.current = current
 				h.toggle()
-				fmt.Println(h.duration)
 			}
 		case <-stop:
 			h.gpio.Off()
