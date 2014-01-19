@@ -174,9 +174,7 @@ func (g *Gadget) off() {
 
 func (g *Gadget) readMessage(msg *Message) {
 	if g.devIn != nil {
-		//fmt.Println("sending to", g.Location, g.Name, "sender", msg.Sender)
 		g.devIn<- *msg
-		//fmt.Println("sent to", g.Location, g.Name)
 	}
 	if msg.Type == COMMAND && g.isMyCommand(msg) {
 		g.readCommand(msg)
