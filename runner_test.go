@@ -211,31 +211,45 @@ func TestRunAnotherMethod(t *testing.T) {
 		},
 	}
 	out<- msg
-	<-in
+	msg = <-in
+	if msg.Type != "method update" || msg.Method.Step != 0 {
+		t.Error(msg)
+	}
 	msg = <-in
 	if msg.Type != "command" && msg.Body != "turn on lab led" {
 		t.Error(msg)
 	}
-	<-in
-	<-in
-	<-in
-	<-in
 	msg = <-in
-	if msg.Type != "command" && msg.Body != "turn off lab led" {
+	if msg.Type != "method update" || msg.Method.Step != 1 {
+		t.Error(msg)
+	}
+	msg = <-in
+	if msg.Type != "method update" || msg.Method.Step != 1 {
+		t.Error(msg)
+	}
+	msg = <-in
+	if msg.Type != "method update" || msg.Method.Step != 1 {
 		t.Error(msg)
 	}
 	<-in
 	msg = <-in
-	if msg.Type != "command" && msg.Body != "wait for user to turn off power" {
+	if msg.Type != "command" || msg.Body != "turn off lab led" {
+		t.Error(msg)
+	}
+	msg = <-in
+	if msg.Type != "method update" || msg.Method.Step != 3 {
 		t.Error(msg)
 	}
 	out<- Message{
 		Type: "update",
 		Body: "wait for user to turn off power",
 	}
-	<-in
 	msg = <-in
-	if msg.Type != "command" && msg.Body != "shutdown" {
+	if msg.Type != "method update" || msg.Method.Step != 4 {
+		t.Error(msg)
+	}
+	msg = <-in
+	if msg.Type != "command" || msg.Body != "shutdown" {
 		t.Error(msg)
 	}
 }
