@@ -2,7 +2,6 @@ package gogadgets
 
 import (
 	"log"
-	//"fmt"
 	"time"
 )
 
@@ -97,9 +96,7 @@ func (a *App) sendMessage(msg Message) {
 	if msg.Target == "" {
 		for uid, channel := range a.channels {
 			if uid != msg.Sender {
-				//fmt.Println(uid)
 				channel<- msg
-				//fmt.Println(uid) 
 			}
 		}
 	} else {
