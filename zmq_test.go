@@ -3,8 +3,8 @@ package gogadgets
 import (
 	"fmt"
 	"time"
-	"math/rand"
 	"testing"
+	"math/rand"
 	"encoding/json"
 	"github.com/vaughan0/go-zmq"
 )

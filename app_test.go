@@ -93,12 +93,12 @@ func TestGadgets(t *testing.T) {
 		UID: fmt.Sprintf("%s %s", location, name),
 	}
 	a := App{
-		gadgets: []GoGadget{p, s},
-		masterHost: "localhost",
-		subPort: port,
-		pubPort: port + 1,
+		Gadgets: []GoGadget{p, s},
+		MasterHost: "localhost",
+		SubPort: port,
+		PubPort: port + 1,
 	}
-	stop := make(chan bool)
+	stop := make(chan Message)
 	go a.Start(stop)
 	time.Sleep(1 * time.Second)
 }

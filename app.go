@@ -7,10 +7,10 @@ import (
 )
 
 type App struct {
-	gadgets []GoGadget
-	masterHost string
-	pubPort int
-	subPort int
+	Gadgets []GoGadget
+	MasterHost string
+	PubPort int
+	SubPort int
 	channels map[string]chan Message
 	queue *Queue
 }
@@ -22,10 +22,10 @@ func NewApp(config *Config) *App {
 		config.PubPort = 6112
 	}
 	return &App{
-		masterHost: config.MasterHost,
-		pubPort: config.PubPort,
-		subPort: config.SubPort,
-		gadgets: gadgets,
+		MasterHost: config.MasterHost,
+		PubPort: config.PubPort,
+		SubPort: config.SubPort,
+		Gadgets: gadgets,
 	}
 }
 
@@ -41,19 +41,19 @@ func GetGadgets(configs []GadgetConfig) []GoGadget {
 	return g
 }
 
-func (a *App) Start(stop <-chan bool) {
-	a.gadgets = append(a.gadgets, &Runner{})
+func (a *App) Start(input <-chan Message) {
+	a.Gadgets = append(a.Gadgets, &Runner{})
 	sockets := &Sockets{
-		masterHost: a.masterHost,
-		pubPort: a.pubPort,
-		subPort: a.subPort,
+		masterHost: a.MasterHost,
+		pubPort: a.PubPort,
+		subPort: a.SubPort,
 	}
-	a.gadgets = append(a.gadgets, sockets)
+	a.Gadgets = append(a.Gadgets, sockets)
 	in := make(chan Message)
 	collect := make(chan Message)
 	a.channels = make(map[string]chan Message)
 	a.queue = NewQueue()
-	for _, gadget := range a.gadgets {
+	for _, gadget := range a.Gadgets {
 		out := make(chan Message)
 		a.channels[gadget.GetUID()] = out
 		go gadget.Start(out, collect)
@@ -63,8 +63,15 @@ func (a *App) Start(stop <-chan bool) {
 	keepRunning := true
 	log.Println("started gagdgets")
 	for keepRunning {
-		msg := <-in
-		a.sendMessage(msg)
+		select {
+		case msg := <-in:
+			a.sendMessage(msg)
+		case msg := <-input:
+			if msg.Type == "command" && msg.Body == "shutdown" {
+				keepRunning = false
+			}
+			a.sendMessage(msg)
+		}
 	}
 }
 
@@ -104,5 +111,5 @@ func (a *App) sendMessage(msg Message) {
 }
 
 func (a *App) AddGadget(gadget GoGadget) {
-	a.gadgets = append(a.gadgets, gadget)
+	a.Gadgets = append(a.Gadgets, gadget)
 }

@@ -45,10 +45,14 @@ func (s *Sockets) Start(in <-chan Message, out chan<- Message) {
 	for keepGoing {
 		select {
 		case data := <-s.subChan.In():
-			msg := &Message{}
-			json.Unmarshal(data[1], msg)
-			msg.Sender = "zmq sockets"
-			out<- *msg
+			if len(data) == 2 {
+				msg := &Message{}
+				json.Unmarshal(data[1], msg)
+				msg.Sender = "zmq sockets"
+				out<- *msg
+			} else {
+				log.Println("zmq received an improper message", data)
+			}
 		case msg := <-in:
 			if msg.Type == COMMAND && msg.Body == "shutdown" {
 				keepGoing = false
