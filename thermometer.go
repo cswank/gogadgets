@@ -8,7 +8,7 @@ import (
 	"io/ioutil"
 	"strings"
 	"strconv"
-	"bitbucket.com/cswank/gogadgets/utils"
+	"bitbucket.org/cswank/gogadgets/utils"
 )
 
 type Thermometer struct {

@@ -7,8 +7,8 @@ import (
 	"time"
 	"io/ioutil"
 	"encoding/json"
-	"bitbucket.com/cswank/gogadgets"
-	"bitbucket.com/cswank/gogadgets/utils"
+	"bitbucket.org/cswank/gogadgets"
+	"bitbucket.org/cswank/gogadgets/utils"
 )
 var (
 	configFlag = flag.String("c", "", "Path to the config json file")

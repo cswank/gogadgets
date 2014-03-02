@@ -3,7 +3,7 @@ package gogadgets
 import (
 	"fmt"
 	"testing"
-	"bitbucket.com/cswank/gogadgets/utils"
+	"bitbucket.org/cswank/gogadgets/utils"
 )
 
 func TestThermometer(t *testing.T) {

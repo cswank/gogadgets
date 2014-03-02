@@ -3,7 +3,7 @@ package main
 import (
 	"time"
 	"testing"
-	"bitbucket.com/cswank/gogadgets"
+	"bitbucket.org/cswank/gogadgets"
 )
 
 func TestGreenhouse(t *testing.T) {

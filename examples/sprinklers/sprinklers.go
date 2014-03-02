@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"bitbucket.com/cswank/gogadgets"
+	"bitbucket.org/cswank/gogadgets"
 )
 
 func main() {

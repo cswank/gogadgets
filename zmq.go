@@ -16,7 +16,7 @@ import (
 )
 
 type Sockets struct {
-	masterHost string
+	host string
 	pubPort int
 	subPort int
 	isMaster bool
@@ -27,17 +27,39 @@ type Sockets struct {
 	pubChan *zmq.Channels
 }
 
+func NewClientSockets(host string) (*Sockets, error) {
+	s := &Sockets{
+		host: host,
+		pubPort: 6112,
+		subPort: 6111,
+	}
+	err := s.getClientSockets()
+	return s, err
+}
+
 func (s *Sockets) GetUID() string {
 	return "zmq sockets"
 }
 
+func (s *Sockets) Send(cmd string) {
+	msg := &Message{
+		Type: COMMAND,
+		Body: cmd,
+	}
+	b, err := json.Marshal(msg)
+	if err != nil {
+		fmt.Println("zmq sockets had a problem", err)
+	} else {
+		s.pub.Send([][]byte{
+			[]byte(msg.Type),
+			b,
+		})
+	}
+}
+
 func (s *Sockets) Start(in <-chan Message, out chan<- Message) {
 	err := s.getSockets()
-	defer s.ctx.Close()
-	defer s.sub.Close()
-	defer s.pub.Close()
-	defer s.subChan.Close()
-	defer s.pubChan.Close()
+	defer s.Close()
 	if err != nil {
 		log.Println("zmq sockets had a problem", err)
 	}
@@ -72,8 +94,16 @@ func (s *Sockets) Start(in <-chan Message, out chan<- Message) {
 	}
 }
 
+func (s *Sockets) Close() {
+	s.ctx.Close()
+	s.sub.Close()
+	s.pub.Close()
+	s.subChan.Close()
+	s.pubChan.Close()
+}
+
 func (s *Sockets) getSockets() (err error) {
-	if s.masterHost == "localhost" || s.masterHost == "" {
+	if s.host == "localhost" || s.host == "" {
 		s.isMaster = true
 		err = s.getMasterSockets()
 	} else {
@@ -120,20 +150,18 @@ func (s *Sockets) getClientSockets() (err error) {
 	if err != nil {
 		return err
 	}
-	if err = s.pub.Connect(fmt.Sprintf("tcp://*:%d", s.masterHost, s.pubPort)); err != nil {
+	if err = s.pub.Connect(fmt.Sprintf("tcp://%s:%d", s.host, s.subPort)); err != nil {
 		return err
 	}
-
-	sub, err := s.ctx.Socket(zmq.Sub)
+	
+	s.sub, err = s.ctx.Socket(zmq.Sub)
 	
 	if err != nil {
 		return err
 	}
-	if err = sub.Connect(fmt.Sprintf("tcp://*:%d", s.masterHost, s.subPort)); err != nil {
+	if err = s.sub.Connect(fmt.Sprintf("tcp://%s:%d", s.host, s.pubPort)); err != nil {
 		return err
 	}
-	sub.Subscribe([]byte(""))
-	s.subChan = sub.Channels()
-	s.sub = sub
+	s.sub.Subscribe([]byte(""))
 	return err
 }

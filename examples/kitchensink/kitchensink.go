@@ -1,7 +1,7 @@
 package main
 
 import (
-	"bitbucket.com/cswank/gogadgets"
+	"bitbucket.org/cswank/gogadgets"
 )
 
 func main() {

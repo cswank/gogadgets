@@ -2,7 +2,7 @@ package gogadgets
 
 import (
 	"fmt"
-	"bitbucket.com/cswank/gogadgets/utils"
+	"bitbucket.org/cswank/gogadgets/utils"
 	"os"
 	"errors"
 	"syscall"

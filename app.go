@@ -43,7 +43,7 @@ func GetGadgets(configs []GadgetConfig) []GoGadget {
 func (a *App) Start(input <-chan Message) {
 	a.Gadgets = append(a.Gadgets, &Runner{})
 	sockets := &Sockets{
-		masterHost: a.MasterHost,
+		host: a.MasterHost,
 		pubPort: a.PubPort,
 		subPort: a.SubPort,
 	}

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 	"testing"
-	"bitbucket.com/cswank/gogadgets/utils"
+	"bitbucket.org/cswank/gogadgets/utils"
 )
 
 func TestStripCommand(t *testing.T) {

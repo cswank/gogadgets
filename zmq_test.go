@@ -13,7 +13,7 @@ func TestSockets(t *testing.T) {
 	pubPort := 1024 + rand.Intn(65535 - 1024)
 	subPort := pubPort + 1
 	s := Sockets{
-		masterHost:"localhost",
+		host:"localhost",
 		pubPort: pubPort,
 		subPort: subPort,
 	}
