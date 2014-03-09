@@ -5,6 +5,9 @@ import (
 	"time"
 )
 
+//Switch is an input device that waits for a GPIO pin
+//to change value (1 to 0 or 0 to 1).  When that change
+//happens it updates the rest of the system.
 type Switch struct {
 	InputDevice
 	GPIO Poller
@@ -12,6 +15,7 @@ type Switch struct {
 	Units string
 	out chan<- Value
 }
+
 
 func NewSwitch(pin *Pin) (InputDevice, error) {
 	var err error
@@ -27,6 +31,10 @@ func NewSwitch(pin *Pin) (InputDevice, error) {
 	return s, err
 }
 
+//The GPIO does the real waiting here.  This wraps it and adds
+//a delay so that the inevitable bounce in the signal from the
+//physical device is ignored.  Gadgets are not meant to be very
+//fast acting devices.
 func (s *Switch) wait(out chan<- float64, err chan<- error) {
 	val, e := s.GPIO.Wait()
 	if e != nil {
@@ -40,6 +48,7 @@ func (s *Switch) wait(out chan<- float64, err chan<- error) {
 	}
 	time.Sleep(200 * time.Millisecond)
 }
+
 
 func (s *Switch) SendValue() {
 	s.out<- Value{

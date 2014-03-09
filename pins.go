@@ -1,5 +1,6 @@
 package gogadgets
 
+//The beaglebone black GPIO pins
 var (
 	Pins = map[string]map[string]map[string]string{
 		"gpio": map[string]map[string]string{

@@ -5,6 +5,9 @@ import (
 	"time"
 )
 
+//App holds all the gadgets and handles passing Messages
+//to them, and receiving messages from them.  It is the
+//central part of Gadgets system.
 type App struct {
 	Gadgets []GoGadget
 	MasterHost string
@@ -28,6 +31,8 @@ func NewApp(config *Config) *App {
 	}
 }
 
+//This is a factory fuction that reads a GadgtConfig
+//and creates all the Gadgets that are defined in it.
 func GetGadgets(configs []GadgetConfig) []GoGadget {	
 	g := make([]GoGadget, len(configs))
 	for i, config := range configs {
@@ -40,6 +45,9 @@ func GetGadgets(configs []GadgetConfig) []GoGadget {
 	return g
 }
 
+//The main entry point for a Gadget system.  It takes
+//a chan in case the system is started as a goroutine,
+//but it can just be called directly.
 func (a *App) Start(input <-chan Message) {
 	a.Gadgets = append(a.Gadgets, &Runner{})
 	sockets := &Sockets{
@@ -74,6 +82,8 @@ func (a *App) Start(input <-chan Message) {
 	}
 }
 
+//Collects each message that is sent by the parts of the
+//system.
 func (a *App) collectMessages(in <-chan Message) {
 	for {
 		msg := <-in
@@ -81,6 +91,9 @@ func (a *App) collectMessages(in <-chan Message) {
 	}
 }
 
+//After a message is collected by collectMessage, it is
+//then sent back out to each Gadget (except the Gadget
+//that sent the message).
 func (a *App) dispenseMessages(out chan<- Message) {
 	for {
 		if a.queue.Len() == 0 {
@@ -107,6 +120,10 @@ func (a *App) sendMessage(msg Message) {
 	}
 }
 
+//Some systems might have a few GoGadgets that are not
+//built into the system (and hense can't be defined in
+//the config file).  This is a way to apss in an instance
+//of a gadget that is not part of the GoGadgets system.
 func (a *App) AddGadget(gadget GoGadget) {
 	a.Gadgets = append(a.Gadgets, gadget)
 }

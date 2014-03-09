@@ -11,6 +11,8 @@ import (
 	"bitbucket.org/cswank/gogadgets/utils"
 )
 
+//Reads temperature from a Dallas 1-Wire thermometer and
+//sends that temperature to the rest of the system.
 type Thermometer struct {
 	InputDevice
 	devicePath string
@@ -54,10 +56,13 @@ func (t *Thermometer) getTemperature(out chan Value, err chan error) {
 	}
 }
 
+//The 1-wire craps out once in a while and a value less than zero is a sign
+//that something went wrong.  Ususally the subsequent temperature value
+//is valid.
 func (t *Thermometer) isValid(value, previous *Value) (isValid bool) {
 	if previous == nil {
 		isValid = true
-	} else if value.Value.(float64) < 0.0 { //the 1-wire craps out once in a while and a value less than zero is a sign
+	} else if value.Value.(float64) < 0.0 {
 		isValid = false
 	} else {
 		isValid = true
@@ -65,6 +70,8 @@ func (t *Thermometer) isValid(value, previous *Value) (isValid bool) {
 	return isValid
 }
 
+//Linux on a Beaglebone and Raspberry Pi have a file based interface
+//to the Dallas 1-wire devices.  This reads from that interface file.
 func (t *Thermometer) readFile() (v *Value, err error) {
 	b, err := ioutil.ReadFile(t.devicePath)
 	if err != nil {
@@ -73,6 +80,8 @@ func (t *Thermometer) readFile() (v *Value, err error) {
 	return t.parseValue(string(b))
 }
 
+//parseValue gets the actual tempreature from the 1-wire interface
+//sysfs file.
 func (t *Thermometer) parseValue(val string) (v *Value, err error) {
 	start := strings.Index(val, "t=")
 	if start == -1 {
@@ -91,6 +100,7 @@ func (t *Thermometer) parseValue(val string) (v *Value, err error) {
 	return v, err
 }
 
+//This is a GoGadget, so it must have a Start.
 func (t *Thermometer) Start(in <-chan Message, out chan<- Value) {
 	temperature := make(chan Value)
 	e := make(chan error)

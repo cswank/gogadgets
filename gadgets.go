@@ -29,6 +29,11 @@ var (
 
 type Comparitor func(msg *Message) bool
 
+
+//Each part of a Gadgets system that controls a single
+//piece of hardware (for example: a gpio pin) is represented
+//by Gadget.  A Gadget must have either an InputDevice or
+//an OutputDevice.  Gaget fufills the GoGaget interface.
 type Gadget struct {
 	GoGadget
 	Location string `json:"location"`
@@ -50,6 +55,10 @@ type Gadget struct {
 	timerOut chan bool
 }
 
+//There are 5 types of Input/Output devices build into
+//GoGadgets (header, cooler, gpio, thermoeter and siwthc)
+//NewGadget reads a GadgetConfig and creates the correct
+//type of Gadget.
 func NewGadget(config *GadgetConfig) (*Gadget, error) {
 	t := config.Pin.Type
 	if t == "heater" || t == "cooler" || t == "gpio" {
@@ -65,6 +74,8 @@ func NewGadget(config *GadgetConfig) (*Gadget, error) {
 	return nil, err
 }
 
+//Input Gadgets read from input devices and report their values (thermometer
+//is an example).
 func NewInputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
 	dev, err := NewInputDevice(&config.Pin)
 	if err == nil {
@@ -81,6 +92,7 @@ func NewInputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
 	return gadget, err
 }
 
+//Output Gadgets turn devices on and off.
 func NewOutputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
 	dev, err := NewOutputDevice(&config.Pin)
 	if config.OnCommand == "" {
@@ -106,6 +118,9 @@ func NewOutputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
 	return gadget, err
 }
 
+//All gadgets respond to Robot Command Language (RCL) messages.  isMyCommand
+//reads an RCL message and decides if it was meant for this instance
+//of Gadget.
 func (g *Gadget) isMyCommand(msg *Message) bool {
 	return msg.Type == COMMAND && 
 		(strings.Index(msg.Body, g.OnCommand) == 0 ||
@@ -114,6 +129,8 @@ func (g *Gadget) isMyCommand(msg *Message) bool {
 		msg.Body == "shutdown")
 }
 
+//Start is one of the two interface methods of GoGadget.  Start takes
+//in in and out chan and is meant to be called as a goroutine.
 func (g *Gadget) Start(in <-chan Message, out chan<- Message) {
 	g.out = out
 	g.timerIn = make(chan bool)
@@ -126,6 +143,10 @@ func (g *Gadget) Start(in <-chan Message, out chan<- Message) {
 	}
 }
 
+//Once a gadget is started as a goroutine, this loop collects
+//all the messages that are sent to this particular Gadget and
+//responds accordingly.  This is the loop that is executed if
+//this Gadget is an input Gadget
 func (g *Gadget) doInputLoop(in <-chan Message) {
 	devOut := make(chan Value, 10)
 	g.devIn = make(chan Message, 10)
@@ -145,6 +166,7 @@ func (g *Gadget) doInputLoop(in <-chan Message) {
 		}
 	}
 }
+
 
 func (g *Gadget) doOutputLoop(in <-chan Message) {
 	for !g.shutdown {

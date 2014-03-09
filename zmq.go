@@ -15,6 +15,11 @@ import (
 	"github.com/vaughan0/go-zmq"
 )
 
+//Sockets fufills the GoGadget interface and is
+//added to each Gadget system by App.  It provides
+//a way to connect multiple gadgets systems together
+//as a single system, and also provides a way for
+//an external UI to control the system.
 type Sockets struct {
 	host string
 	pubPort int
@@ -57,6 +62,10 @@ func (s *Sockets) Send(cmd string) {
 	}
 }
 
+//This is the main loop for Sockets.  It listens for chann Messages
+//from inside the system and sends it to external listeners (like a
+//UI), and listens for external messages and sends them along to
+//the internal system.
 func (s *Sockets) Start(in <-chan Message, out chan<- Message) {
 	err := s.getSockets()
 	defer s.Close()
@@ -94,6 +103,7 @@ func (s *Sockets) Start(in <-chan Message, out chan<- Message) {
 	}
 }
 
+
 func (s *Sockets) Close() {
 	s.ctx.Close()
 	s.sub.Close()
@@ -112,6 +122,9 @@ func (s *Sockets) getSockets() (err error) {
 	return err
 }
 
+//Two GoGadgets systems can be joined together into a single system.
+//One of the GoGadgets system must be declared as being the master,
+//and the zmq sockets for the master are created here.
 func (s *Sockets) getMasterSockets() (err error) {
 	s.ctx, err = zmq.NewContext()
 	if err != nil {
@@ -140,6 +153,8 @@ func (s *Sockets) getMasterSockets() (err error) {
 	return err
 }
 
+//This creates the zmq sockets for a GoGadget system that is not the master
+//system.
 func (s *Sockets) getClientSockets() (err error) {
 	s.ctx, err = zmq.NewContext()
 	if err != nil {
