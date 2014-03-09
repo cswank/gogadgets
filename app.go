@@ -17,8 +17,13 @@ type App struct {
 	queue *Queue
 }
 
-func NewApp(config *Config) *App {
-	gadgets := GetGadgets(config.Gadgets)
+func NewApp(configPath string) *App {
+	cfg := &gogadgets.Config{}
+	err := json.Unmarshal(b, cfg)
+	if err != nil {
+		panic(err)
+	}
+	gadgets := GetGadgets(cfg.Gadgets)
 	if  config.PubPort == 0 {
 		config.SubPort = 6111
 		config.PubPort = 6112
@@ -48,7 +53,7 @@ func GetGadgets(configs []GadgetConfig) []GoGadget {
 //The main entry point for a Gadget system.  It takes
 //a chan in case the system is started as a goroutine,
 //but it can just be called directly.
-func (a *App) Start(input <-chan Message) {
+func (a *App) Start() {
 	a.Gadgets = append(a.Gadgets, &Runner{})
 	sockets := &Sockets{
 		host: a.MasterHost,
@@ -70,14 +75,11 @@ func (a *App) Start(input <-chan Message) {
 	keepRunning := true
 	log.Println("started gagdgets")
 	for keepRunning {
-		select {
-		case msg := <-in:
-			a.sendMessage(msg)
-		case msg := <-input:
-			if msg.Type == "command" && msg.Body == "shutdown" {
-				keepRunning = false
-			}
-			a.sendMessage(msg)
+		msg := <-in
+		a.sendMessage(msg)
+		if msg.Type == "command" && msg.Body == "shutdown" {
+			keepRunning = false
+			time.Sleep(100 * time.Millisecond)
 		}
 	}
 }

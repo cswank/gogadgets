@@ -10,11 +10,25 @@ import (
 
 var (
 	command = flag.String("c", "", "send a Robot Command Language command")
+	cfg = flag.String("config", "", "Path to the config json file")
 	host = flag.String("h", "localhost", "gadgets host")
 )
 
 func main() {
 	flag.Parse()
+	if len(*cfg ) > 0 {
+		runGadgets()
+	} else if len(*command) > 0 {
+		sendCommand()
+	}
+}
+
+func runGadgets() {
+	a := gogadgets.NewApp(cfg)
+	a.Start()
+}
+
+func sendCommand() {	
 	s, err := gogadgets.NewClientSockets(*host)
 	defer s.Close()
 	if err != nil {

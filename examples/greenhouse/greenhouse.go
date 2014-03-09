@@ -38,7 +38,6 @@ func (g *Greenhouse)wait(location string) {
 	g.out<- cmd
 }
 
-
 func (g *Greenhouse)GetUID() string {
 	return "greenhouse watcher"
 }
@@ -96,13 +95,7 @@ func main() {
 	if !utils.FileExists("/sys/bus/w1/devices/28-0000047ade8f") {
 		ioutil.WriteFile("/sys/devices/bone_capemgr.9/slots", []byte("BB-W1:00A0"), 0666)
 	}
-	b, err := ioutil.ReadFile(*configFlag)
-	if err != nil {
-		panic(err)
-	}
-	cfg := &gogadgets.Config{}
-	err = json.Unmarshal(b, cfg)
-	a := gogadgets.NewApp(cfg)
+	a := gogadgets.NewApp(configFlag)
 	sleepTimes := map[string]time.Duration{
 		"bed 1": 300 * time.Second,
 		"bed 2": 300 * time.Second,

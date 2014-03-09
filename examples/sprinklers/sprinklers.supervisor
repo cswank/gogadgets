@@ -1,0 +1,2 @@
+[program:sprinklers]
+command = /opt/gadgets/bin/gogadgets --config /opt/gadgets/src/bitbucket.org/cswank/gogadgets/examples/greenhouse/config.json

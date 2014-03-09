@@ -1,0 +1,57 @@
+{
+    "MasterHost": "localhost",
+    "SubPort": 6111,
+    "PubPort": 6112,
+    "Gadgets": [
+        {
+            "Location": "front yard",
+            "Name": "sprinklers",
+            "Pin": {
+                "Type": "gpio",
+                "Port": "8",
+                "Pin": "10",
+                "Direction": "out",
+            }
+        },
+        {
+            "Location": "front garden",
+            "Name": "sprinklers",
+            "Pin": {
+                "Type": "gpio",
+                "Port": "8",
+                "Pin": "11",
+                "Direction": "out",
+            }
+        },
+        {
+            "Location": "sidewalk",
+            "Name": "sprinklers",
+            "Pin": {
+                "Type": "gpio",
+                "Port": "8",
+                "Pin": "12",
+                "Direction": "out",
+            }
+        },
+        {
+            "Location": "back yard",
+            "Name": "sprinklers",
+            "Pin": {
+                "Type": "gpio",
+                "Port": "8",
+                "Pin": "14",
+                "Direction": "out",
+            }
+        },
+        {
+            "Location": "back garden",
+            "Name": "sprinklers",
+            "Pin": {
+                "Type": "gpio",
+                "Port": "8",
+                "Pin": "15",
+                "Direction": "out",
+            }
+        }
+    ]
+}
