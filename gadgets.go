@@ -1,34 +1,33 @@
 package gogadgets
 
 import (
-	"time"
-	"fmt"
 	"errors"
-	"strings"
+	"fmt"
 	"strconv"
+	"strings"
+	"time"
 )
 
 var (
 	units = map[string]string{
-		"liters": "volume",
-		"gallons": "volume",
-		"liter": "volume",
-		"gallon": "volume",
-		"c": "temperature",
-		"f": "temperature",
-		"celcius": "temperature",
+		"liters":     "volume",
+		"gallons":    "volume",
+		"liter":      "volume",
+		"gallon":     "volume",
+		"c":          "temperature",
+		"f":          "temperature",
+		"celcius":    "temperature",
 		"fahrenheit": "temperature",
-		"seconds": "time",
-		"minutes": "time",
-		"hours": "time",
-		"second": "time",
-		"minute": "time",
-		"hour": "time",
+		"seconds":    "time",
+		"minutes":    "time",
+		"hours":      "time",
+		"second":     "time",
+		"minute":     "time",
+		"hour":       "time",
 	}
 )
 
 type Comparitor func(msg *Message) bool
-
 
 //Each part of a Gadgets system that controls a single
 //piece of hardware (for example: a gpio pin) is represented
@@ -36,23 +35,23 @@ type Comparitor func(msg *Message) bool
 //an OutputDevice.  Gaget fufills the GoGaget interface.
 type Gadget struct {
 	GoGadget
-	Location string `json:"location"`
-	Name string `json:"name"`
-	Output OutputDevice `json:"-"`
-	Input InputDevice `json:"-"`
-	Direction string `json:"direction"`
-	OnCommand string `json:"on"`
-	OffCommand string `json:"off"`
-	UID string `json:"uid"`
-	status bool
-	compare Comparitor
-	shutdown bool
-	units string
-	Operator string
-	out chan<- Message
-	devIn chan Message
-	timerIn chan bool
-	timerOut chan bool
+	Location   string       `json:"location"`
+	Name       string       `json:"name"`
+	Output     OutputDevice `json:"-"`
+	Input      InputDevice  `json:"-"`
+	Direction  string       `json:"direction"`
+	OnCommand  string       `json:"on"`
+	OffCommand string       `json:"off"`
+	UID        string       `json:"uid"`
+	status     bool
+	compare    Comparitor
+	shutdown   bool
+	units      string
+	Operator   string
+	out        chan<- Message
+	devIn      chan Message
+	timerIn    chan bool
+	timerOut   chan bool
 }
 
 //There are 5 types of Input/Output devices build into
@@ -80,13 +79,13 @@ func NewInputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
 	dev, err := NewInputDevice(&config.Pin)
 	if err == nil {
 		gadget = &Gadget{
-			Location: config.Location,
-			Name: config.Name,
-			Input: dev,
-			Direction: "input",
-			OnCommand: "n/a",
+			Location:   config.Location,
+			Name:       config.Name,
+			Input:      dev,
+			Direction:  "input",
+			OnCommand:  "n/a",
 			OffCommand: "n/a",
-			UID: fmt.Sprintf("%s %s", config.Location, config.Name),
+			UID:        fmt.Sprintf("%s %s", config.Location, config.Name),
 		}
 	}
 	return gadget, err
@@ -103,14 +102,14 @@ func NewOutputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
 	}
 	if err == nil {
 		gadget = &Gadget{
-			Location: config.Location,
-			Name: config.Name,
-			Direction: "output",
-			OnCommand: config.OnCommand,
+			Location:   config.Location,
+			Name:       config.Name,
+			Direction:  "output",
+			OnCommand:  config.OnCommand,
 			OffCommand: config.OffCommand,
-			Output: dev,
-			Operator: ">=",
-			UID: fmt.Sprintf("%s %s", config.Location, config.Name),
+			Output:     dev,
+			Operator:   ">=",
+			UID:        fmt.Sprintf("%s %s", config.Location, config.Name),
 		}
 	} else {
 		panic(err)
@@ -122,11 +121,11 @@ func NewOutputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
 //reads an RCL message and decides if it was meant for this instance
 //of Gadget.
 func (g *Gadget) isMyCommand(msg *Message) bool {
-	return msg.Type == COMMAND && 
+	return msg.Type == COMMAND &&
 		(strings.Index(msg.Body, g.OnCommand) == 0 ||
-		strings.Index(msg.Body, g.OffCommand) == 0 ||
-		msg.Body == "update" ||
-		msg.Body == "shutdown")
+			strings.Index(msg.Body, g.OffCommand) == 0 ||
+			msg.Body == "update" ||
+			msg.Body == "shutdown")
 }
 
 //Start is one of the two interface methods of GoGadget.  Start takes
@@ -156,23 +155,22 @@ func (g *Gadget) doInputLoop(in <-chan Message) {
 		case msg := <-in:
 			g.readMessage(&msg)
 		case val := <-devOut:
-			g.out<- Message{
-				Sender: g.UID,
-				Type: "update",
+			g.out <- Message{
+				Sender:   g.UID,
+				Type:     "update",
 				Location: g.Location,
-				Name: g.Name,
-				Value: val,
+				Name:     g.Name,
+				Value:    val,
 			}
 		}
 	}
 }
 
-
 func (g *Gadget) doOutputLoop(in <-chan Message) {
 	for !g.shutdown {
 		select {
 		case msg := <-in:
-			g.readMessage(&msg)			
+			g.readMessage(&msg)
 		case <-g.timerOut:
 			g.off()
 		}
@@ -196,7 +194,7 @@ func (g *Gadget) off() {
 
 func (g *Gadget) readMessage(msg *Message) {
 	if g.devIn != nil {
-		g.devIn<- *msg
+		g.devIn <- *msg
 	}
 	if msg.Type == COMMAND && g.isMyCommand(msg) {
 		g.readCommand(msg)
@@ -283,13 +281,13 @@ func (g *Gadget) setCompare(value float64, unit string, gadget string) {
 func (g *Gadget) startTimer(value float64, unit string, in <-chan bool, out chan<- bool) {
 	d := time.Duration(value * float64(time.Second))
 	keepGoing := true
-	for  keepGoing{
+	for keepGoing {
 		select {
 		case <-in:
 			keepGoing = false
 		case <-time.After(d):
 			keepGoing = false
-			out<- true
+			out <- true
 		}
 	}
 }
@@ -318,19 +316,19 @@ func (g *Gadget) sendUpdate(val *Value) {
 		}
 	}
 	msg := Message{
-		Sender: g.UID,
-		Type: UPDATE,
-		Location: g.Location,
-		Name: g.Name,
-		Value: *value,
+		Sender:      g.UID,
+		Type:        UPDATE,
+		Location:    g.Location,
+		Name:        g.Name,
+		Value:       *value,
 		TargetValue: val,
 		Info: Info{
 			Direction: g.Direction,
-			On: g.OnCommand,
-			Off: g.OffCommand,
+			On:        g.OnCommand,
+			Off:       g.OffCommand,
 		},
 	}
-	g.out<- msg
+	g.out <- msg
 }
 
 func ParseCommand(cmd string) (float64, string, error) {
@@ -352,11 +350,11 @@ func stripCommand(cmd string) string {
 	cmd = strings.Trim(cmd, " ")
 	i := strings.Index(cmd, " for ")
 	if i != -1 {
-		return cmd[i + 5:]
+		return cmd[i+5:]
 	}
 	i = strings.Index(cmd, " to ")
 	if i != -1 {
-		return cmd[i + 4:]
+		return cmd[i+4:]
 	}
 	return ""
 }

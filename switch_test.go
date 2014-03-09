@@ -7,7 +7,7 @@ import (
 func TestSwitch(t *testing.T) {
 	poller := &FakePoller{}
 	s := &Switch{
-		GPIO: poller,
+		GPIO:  poller,
 		Value: 5.0,
 		Units: "liters",
 	}
@@ -22,7 +22,7 @@ func TestSwitch(t *testing.T) {
 	if val.Value.(float64) != 0.0 {
 		t.Error("should have been 0.0", val)
 	}
-	out<- Message{
+	out <- Message{
 		Type: "command",
 		Body: "shutdown",
 	}

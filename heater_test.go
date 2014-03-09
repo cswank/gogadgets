@@ -1,15 +1,14 @@
 package gogadgets
 
 import (
-	"time"
 	"bitbucket.org/cswank/gogadgets/utils"
 	"testing"
+	"time"
 )
-
 
 func TestCreateHeater(t *testing.T) {
 	_ = Heater{
-		gpio: &FakeOutput{},
+		gpio:   &FakeOutput{},
 		target: 100.0,
 	}
 }
@@ -27,12 +26,12 @@ func TestHeater(t *testing.T) {
 	if !utils.FileExists("/sys/class/gpio/export") {
 		return //not a beaglebone
 	}
-	g, err := NewGPIO(&Pin{Port:"9", Pin:"14", Direction:"out"})
+	g, err := NewGPIO(&Pin{Port: "9", Pin: "14", Direction: "out"})
 	if err != nil {
 		t.Fatal(err)
 	}
 	h := Heater{
-		gpio: g,
+		gpio:   g,
 		target: 100.0,
 	}
 	v := &Value{
@@ -54,6 +53,5 @@ func TestHeater(t *testing.T) {
 	h.Update(msg)
 	time.Sleep(5 * time.Second)
 	h.Off()
-	
-}
 
+}

@@ -1,32 +1,32 @@
 package gogadgets
 
 import (
-	"fmt"
-	"time"
-	"testing"
-	"math/rand"
 	"encoding/json"
+	"fmt"
 	"github.com/vaughan0/go-zmq"
+	"math/rand"
+	"testing"
+	"time"
 )
 
 func TestSockets(t *testing.T) {
-	pubPort := 1024 + rand.Intn(65535 - 1024)
+	pubPort := 1024 + rand.Intn(65535-1024)
 	subPort := pubPort + 1
 	s := Sockets{
-		host:"localhost",
+		host:    "localhost",
 		pubPort: pubPort,
 		subPort: subPort,
 	}
 	input := make(chan Message)
 	output := make(chan Message)
 	go s.Start(input, output)
-	
+
 	ctx, err := zmq.NewContext()
 	defer ctx.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
-	
+
 	pub, err := ctx.Socket(zmq.Pub)
 	defer pub.Close()
 	if err != nil {
@@ -48,17 +48,17 @@ func TestSockets(t *testing.T) {
 		t.Fatal(err)
 	}
 	sub.Subscribe([]byte(""))
-	
+
 	msg := Message{
 		Type: "command",
 		Body: "testing testing",
 	}
-	
+
 	b, _ := json.Marshal(msg)
-	
+
 	go func() {
 		time.Sleep(500 * time.Millisecond)
-		chans.Out()<- [][]byte{
+		chans.Out() <- [][]byte{
 			[]byte(msg.Type),
 			b,
 		}
@@ -66,10 +66,10 @@ func TestSockets(t *testing.T) {
 	<-output
 	go func() {
 		time.Sleep(50 * time.Millisecond)
-		input<- msg
+		input <- msg
 	}()
 	parts, err := sub.Recv()
-	
+
 	if err != nil {
 		t.Error(err)
 	}
@@ -79,10 +79,10 @@ func TestSockets(t *testing.T) {
 	if string(parts[0]) != "command" {
 		t.Error(string(parts[0]))
 	}
-	
+
 	msg = Message{
 		Type: "command",
 		Body: "shutdown",
 	}
-	input<- msg
+	input <- msg
 }

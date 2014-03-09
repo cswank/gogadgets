@@ -6,13 +6,13 @@ import (
 
 type Heater struct {
 	OutputDevice
-	target float64
-	current float64
+	target   float64
+	current  float64
 	duration time.Duration
-	status bool
-	gpio OutputDevice
-	update chan Message
-	stop chan bool
+	status   bool
+	gpio     OutputDevice
+	update   chan Message
+	stop     chan bool
 }
 
 func NewHeater(pin *Pin) (OutputDevice, error) {
@@ -21,9 +21,9 @@ func NewHeater(pin *Pin) (OutputDevice, error) {
 	g, err := NewGPIO(pin)
 	if err == nil {
 		h = &Heater{
-			gpio:g,
+			gpio:    g,
 			current: 0.0,
-			target: 100.0,
+			target:  100.0,
 		}
 	}
 	return h, err
@@ -31,7 +31,7 @@ func NewHeater(pin *Pin) (OutputDevice, error) {
 
 func (h *Heater) Update(msg *Message) {
 	if h.status && msg.Name == "temperature" {
-		h.update<- *msg
+		h.update <- *msg
 	}
 }
 
@@ -55,7 +55,7 @@ func (h *Heater) Status() interface{} {
 
 func (h *Heater) Off() error {
 	if h.status {
-		h.stop<- true
+		h.stop <- true
 	}
 	return nil
 }
@@ -106,7 +106,7 @@ func (h *Heater) getDurations() (on time.Duration, off time.Duration) {
 	} else if diff > 0.0 {
 		on = time.Duration(0.25 * float64(time.Second))
 		off = time.Duration(0.75 * float64(time.Second))
-	} else if  diff <= 0.0 {
+	} else if diff <= 0.0 {
 		off = time.Duration(60.0 * float64(time.Second))
 	}
 	return on, off

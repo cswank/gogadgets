@@ -11,28 +11,28 @@ func TestReadWaitCommand(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if waitTime != time.Duration(3.3 * float64(time.Second)) {
+	if waitTime != time.Duration(3.3*float64(time.Second)) {
 		t.Error("incorrect time", waitTime)
 	}
 	waitTime, err = m.getWaitTime("wait for 1 second")
 	if err != nil {
 		t.Error(err)
 	}
-	if waitTime != time.Duration(1.0 * float64(time.Second)) {
+	if waitTime != time.Duration(1.0*float64(time.Second)) {
 		t.Error("incorrect time", waitTime)
 	}
 	waitTime, err = m.getWaitTime("wait for 10 hours")
 	if err != nil {
 		t.Error(err)
 	}
-	if waitTime != time.Duration(36000.0 * float64(time.Second)) {
+	if waitTime != time.Duration(36000.0*float64(time.Second)) {
 		t.Error("incorrect time", waitTime)
 	}
 	waitTime, err = m.getWaitTime("wait for 1.1 minutes")
 	if err != nil {
 		t.Error(err)
 	}
-	if waitTime != time.Duration(66.0 * float64(time.Second)) {
+	if waitTime != time.Duration(66.0*float64(time.Second)) {
 		t.Error("incorrect time", waitTime)
 	}
 }
@@ -142,7 +142,7 @@ func TestRunMethod(t *testing.T) {
 			},
 		},
 	}
-	out<- msg
+	out <- msg
 	<-in
 	msg = <-in
 	if msg.Type != "command" && msg.Body != "fill boiler to 3.3 gallons" {
@@ -154,7 +154,7 @@ func TestRunMethod(t *testing.T) {
 		t.Error(msg)
 	}
 	msg = Message{
-		Type: "update",
+		Type:   "update",
 		Sender: "boiler temperature",
 		Value: Value{
 			Value: 96.0,
@@ -162,7 +162,7 @@ func TestRunMethod(t *testing.T) {
 		},
 	}
 	<-in
-	out<- msg
+	out <- msg
 	<-in
 	msg = <-in
 	if msg.Type != "command" && msg.Body != "stop heating boiler" {
@@ -173,7 +173,7 @@ func TestRunMethod(t *testing.T) {
 		Body: "shutdown",
 	}
 	<-in
-	out<- msg
+	out <- msg
 	<-in
 }
 
@@ -201,7 +201,7 @@ func TestRunAnotherMethod(t *testing.T) {
 	msg := Message{
 		Type: METHOD,
 		Method: Method{
-			Steps:[]string{
+			Steps: []string{
 				"turn on lab led",
 				"wait for 0.1 seconds",
 				"turn off lab led",
@@ -210,7 +210,7 @@ func TestRunAnotherMethod(t *testing.T) {
 			},
 		},
 	}
-	out<- msg
+	out <- msg
 	msg = <-in
 	if msg.Type != "method update" || msg.Method.Step != 0 {
 		t.Error(msg)
@@ -240,7 +240,7 @@ func TestRunAnotherMethod(t *testing.T) {
 	if msg.Type != "method update" || msg.Method.Step != 3 {
 		t.Error(msg)
 	}
-	out<- Message{
+	out <- Message{
 		Type: "update",
 		Body: "wait for user to turn off power",
 	}
@@ -253,6 +253,3 @@ func TestRunAnotherMethod(t *testing.T) {
 		t.Error(msg)
 	}
 }
-
-
-

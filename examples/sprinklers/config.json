@@ -1,56 +1,53 @@
 {
-    "MasterHost": "localhost",
-    "SubPort": 6111,
-    "PubPort": 6112,
-    "Gadgets": [
+    "adgets": [
         {
-            "Location": "front yard",
-            "Name": "sprinklers",
-            "Pin": {
-                "Type": "gpio",
-                "Port": "8",
-                "Pin": "10",
-                "Direction": "out",
+            "location": "front yard",
+            "name": "sprinklers",
+            "pin": {
+                "type": "gpio",
+                "port": "8",
+                "pin": "10",
+                "direction": "out",
             }
         },
         {
-            "Location": "front garden",
-            "Name": "sprinklers",
-            "Pin": {
-                "Type": "gpio",
-                "Port": "8",
-                "Pin": "11",
-                "Direction": "out",
+            "location": "front garden",
+            "name": "sprinklers",
+            "pin": {
+                "type": "gpio",
+                "port": "8",
+                "pin": "11",
+                "direction": "out",
             }
         },
         {
-            "Location": "sidewalk",
-            "Name": "sprinklers",
-            "Pin": {
-                "Type": "gpio",
-                "Port": "8",
-                "Pin": "12",
-                "Direction": "out",
+            "location": "sidewalk",
+            "name": "sprinklers",
+            "pin": {
+                "type": "gpio",
+                "port": "8",
+                "pin": "12",
+                "direction": "out",
             }
         },
         {
-            "Location": "back yard",
-            "Name": "sprinklers",
-            "Pin": {
-                "Type": "gpio",
-                "Port": "8",
-                "Pin": "14",
-                "Direction": "out",
+            "location": "back yard",
+            "name": "sprinklers",
+            "pin": {
+                "type": "gpio",
+                "port": "8",
+                "pin": "14",
+                "direction": "out",
             }
         },
         {
-            "Location": "back garden",
-            "Name": "sprinklers",
-            "Pin": {
-                "Type": "gpio",
-                "Port": "8",
-                "Pin": "15",
-                "Direction": "out",
+            "location": "back garden",
+            "name": "sprinklers",
+            "pin": {
+                "type": "gpio",
+                "port": "8",
+                "pin": "15",
+                "direction": "out",
             }
         }
     ]

@@ -1,17 +1,17 @@
 package gogadgets
 
 import (
+	"bitbucket.org/cswank/gogadgets/utils"
 	"fmt"
 	"testing"
 	"time"
-	"bitbucket.org/cswank/gogadgets/utils"
 )
 
 func TestGPIO(t *testing.T) {
 	if !utils.FileExists("/sys/class/gpio/export") {
 		return //not a beaglebone
 	}
-	g, err := NewGPIO(&Pin{Port:"9", Pin:"15", Direction:"out"})
+	g, err := NewGPIO(&Pin{Port: "9", Pin: "15", Direction: "out"})
 	if err != nil {
 		t.Error(err)
 	}
@@ -20,17 +20,16 @@ func TestGPIO(t *testing.T) {
 	g.Off()
 }
 
-
 func TestGPIOWait(t *testing.T) {
 	if !utils.FileExists("/sys/class/gpio/export") {
 		return //not a beaglebone
 	}
-	g, err := NewGPIO(&Pin{Port:"9", Pin:"16", Direction:"in", Edge:"rising"})
+	g, err := NewGPIO(&Pin{Port: "9", Pin: "16", Direction: "in", Edge: "rising"})
 	p := g.(Poller)
 	if err != nil {
 		t.Error(err)
 	}
-	gIn, _ := NewGPIO(&Pin{Port:"9", Pin:"15", Direction:"out"})
+	gIn, _ := NewGPIO(&Pin{Port: "9", Pin: "15", Direction: "out"})
 	go func() {
 		gIn.Off()
 		time.Sleep(1 * time.Second)
@@ -47,4 +46,3 @@ func TestGPIOWait(t *testing.T) {
 	}
 	gIn.Off()
 }
-

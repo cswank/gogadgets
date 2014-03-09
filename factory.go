@@ -1,22 +1,20 @@
 package gogadgets
 
-import (
-	
-)
+import ()
 
 type AppFactory struct {
-	inputFactories map[string] InputDeviceFactory
-	outputFactories map[string] OutputDeviceFactory
+	inputFactories  map[string]InputDeviceFactory
+	outputFactories map[string]OutputDeviceFactory
 }
 
 func NewAppFactory() *AppFactory {
 	a := &AppFactory{
-		inputFactories: map[string] InputDeviceFactory{
+		inputFactories: map[string]InputDeviceFactory{
 			"thermometer": NewThermometer,
-			"switch": NewSwitch,
+			"switch":      NewSwitch,
 		},
-		outputFactories: map[string] OutputDeviceFactory{
-			"gpio": NewGPIO,
+		outputFactories: map[string]OutputDeviceFactory{
+			"gpio":   NewGPIO,
 			"heater": NewHeater,
 			"cooler": NewCooler,
 		},

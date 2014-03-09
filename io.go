@@ -37,10 +37,9 @@ func NewInputDevice(pin *Pin) (dev InputDevice, err error) {
 	if pin.Type == "thermometer" {
 		dev, err = NewThermometer(pin)
 	} else if pin.Type == "switch" {
-		dev, err =  NewSwitch(pin)
+		dev, err = NewSwitch(pin)
 	} else {
 		err = errors.New("invalid pin type")
 	}
 	return dev, err
 }
-

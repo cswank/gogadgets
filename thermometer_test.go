@@ -1,9 +1,9 @@
 package gogadgets
 
 import (
+	"bitbucket.org/cswank/gogadgets/utils"
 	"fmt"
 	"testing"
-	"bitbucket.org/cswank/gogadgets/utils"
 )
 
 func TestThermometer(t *testing.T) {
@@ -25,7 +25,7 @@ func TestThermometer(t *testing.T) {
 		t.Error("units should have been 'C'", val)
 	}
 	fmt.Println("the temperature is:", val.Value)
-	out<- Message{
+	out <- Message{
 		Type: "command",
 		Body: "shutdown",
 	}

@@ -3,42 +3,51 @@ package gogadgets
 import (
 	"log"
 	"time"
+	"io/ioutil"
+	"encoding/json"
 )
 
 //App holds all the gadgets and handles passing Messages
 //to them, and receiving messages from them.  It is the
 //central part of Gadgets system.
 type App struct {
-	Gadgets []GoGadget
+	Gadgets    []GoGadget
 	MasterHost string
-	PubPort int
-	SubPort int
-	channels map[string]chan Message
-	queue *Queue
+	PubPort    int
+	SubPort    int
+	channels   map[string]chan Message
+	queue      *Queue
 }
 
 func NewApp(configPath string) *App {
-	cfg := &gogadgets.Config{}
-	err := json.Unmarshal(b, cfg)
+	config := &Config{}
+	b, err := ioutil.ReadFile(configPath)
 	if err != nil {
 		panic(err)
 	}
-	gadgets := GetGadgets(cfg.Gadgets)
-	if  config.PubPort == 0 {
+	err = json.Unmarshal(b, config)
+	if err != nil {
+		panic(err)
+	}
+	if config.PubPort == 0 {
 		config.SubPort = 6111
 		config.PubPort = 6112
 	}
+	if config.MasterHost == "" {
+		config.MasterHost = "localhost"
+	}
+	gadgets := GetGadgets(config.Gadgets)
 	return &App{
 		MasterHost: config.MasterHost,
-		PubPort: config.PubPort,
-		SubPort: config.SubPort,
-		Gadgets: gadgets,
+		PubPort:    config.PubPort,
+		SubPort:    config.SubPort,
+		Gadgets:    gadgets,
 	}
 }
 
 //This is a factory fuction that reads a GadgtConfig
 //and creates all the Gadgets that are defined in it.
-func GetGadgets(configs []GadgetConfig) []GoGadget {	
+func GetGadgets(configs []GadgetConfig) []GoGadget {
 	g := make([]GoGadget, len(configs))
 	for i, config := range configs {
 		gadget, err := NewGadget(&config)
@@ -56,7 +65,7 @@ func GetGadgets(configs []GadgetConfig) []GoGadget {
 func (a *App) Start() {
 	a.Gadgets = append(a.Gadgets, &Runner{})
 	sockets := &Sockets{
-		host: a.MasterHost,
+		host:    a.MasterHost,
 		pubPort: a.PubPort,
 		subPort: a.SubPort,
 	}
@@ -102,7 +111,7 @@ func (a *App) dispenseMessages(out chan<- Message) {
 			time.Sleep(100 * time.Millisecond)
 		} else {
 			msg := a.queue.Get()
-			out<- *msg
+			out <- *msg
 		}
 	}
 }
@@ -111,13 +120,13 @@ func (a *App) sendMessage(msg Message) {
 	if msg.Target == "" {
 		for uid, channel := range a.channels {
 			if uid != msg.Sender {
-				channel<- msg
+				channel <- msg
 			}
 		}
 	} else {
 		channel, ok := a.channels[msg.Target]
 		if ok {
-			channel<- msg
+			channel <- msg
 		}
 	}
 }

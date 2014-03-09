@@ -1,5 +1,5 @@
 /*
-       board (master)         board 2 
+       board (master)         board 2
    sub  pub  reply        sub  pub  reply
     |    |                 |    |
     |    -------------------    |
@@ -9,10 +9,10 @@
 package gogadgets
 
 import (
-	"fmt"
-	"log"
 	"encoding/json"
+	"fmt"
 	"github.com/vaughan0/go-zmq"
+	"log"
 )
 
 //Sockets fufills the GoGadget interface and is
@@ -21,20 +21,20 @@ import (
 //as a single system, and also provides a way for
 //an external UI to control the system.
 type Sockets struct {
-	host string
-	pubPort int
-	subPort int
+	host     string
+	pubPort  int
+	subPort  int
 	isMaster bool
-	ctx *zmq.Context
-	sub *zmq.Socket
-	subChan *zmq.Channels
-	pub *zmq.Socket
-	pubChan *zmq.Channels
+	ctx      *zmq.Context
+	sub      *zmq.Socket
+	subChan  *zmq.Channels
+	pub      *zmq.Socket
+	pubChan  *zmq.Channels
 }
 
 func NewClientSockets(host string) (*Sockets, error) {
 	s := &Sockets{
-		host: host,
+		host:    host,
 		pubPort: 6112,
 		subPort: 6111,
 	}
@@ -80,7 +80,7 @@ func (s *Sockets) Start(in <-chan Message, out chan<- Message) {
 				msg := &Message{}
 				json.Unmarshal(data[1], msg)
 				msg.Sender = "zmq sockets"
-				out<- *msg
+				out <- *msg
 			} else {
 				log.Println("zmq received an improper message", data)
 			}
@@ -92,7 +92,7 @@ func (s *Sockets) Start(in <-chan Message, out chan<- Message) {
 			if err != nil {
 				log.Println("zmq sockets had a problem", err)
 			} else {
-				s.pubChan.Out()<- [][]byte{
+				s.pubChan.Out() <- [][]byte{
 					[]byte(msg.Type),
 					b,
 				}
@@ -102,7 +102,6 @@ func (s *Sockets) Start(in <-chan Message, out chan<- Message) {
 		}
 	}
 }
-
 
 func (s *Sockets) Close() {
 	s.ctx.Close()
@@ -130,7 +129,7 @@ func (s *Sockets) getMasterSockets() (err error) {
 	if err != nil {
 		return err
 	}
-	
+
 	s.pub, err = s.ctx.Socket(zmq.Pub)
 	if err != nil {
 		return err
@@ -160,7 +159,7 @@ func (s *Sockets) getClientSockets() (err error) {
 	if err != nil {
 		return err
 	}
-	
+
 	s.pub, err = s.ctx.Socket(zmq.Pub)
 	if err != nil {
 		return err
@@ -168,9 +167,9 @@ func (s *Sockets) getClientSockets() (err error) {
 	if err = s.pub.Connect(fmt.Sprintf("tcp://%s:%d", s.host, s.subPort)); err != nil {
 		return err
 	}
-	
+
 	s.sub, err = s.ctx.Socket(zmq.Sub)
-	
+
 	if err != nil {
 		return err
 	}

@@ -1,14 +1,12 @@
 package gogadgets
 
-import (
-
-)
+import ()
 
 type Cooler struct {
 	OutputDevice
 	target float64
 	status bool
-	gpio OutputDevice
+	gpio   OutputDevice
 }
 
 func NewCooler(pin *Pin) (OutputDevice, error) {
@@ -17,7 +15,7 @@ func NewCooler(pin *Pin) (OutputDevice, error) {
 	g, err := NewGPIO(pin)
 	if err == nil {
 		c = &Cooler{
-			gpio:g,
+			gpio:   g,
 			target: 0.0,
 		}
 	}

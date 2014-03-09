@@ -10,12 +10,11 @@ import (
 //happens it updates the rest of the system.
 type Switch struct {
 	InputDevice
-	GPIO Poller
+	GPIO  Poller
 	Value float64
 	Units string
-	out chan<- Value
+	out   chan<- Value
 }
-
 
 func NewSwitch(pin *Pin) (InputDevice, error) {
 	var err error
@@ -23,7 +22,7 @@ func NewSwitch(pin *Pin) (InputDevice, error) {
 	gpio, err := NewGPIO(pin)
 	if err == nil {
 		s = &Switch{
-			GPIO:gpio.(Poller),
+			GPIO:  gpio.(Poller),
 			Value: pin.Value.(float64),
 			Units: pin.Units,
 		}
@@ -38,20 +37,19 @@ func NewSwitch(pin *Pin) (InputDevice, error) {
 func (s *Switch) wait(out chan<- float64, err chan<- error) {
 	val, e := s.GPIO.Wait()
 	if e != nil {
-		err<- e
+		err <- e
 	} else {
 		if val {
-			out<- s.Value
+			out <- s.Value
 		} else {
-			out<- 0.0
+			out <- 0.0
 		}
 	}
 	time.Sleep(200 * time.Millisecond)
 }
 
-
 func (s *Switch) SendValue() {
-	s.out<- Value{
+	s.out <- Value{
 		Value: s.Value,
 		Units: s.Units,
 	}
@@ -65,7 +63,7 @@ func (s *Switch) Start(in <-chan Message, out chan<- Value) {
 	for keepGoing {
 		go s.wait(value, err)
 		select {
-		case <- in:
+		case <-in:
 			//do nothing
 		case val := <-value:
 			s.Value = val

@@ -1,10 +1,10 @@
 package gogadgets
 
 import (
-	"math/rand"
 	"fmt"
-	"time"
+	"math/rand"
 	"testing"
+	"time"
 )
 
 type FakeOutput struct {
@@ -13,7 +13,7 @@ type FakeOutput struct {
 }
 
 func (f *FakeOutput) Update(msg *Message) {
-	
+
 }
 
 func (f *FakeOutput) On(val *Value) error {
@@ -70,35 +70,34 @@ func TestGetGadgets(t *testing.T) {
 }
 
 func TestGadgets(t *testing.T) {
-	port := 1024 + rand.Intn(65535 - 1024)
+	port := 1024 + rand.Intn(65535-1024)
 	p := &Gadget{
-		Location: "tank",
-		Name: "pump",
-		OnCommand: fmt.Sprintf("turn on %s %s", "tank", "pump"),
+		Location:   "tank",
+		Name:       "pump",
+		OnCommand:  fmt.Sprintf("turn on %s %s", "tank", "pump"),
 		OffCommand: fmt.Sprintf("turn off %s %s", "tank", "pump"),
-		Output: &FakeOutput{},
-		UID: fmt.Sprintf("%s %s", "tank", "pump"),
+		Output:     &FakeOutput{},
+		UID:        fmt.Sprintf("%s %s", "tank", "pump"),
 	}
 	location := "tank"
 	name := "switch"
 	poller := &FakePoller{}
 	s := &Gadget{
 		Location: location,
-		Name: name,
+		Name:     name,
 		Input: &Switch{
-			GPIO: poller,
+			GPIO:  poller,
 			Value: 5.0,
 			Units: "liters",
 		},
 		UID: fmt.Sprintf("%s %s", location, name),
 	}
 	a := App{
-		Gadgets: []GoGadget{p, s},
+		Gadgets:    []GoGadget{p, s},
 		MasterHost: "localhost",
-		SubPort: port,
-		PubPort: port + 1,
+		SubPort:    port,
+		PubPort:    port + 1,
 	}
-	stop := make(chan Message)
-	go a.Start(stop)
+	go a.Start()
 	time.Sleep(1 * time.Second)
 }

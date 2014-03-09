@@ -1,13 +1,13 @@
 package gogadgets
 
 import (
-	"log"
-	"fmt"
-	"time"
 	"errors"
+	"fmt"
+	"log"
 	"regexp"
-	"strings"
 	"strconv"
+	"strings"
+	"time"
 )
 
 var (
@@ -36,12 +36,12 @@ type comparitor func(value float64) bool
 //message of the method
 type Runner struct {
 	Gadget
-	method Method
+	method      Method
 	stepChecker stepChecker
-	step int
-	uid string
-	out chan<- Message
-	timeOut chan bool
+	step        int
+	uid         string
+	out         chan<- Message
+	timeOut     chan bool
 }
 
 func (m *Runner) GetUID() string {
@@ -61,7 +61,7 @@ func (m *Runner) Start(in <-chan Message, out chan<- Message) {
 			m.runNextStep()
 		}
 	}
-	m.out<- Message{}
+	m.out <- Message{}
 }
 
 func (m *Runner) readMessage(msg *Message) (shutdown bool) {
@@ -72,7 +72,7 @@ func (m *Runner) readMessage(msg *Message) (shutdown bool) {
 		shutdown = false
 	} else if msg.Type == COMMAND && msg.Body == "update" {
 		m.sendUpdate()
-	}else if msg.Type == COMMAND && msg.Body == "clear method" {
+	} else if msg.Type == COMMAND && msg.Body == "clear method" {
 		m.clear()
 		m.sendUpdate()
 	} else if len(m.method.Steps) != 0 && msg.Type == UPDATE {
@@ -90,14 +90,14 @@ func (m *Runner) sendUpdate() {
 	m.method.Step = m.step
 	msg := Message{
 		Sender: m.GetUID(),
-		Type: UPDATE,
+		Type:   UPDATE,
 		Method: m.method,
 	}
-	m.out<- msg
+	m.out <- msg
 }
 
 func (m *Runner) checkUpdate(msg *Message) {
-	if (m.stepChecker != nil && m.stepChecker(msg)) {
+	if m.stepChecker != nil && m.stepChecker(msg) {
 		m.stepChecker = nil
 		m.runNextStep()
 	}
@@ -110,9 +110,9 @@ func (m *Runner) clear() {
 
 func (m *Runner) runNextStep() {
 	m.step += 1
-	m.out<- Message{
+	m.out <- Message{
 		Sender: m.uid,
-		Type: METHODUPDATE,
+		Type:   METHODUPDATE,
 		Method: Method{
 			Step: m.step,
 		},
@@ -133,10 +133,10 @@ func (m *Runner) runNextStep() {
 func (m *Runner) sendCommand(cmd string) {
 	msg := Message{
 		Sender: m.uid,
-		Type: COMMAND,
-		Body: cmd,
+		Type:   COMMAND,
+		Body:   cmd,
 	}
-	m.out<- msg
+	m.out <- msg
 }
 
 func (m *Runner) readWaitCommand(cmd string) {
@@ -175,15 +175,15 @@ func (m *Runner) setStepChecker(cmd string) {
 
 func (m *Runner) getCompare(operator string, value float64) (cmp comparitor, err error) {
 	if operator == "<=" {
-		cmp = func(x float64) bool {return x <= value}
+		cmp = func(x float64) bool { return x <= value }
 	} else if operator == "<" {
-		cmp = func(x float64) bool {return x < value}
+		cmp = func(x float64) bool { return x < value }
 	} else if operator == "==" {
-		cmp = func(x float64) bool {return x == value}
+		cmp = func(x float64) bool { return x == value }
 	} else if operator == ">=" {
-		cmp = func(x float64) bool {return x >= value}
+		cmp = func(x float64) bool { return x >= value }
 	} else if operator == ">" {
-		cmp = func(x float64) bool {return x > value}
+		cmp = func(x float64) bool { return x > value }
 	} else {
 		err = errors.New(fmt.Sprintf("invalid operator: %s", operator))
 	}
@@ -226,9 +226,9 @@ func (m *Runner) doCountdown(waitTime time.Duration) {
 	t1 := time.Now()
 	sleepTime := time.Duration(1 * time.Second)
 	i := 0.0
-	m.out<- Message{
+	m.out <- Message{
 		Sender: m.uid,
-		Type: METHODUPDATE,
+		Type:   METHODUPDATE,
 		Method: Method{
 			Time: int(waitTime.Seconds()),
 			Step: m.step,
@@ -240,16 +240,16 @@ func (m *Runner) doCountdown(waitTime time.Duration) {
 		t2 := time.Now()
 		d := t2.Sub(t1)
 		sleepTime = time.Duration((1 - (d.Seconds() - i)) * float64(time.Second))
-		m.out<- Message{
+		m.out <- Message{
 			Sender: m.uid,
-			Type: METHODUPDATE,
+			Type:   METHODUPDATE,
 			Method: Method{
 				Time: int(1 + waitTime.Seconds() - d.Seconds()),
 				Step: m.step,
 			},
 		}
 		if d > waitTime {
-			m.timeOut<- true
+			m.timeOut <- true
 			return
 		}
 	}

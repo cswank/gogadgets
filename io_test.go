@@ -1,8 +1,8 @@
 package gogadgets
 
 import (
-	"testing"
 	"bitbucket.org/cswank/gogadgets/utils"
+	"testing"
 )
 
 func TestNewOutputDevice(t *testing.T) {

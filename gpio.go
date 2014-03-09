@@ -1,28 +1,28 @@
 package gogadgets
 
 import (
-	"fmt"
 	"bitbucket.org/cswank/gogadgets/utils"
-	"os"
 	"errors"
-	"syscall"
+	"fmt"
 	"io/ioutil"
+	"os"
+	"syscall"
 )
 
 type GPIO struct {
 	OutputDevice
 	Poller
-	units string
-	export string
-	exportPath string
+	units         string
+	export        string
+	exportPath    string
 	directionPath string
-	valuePath string
-	edgePath string
-	direction string
-	edge string
-	fd int
-	fdSet *syscall.FdSet
-	buf []byte
+	valuePath     string
+	edgePath      string
+	direction     string
+	edge          string
+	fd            int
+	fdSet         *syscall.FdSet
+	buf           []byte
 }
 
 func NewGPIO(pin *Pin) (OutputDevice, error) {
@@ -38,13 +38,13 @@ func NewGPIO(pin *Pin) (OutputDevice, error) {
 		pin.Direction = "out"
 	}
 	g := &GPIO{
-		export: export,
-		exportPath: "/sys/class/gpio/export",
+		export:        export,
+		exportPath:    "/sys/class/gpio/export",
 		directionPath: fmt.Sprintf("/sys/class/gpio/gpio%s/direction", export),
-		edgePath: fmt.Sprintf("/sys/class/gpio/gpio%s/edge", export),
-		valuePath: fmt.Sprintf("/sys/class/gpio/gpio%s/value", export),
-		direction: pin.Direction,
-		edge: pin.Edge,
+		edgePath:      fmt.Sprintf("/sys/class/gpio/gpio%s/edge", export),
+		valuePath:     fmt.Sprintf("/sys/class/gpio/gpio%s/value", export),
+		direction:     pin.Direction,
+		edge:          pin.Edge,
 	}
 	err := g.Init()
 	return g, err
@@ -67,7 +67,7 @@ func (g *GPIO) Init() error {
 }
 
 func (g *GPIO) Update(msg *Message) {
-	
+
 }
 
 func (g *GPIO) On(val *Value) error {
@@ -99,7 +99,7 @@ func (g *GPIO) Wait() (bool, error) {
 		g.buf = make([]byte, 64)
 		syscall.Read(g.fd, g.buf)
 	}
-	syscall.Select(g.fd + 1, nil, nil, g.fdSet, nil)
+	syscall.Select(g.fd+1, nil, nil, g.fdSet, nil)
 	syscall.Seek(g.fd, 0, 0)
 	_, err := syscall.Read(g.fd, g.buf)
 	if err != nil {
@@ -109,5 +109,5 @@ func (g *GPIO) Wait() (bool, error) {
 }
 
 func FD_SET(fd int, p *syscall.FdSet) {
-        p.Bits[fd/32] |= 1 << (uint(fd) % 32)
+	p.Bits[fd/32] |= 1 << (uint(fd) % 32)
 }

@@ -1,14 +1,14 @@
 package gogadgets
 
 import (
-	"fmt"
-	"time"
-	"log"
-	"errors"
-	"io/ioutil"
-	"strings"
-	"strconv"
 	"bitbucket.org/cswank/gogadgets/utils"
+	"errors"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"strconv"
+	"strings"
+	"time"
 )
 
 //Reads temperature from a Dallas 1-Wire thermometer and
@@ -16,8 +16,8 @@ import (
 type Thermometer struct {
 	InputDevice
 	devicePath string
-	units string
-	value float64
+	units      string
+	value      float64
 }
 
 func NewThermometer(pin *Pin) (InputDevice, error) {
@@ -30,7 +30,7 @@ func NewThermometer(pin *Pin) (InputDevice, error) {
 	}
 	therm = &Thermometer{
 		devicePath: path,
-		units: "C",
+		units:      "C",
 	}
 	return therm, err
 }
@@ -48,9 +48,9 @@ func (t *Thermometer) getTemperature(out chan Value, err chan error) {
 		val, e := t.readFile()
 		if e == nil && t.isValid(val, previousTemperature) {
 			previousTemperature = val
-			out<- *val
+			out <- *val
 		} else {
-			err<- e
+			err <- e
 		}
 		time.Sleep(5 * time.Second)
 	}
@@ -87,7 +87,7 @@ func (t *Thermometer) parseValue(val string) (v *Value, err error) {
 	if start == -1 {
 		return v, errors.New("could not parse temp")
 	}
-	temperatureStr := val[start + 2:]
+	temperatureStr := val[start+2:]
 	temperatureStr = strings.Trim(temperatureStr, "\n")
 	temperature, err := strconv.ParseFloat(temperatureStr, 64)
 	if err == nil {
@@ -110,7 +110,7 @@ func (t *Thermometer) Start(in <-chan Message, out chan<- Value) {
 		case <-in:
 			// do nothing
 		case val := <-temperature:
-			out<- val
+			out <- val
 		case err := <-e:
 			log.Println(fmt.Sprintf("error reading thermometer %s", t.devicePath), err)
 		}

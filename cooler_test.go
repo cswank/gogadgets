@@ -4,10 +4,9 @@ import (
 	"testing"
 )
 
-
 func TestCreateCooler(t *testing.T) {
 	_ = Cooler{
-		gpio: &FakeOutput{},
+		gpio:   &FakeOutput{},
 		target: 0.0,
 	}
 }

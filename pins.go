@@ -5,9 +5,9 @@ var (
 	Pins = map[string]map[string]map[string]string{
 		"gpio": map[string]map[string]string{
 			"8": map[string]string{
-				"7": "66",
-				"8": "67",
-				"9": "69",
+				"7":  "66",
+				"8":  "67",
+				"9":  "69",
 				"10": "68",
 				"11": "45",
 				"12": "44",

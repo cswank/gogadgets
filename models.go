@@ -5,10 +5,10 @@ import (
 )
 
 var (
-	COMMAND = "command"
-	METHOD = "method"
-	DONE = "done"
-	UPDATE = "update"
+	COMMAND      = "command"
+	METHOD       = "method"
+	DONE         = "done"
+	UPDATE       = "update"
 	METHODUPDATE = "method update"
 )
 
@@ -38,54 +38,53 @@ func (v *Value) ToFloat() (f float64, ok bool) {
 }
 
 type Info struct {
-	Direction string      `json:"direction"`
-	On string             `json:"on"`
-	Off string            `json:"off"`
+	Direction string `json:"direction"`
+	On        string `json:"on"`
+	Off       string `json:"off"`
 }
 
 type Method struct {
-	Step int        `json:"step"`
-	Steps []string  `json:"steps"`
-	Time int        `json:"time"`
+	Step  int      `json:"step"`
+	Steps []string `json:"steps"`
+	Time  int      `json:"time"`
 }
 
 type Message struct {
-	Sender      string      `json:"sender"`
-	Target      string      `json:"target"`
-	Type        string      `json:"type"`
-	Body        string      `json:"body"`
-	Method      Method      `json:"method"`
-	Timestamp   time.Time   `json:"timestamp"`
-	Name        string      `json:"name"`
-	Location    string      `json:"location"`
-	Value       Value       `json:"value"`
-	TargetValue *Value       `json:"targetValue"`
-	Info        Info        `json:"info"`
+	Sender      string    `json:"sender"`
+	Target      string    `json:"target"`
+	Type        string    `json:"type"`
+	Body        string    `json:"body"`
+	Method      Method    `json:"method"`
+	Timestamp   time.Time `json:"timestamp"`
+	Name        string    `json:"name"`
+	Location    string    `json:"location"`
+	Value       Value     `json:"value"`
+	TargetValue *Value    `json:"targetValue"`
+	Info        Info      `json:"info"`
 }
 
 type Pin struct {
-	Type string
-	Port string
-	Pin string
+	Type      string
+	Port      string
+	Pin       string
 	Direction string
-	Edge string
+	Edge      string
 	OneWireId string
-	Value interface{}
-	Units string
+	Value     interface{}
+	Units     string
 }
 
 type GadgetConfig struct {
-	Location string
-	Name string
-	OnCommand string
-	OffCommand string
-	Pin Pin
+	Location   string `json:"location"`
+	Name       string `json:"name"`
+	OnCommand  string `json:"onCommand"`
+	OffCommand string `json:"offCommand"`
+	Pin        Pin    `json:"pin"`
 }
 
 type Config struct {
-	MasterHost string
-	PubPort int
-	SubPort int
-	Gadgets []GadgetConfig
+	MasterHost string         `json:"masterHost"`
+	PubPort    int            `json:"pubPort"`
+	SubPort    int            `json:"subPort"`
+	Gadgets    []GadgetConfig `json:"gadgets"`
 }
-
