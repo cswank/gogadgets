@@ -29,6 +29,7 @@ func NewApp(configPath string) *App {
 	if err != nil {
 		panic(err)
 	}
+	log.Println(config)
 	if config.PubPort == 0 {
 		config.SubPort = 6111
 		config.PubPort = 6112
@@ -70,7 +71,8 @@ func (a *App) Start() {
 //Useful for tests of other libraries that use Gogadgets
 func (a *App) GoStart(input <-chan Message) {
 	a.Gadgets = append(a.Gadgets, &Runner{})
-	sockets := &Sockets{
+	var sockets *Sockets
+	sockets = &Sockets{
 		host:    a.MasterHost,
 		pubPort: a.PubPort,
 		subPort: a.SubPort,

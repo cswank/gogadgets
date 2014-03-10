@@ -24,7 +24,6 @@ type Sockets struct {
 	host     string
 	pubPort  int
 	subPort  int
-	isMaster bool
 	ctx      *zmq.Context
 	sub      *zmq.Socket
 	subChan  *zmq.Channels
@@ -113,10 +112,11 @@ func (s *Sockets) Close() {
 
 func (s *Sockets) getSockets() (err error) {
 	if s.host == "localhost" || s.host == "" {
-		s.isMaster = true
 		err = s.getMasterSockets()
 	} else {
 		err = s.getClientSockets()
+		s.subChan = s.sub.Channels()
+		s.pubChan = s.pub.Channels()
 	}
 	return err
 }
@@ -164,16 +164,17 @@ func (s *Sockets) getClientSockets() (err error) {
 	if err != nil {
 		return err
 	}
-	if err = s.pub.Connect(fmt.Sprintf("tcp://%s:%d", s.host, s.subPort)); err != nil {
+	u := fmt.Sprintf("tcp://%s:%d", s.host, s.subPort)
+	if err = s.pub.Connect(u); err != nil {
 		return err
 	}
 
 	s.sub, err = s.ctx.Socket(zmq.Sub)
-
 	if err != nil {
 		return err
 	}
-	if err = s.sub.Connect(fmt.Sprintf("tcp://%s:%d", s.host, s.pubPort)); err != nil {
+	u = fmt.Sprintf("tcp://%s:%d", s.host, s.pubPort)
+	if err = s.sub.Connect(u); err != nil {
 		return err
 	}
 	s.sub.Subscribe([]byte(""))

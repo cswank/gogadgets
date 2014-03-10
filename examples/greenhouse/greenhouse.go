@@ -103,6 +103,5 @@ func main() {
 	}
 	g := &Greenhouse{sleepTimes: sleepTimes}
 	a.AddGadget(g)
-	stop := make(chan bool)
-	a.Start(stop)
+	a.Start()
 }
