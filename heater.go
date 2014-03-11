@@ -4,6 +4,10 @@ import (
 	"time"
 )
 
+//Heater represnts an electic heating element.  It
+//provices a way to heat up something to a target
+//temperature. In order to use this there must be
+//a thermometer in the same Location.
 type Heater struct {
 	OutputDevice
 	target   float64
@@ -96,6 +100,8 @@ func (h *Heater) toggle() {
 	}
 }
 
+//Once the heater approaches the target temperature the electricity
+//is applied PWM style so the target temperature isn't overshot.
 func (h *Heater) getDurations() (on time.Duration, off time.Duration) {
 	diff := h.target - h.current
 	if diff >= 2.0 {

@@ -4,6 +4,8 @@ import (
 	"errors"
 )
 
+//Outputdevices turn things on and off.  Currently the
+//only 
 type OutputDevice interface {
 	On(val *Value) error
 	Off() error
@@ -11,6 +13,8 @@ type OutputDevice interface {
 	Status() interface{}
 }
 
+//Inputdevices are started as goroutines by the Gadget
+//that contains it.
 type InputDevice interface {
 	Start(<-chan Message, chan<- Value)
 	GetValue() *Value

@@ -100,9 +100,10 @@ func (t *Thermometer) parseValue(val string) (v *Value, err error) {
 	return v, err
 }
 
-//This is a GoGadget, so it must have a Start.
+//This is an InputDevice, so it must have a Start.
 func (t *Thermometer) Start(in <-chan Message, out chan<- Value) {
 	temperature := make(chan Value)
+	
 	e := make(chan error)
 	go t.getTemperature(temperature, e)
 	for {

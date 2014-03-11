@@ -29,10 +29,11 @@ var (
 
 type Comparitor func(msg *Message) bool
 
+
 //Each part of a Gadgets system that controls a single
 //piece of hardware (for example: a gpio pin) is represented
 //by Gadget.  A Gadget must have either an InputDevice or
-//an OutputDevice.  Gaget fufills the GoGaget interface.
+//an OutputDevice.  Gadget fulfills the GoGaget interface.
 type Gadget struct {
 	GoGadget
 	Location   string       `json:"location"`
@@ -55,7 +56,7 @@ type Gadget struct {
 }
 
 //There are 5 types of Input/Output devices build into
-//GoGadgets (header, cooler, gpio, thermoeter and siwthc)
+//GoGadgets (header, cooler, gpio, thermometer and switch)
 //NewGadget reads a GadgetConfig and creates the correct
 //type of Gadget.
 func NewGadget(config *GadgetConfig) (*Gadget, error) {
