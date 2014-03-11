@@ -7,7 +7,7 @@ import (
 
 //Switch is an input device that waits for a GPIO pin
 //to change value (1 to 0 or 0 to 1).  When that change
-//happens it updates the rest of the system.
+//happens it sends an update to the rest of the system.
 type Switch struct {
 	InputDevice
 	GPIO  Poller

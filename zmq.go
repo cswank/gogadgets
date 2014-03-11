@@ -34,8 +34,8 @@ type Sockets struct {
 func NewClientSockets(host string) (*Sockets, error) {
 	s := &Sockets{
 		host:    host,
-		pubPort: 6112,
 		subPort: 6111,
+		pubPort: 6112,
 	}
 	err := s.getClientSockets()
 	return s, err
@@ -75,30 +75,45 @@ func (s *Sockets) Start(in <-chan Message, out chan<- Message) {
 	for keepGoing {
 		select {
 		case data := <-s.subChan.In():
-			if len(data) == 2 {
-				msg := &Message{}
-				json.Unmarshal(data[1], msg)
-				msg.Sender = "zmq sockets"
-				out <- *msg
-			} else {
-				log.Println("zmq received an improper message", data)
-			}
+			s.sendMessageIn(data, out)
 		case msg := <-in:
-			if msg.Type == COMMAND && msg.Body == "shutdown" {
-				keepGoing = false
-			}
-			b, err := json.Marshal(msg)
-			if err != nil {
-				log.Println("zmq sockets had a problem", err)
-			} else {
-				s.pubChan.Out() <- [][]byte{
-					[]byte(msg.Type),
-					b,
-				}
-			}
+			s.sendMessageOut(msg)
 		case err = <-s.subChan.Errors():
 			log.Println(err)
 		}
+	}
+}
+
+//A message that came from inside this gogadgets system
+//is sent to outside clients (ui, connected gogadget systems)
+func (s *Sockets)sendMessageOut(msg Message) bool {
+	keepGoing := true
+	if msg.Type == COMMAND && msg.Body == "shutdown" {
+		keepGoing = false
+	}
+	b, err := json.Marshal(msg)
+	if err != nil {
+		log.Println("zmq sockets had a problem", err)
+	} else {
+		s.pubChan.Out() <- [][]byte{
+			[]byte(msg.Type),
+			b,
+		}
+	}
+	return keepGoing
+}
+
+//A message that came from outside clients (ui, connected
+//gogadget systems) is passed along to this gogadget
+//system
+func (s *Sockets)sendMessageIn(data [][]byte, out chan<- Message) {
+	if len(data) == 2 {
+		msg := &Message{}
+		json.Unmarshal(data[1], msg)
+		msg.Sender = "zmq sockets"
+		out <- *msg
+	} else {
+		log.Println("zmq received an improper message", data)
 	}
 }
 
