@@ -29,7 +29,7 @@ type Value struct {
 
 func (v *Value) ToFloat() (f float64, ok bool) {
 	f, ok = v.Value.(float64)
-	if v.Units == "F" || v.Units == "F" {
+	if v.Units == "F" || v.Units == "f" {
 		f = (f - 32.0) / 1.8
 	} else if v.Units == "Gallons" || v.Units == "gallons" || v.Units == "gal" {
 		f = f * 3.78541
@@ -49,15 +49,17 @@ type Method struct {
 	Time  int      `json:"time"`
 }
 
+//Message is what all Gadgets pass around to each
+//other.
 type Message struct {
+	Name        string    `json:"name"`
+	Location    string    `json:"location"`
 	Sender      string    `json:"sender"`
 	Target      string    `json:"target"`
 	Type        string    `json:"type"`
 	Body        string    `json:"body"`
 	Method      Method    `json:"method"`
 	Timestamp   time.Time `json:"timestamp"`
-	Name        string    `json:"name"`
-	Location    string    `json:"location"`
 	Value       Value     `json:"value"`
 	TargetValue *Value    `json:"targetValue"`
 	Info        Info      `json:"info"`
@@ -83,7 +85,7 @@ type GadgetConfig struct {
 }
 
 type Config struct {
-	MasterHost string         `json:"masterHost"`
+	Host string               `json:"host"`
 	PubPort    int            `json:"pubPort"`
 	SubPort    int            `json:"subPort"`
 	Gadgets    []GadgetConfig `json:"gadgets"`

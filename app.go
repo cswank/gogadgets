@@ -12,34 +12,27 @@ import (
 //central part of Gadgets system.
 type App struct {
 	Gadgets    []GoGadget
-	MasterHost string
+	Host string
 	PubPort    int
 	SubPort    int
 	channels   map[string]chan Message
 	queue      *Queue
-}
+}	
 
-func NewApp(configPath string) *App {
-	config := &Config{}
-	b, err := ioutil.ReadFile(configPath)
-	if err != nil {
-		panic(err)
-	}
-	err = json.Unmarshal(b, config)
-	if err != nil {
-		panic(err)
-	}
-	log.Println(config)
+//NewApp creates a new Gadgets system.  The cfg argument can be a
+//path to a json file or a Config object itself.
+func NewApp(cfg interface{}) *App {
+	config := getConfig(cfg)
 	if config.PubPort == 0 {
 		config.SubPort = 6111
 		config.PubPort = 6112
 	}
-	if config.MasterHost == "" {
-		config.MasterHost = "localhost"
+	if config.Host == "" {
+		config.Host = "localhost"
 	}
 	gadgets := GetGadgets(config.Gadgets)
 	return &App{
-		MasterHost: config.MasterHost,
+		Host: config.Host,
 		PubPort:    config.PubPort,
 		SubPort:    config.SubPort,
 		Gadgets:    gadgets,
@@ -73,7 +66,7 @@ func (a *App) GoStart(input <-chan Message) {
 	a.Gadgets = append(a.Gadgets, &Runner{})
 	var sockets *Sockets
 	sockets = &Sockets{
-		host:    a.MasterHost,
+		host:    a.Host,
 		pubPort: a.PubPort,
 		subPort: a.SubPort,
 	}
@@ -148,4 +141,31 @@ func (a *App) sendMessage(msg Message) {
 //of a gadget that is not part of the GoGadgets system.
 func (a *App) AddGadget(gadget GoGadget) {
 	a.Gadgets = append(a.Gadgets, gadget)
+}
+
+
+func getConfig(config interface{}) *Config {
+	var c *Config
+	switch v := config.(type) {
+	case string:
+		c = getConfigFromFile(v)
+	case *Config:
+		c = v
+	default:
+		panic("invalid config")
+	}
+	return c
+}
+
+func getConfigFromFile(configPath string) *Config {
+	c := &Config{}
+	b, err := ioutil.ReadFile(configPath)
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(b, c)
+	if err != nil {
+		panic(err)
+	}
+	return c
 }

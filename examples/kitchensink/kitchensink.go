@@ -6,7 +6,7 @@ import (
 
 func main() {
 	cfg := &gogadgets.Config{
-		MasterHost: "localhost",
+		Host: "localhost",
 		Gadgets: []gogadgets.GadgetConfig{
 			gogadgets.GadgetConfig{
 				Location: "tank",

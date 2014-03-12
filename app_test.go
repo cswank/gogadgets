@@ -5,6 +5,8 @@ import (
 	"math/rand"
 	"testing"
 	"time"
+	"os"
+	"io/ioutil"
 )
 
 type FakeOutput struct {
@@ -41,34 +43,6 @@ func (f *FakePoller) Wait() (bool, error) {
 	return f.val, nil
 }
 
-func TestGetGadgets(t *testing.T) {
-	// if !utils.FileExists("/sys/class/gpio/export") {
-	// 	return //not a beaglebone
-	// }
-	// configs := []*Config{
-	// 	&Config{
-	// 		Type: "gpio",
-	// 		Location: "tank",
-	// 		Name: "pump",
-	// 		Pin: Pin{
-	// 			Port: "9",
-	// 			Pin: "15",
-	// 		},
-	// 	},
-	// 	&Config{
-	// 		Type: "switch",
-	// 		Location: "tank",
-	// 		Name: "switch",
-	// 		Pin: Pin{
-	// 			Port: "9",
-	// 			Pin: "16",
-	// 			Value: "7.5",
-	// 			Units: "liters",
-	// 		},
-	// 	},
-	// }
-}
-
 func TestGadgets(t *testing.T) {
 	port := 1024 + rand.Intn(65535-1024)
 	p := &Gadget{
@@ -94,10 +68,76 @@ func TestGadgets(t *testing.T) {
 	}
 	a := App{
 		Gadgets:    []GoGadget{p, s},
-		MasterHost: "localhost",
+		Host: "localhost",
 		SubPort:    port,
 		PubPort:    port + 1,
 	}
 	go a.Start()
 	time.Sleep(1 * time.Second)
+}
+
+func TestGetConfigFromFile(t *testing.T) {
+	cfg := `{
+    "gadgets": [
+        {
+            "location": "front yard",
+            "name": "sprinklers",
+            "pin": {
+                "type": "gpio",
+                "port": "8",
+                "pin": "10",
+                "direction": "out"
+            }
+        },
+        {
+            "location": "front garden",
+            "name": "sprinklers",
+            "pin": {
+                "type": "gpio",
+                "port": "8",
+                "pin": "11",
+                "direction": "out"
+            }
+        },
+        {
+            "location": "sidewalk",
+            "name": "sprinklers",
+            "pin": {
+                "type": "gpio",
+                "port": "8",
+                "pin": "12",
+                "direction": "out"
+            }
+        },
+        {
+            "location": "back yard",
+            "name": "sprinklers",
+            "pin": {
+                "type": "gpio",
+                "port": "8",
+                "pin": "14",
+                "direction": "out"
+            }
+        },
+        {
+            "location": "back garden",
+            "name": "sprinklers",
+            "pin": {
+                "type": "gpio",
+                "port": "8",
+                "pin": "15",
+                "direction": "out"
+            }
+        }
+    ]
+}
+`
+	f, _ := ioutil.TempFile("", "")
+	f.Write([]byte(cfg))
+	f.Close()
+	config := getConfig(f.Name())
+	os.Remove(f.Name())
+	if len(config.Gadgets) != 5 {
+		t.Error(config)
+	}
 }
