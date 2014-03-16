@@ -102,7 +102,6 @@ func (a *App) collectMessages(in <-chan Message) {
 	for {
 		msg := <-in
 		a.queue.Push(&msg)
-		log.Println("push")
 	}
 }
 
@@ -111,11 +110,13 @@ func (a *App) collectMessages(in <-chan Message) {
 //be improved.
 func (a *App) dispenseMessages(out chan<- Message) {
 	for {
-		a.queue.Wait()
-		log.Println("getting")
+		a.queue.cond.L.Lock()
+		for a.queue.Len() == 0 {
+			a.queue.Wait()
+		}
 		msg := a.queue.Get()
-		log.Println("get")
 		out <- *msg
+		a.queue.cond.L.Unlock()
 	}
 }
 
