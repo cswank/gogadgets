@@ -2,7 +2,6 @@ package gogadgets
 
 import (
 	"log"
-	"time"
 	"io/ioutil"
 	"encoding/json"
 )
@@ -74,12 +73,12 @@ func (a *App) GoStart(input <-chan Message) {
 	in := make(chan Message)
 	collect := make(chan Message)
 	a.channels = make(map[string]chan Message)
-	a.queue = NewQueue()
 	for _, gadget := range a.Gadgets {
 		out := make(chan Message)
 		a.channels[gadget.GetUID()] = out
 		go gadget.Start(out, collect)
 	}
+	a.queue = NewQueue()
 	go a.collectMessages(collect)
 	go a.dispenseMessages(in)
 	keepRunning := true
@@ -103,23 +102,24 @@ func (a *App) collectMessages(in <-chan Message) {
 	for {
 		msg := <-in
 		a.queue.Push(&msg)
+		log.Println("push")
 	}
 }
 
 //After a message is collected by collectMessage, it is
-//then sent back out to each Gadget (except the Gadget
-//that sent the message).
+//then sent back to the rest of the system.  This can 
+//be improved.
 func (a *App) dispenseMessages(out chan<- Message) {
 	for {
-		if a.queue.Len() == 0 {
-			time.Sleep(100 * time.Millisecond)
-		} else {
-			msg := a.queue.Get()
-			out <- *msg
-		}
+		a.queue.Wait()
+		log.Println("getting")
+		msg := a.queue.Get()
+		log.Println("get")
+		out <- *msg
 	}
 }
 
+//This is where a new m
 func (a *App) sendMessage(msg Message) {
 	if msg.Target == "" {
 		for uid, channel := range a.channels {

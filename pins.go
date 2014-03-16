@@ -1,6 +1,7 @@
 package gogadgets
 
-//The beaglebone black GPIO pins
+//The beaglebone black GPIO pins that are available by default.
+//You can use the device tree overlay to get more.
 var (
 	Pins = map[string]map[string]map[string]string{
 		"gpio": map[string]map[string]string{

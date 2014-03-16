@@ -1,6 +1,9 @@
 package gogadgets
 
-import "sync"
+import (
+	"sync"
+	"log"
+)
 
 type queuenode struct {
 	data *Message
@@ -12,24 +15,26 @@ type Queue struct {
 	tail  *queuenode
 	count int
 	lock  *sync.Mutex
+	cond  *sync.Cond
+	
 }
 
 func NewQueue() *Queue {
 	q := &Queue{}
 	q.lock = &sync.Mutex{}
+	l := &sync.Mutex{}
+	l.Lock()
+	q.cond = sync.NewCond(l)
 	return q
 }
 
-func (q *Queue) Len() int {
-	q.lock.Lock()
-	defer q.lock.Unlock()
-	return q.count
+func (q *Queue) Wait() {
+	q.cond.Wait()
 }
 
 func (q *Queue) Push(item *Message) {
 	q.lock.Lock()
 	defer q.lock.Unlock()
-
 	n := &queuenode{data: item}
 
 	if q.tail == nil {
@@ -40,16 +45,16 @@ func (q *Queue) Push(item *Message) {
 		q.tail = n
 	}
 	q.count++
+	log.Println(q.count)
+	q.cond.Signal()
 }
 
 func (q *Queue) Get() *Message {
 	q.lock.Lock()
 	defer q.lock.Unlock()
-
 	if q.head == nil {
 		return nil
 	}
-
 	n := q.head
 	q.head = n.next
 
