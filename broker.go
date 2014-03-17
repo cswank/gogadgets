@@ -4,30 +4,29 @@ import (
 	"log"
 )
 
-
 //All the gadgets of the system push their messages here.
 type Broker struct {
-	queue      *Queue
-	channels   map[string]chan Message
-	collect chan Message
-	input <-chan Message
+	queue    *Queue
+	channels map[string]chan Message
+	collect  chan Message
+	input    <-chan Message
 }
 
 func NewBroker(channels map[string]chan Message, input <-chan Message, collect chan Message) *Broker {
 	return &Broker{
-		input: input,
-		queue: NewQueue(),
+		input:    input,
+		queue:    NewQueue(),
 		channels: channels,
-		collect: collect,
+		collect:  collect,
 	}
 }
 
-func (b *Broker)Start() {
+func (b *Broker) Start() {
+	log.Println("started gagdgets")
 	in := make(chan Message)
 	go b.collectMessages(b.collect)
 	go b.dispenseMessages(in)
 	keepRunning := true
-	log.Println("started gagdgets")
 	for keepRunning {
 		select {
 		case msg := <-in:
@@ -41,7 +40,6 @@ func (b *Broker)Start() {
 	}
 }
 
-
 //Collects each message that is sent by the parts of the
 //system and pushes it in the queue.
 func (b *Broker) collectMessages(in <-chan Message) {
@@ -52,12 +50,12 @@ func (b *Broker) collectMessages(in <-chan Message) {
 }
 
 //After a message is collected by collectMessage, it is
-//then sent back to the rest of the system.  This can 
+//then sent back to the rest of the system.  This can
 //be improved.
 func (b *Broker) dispenseMessages(out chan<- Message) {
 	for {
 		b.queue.cond.L.Lock()
-		for b.queue.Len() == 0 {
+		if b.queue.Len() == 0 {
 			b.queue.Wait()
 		}
 		msg := b.queue.Get()

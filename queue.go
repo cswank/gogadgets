@@ -15,7 +15,6 @@ type Queue struct {
 	count int
 	lock  *sync.Mutex
 	cond  *sync.Cond
-	
 }
 
 func NewQueue() *Queue {

@@ -103,7 +103,7 @@ func (t *Thermometer) parseValue(val string) (v *Value, err error) {
 //This is an InputDevice, so it must have a Start.
 func (t *Thermometer) Start(in <-chan Message, out chan<- Value) {
 	temperature := make(chan Value)
-	
+
 	e := make(chan error)
 	go t.getTemperature(temperature, e)
 	for {

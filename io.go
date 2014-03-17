@@ -5,7 +5,7 @@ import (
 )
 
 //Outputdevices turn things on and off.  Currently the
-//only 
+//only
 type OutputDevice interface {
 	On(val *Value) error
 	Off() error

@@ -21,14 +21,14 @@ import (
 //as a single system, and also provides a way for
 //an external UI to control the system.
 type Sockets struct {
-	host     string
-	pubPort  int
-	subPort  int
-	ctx      *zmq.Context
-	sub      *zmq.Socket
-	subChan  *zmq.Channels
-	pub      *zmq.Socket
-	pubChan  *zmq.Channels
+	host    string
+	pubPort int
+	subPort int
+	ctx     *zmq.Context
+	sub     *zmq.Socket
+	subChan *zmq.Channels
+	pub     *zmq.Socket
+	pubChan *zmq.Channels
 }
 
 func NewClientSockets(host string) (*Sockets, error) {
@@ -86,7 +86,7 @@ func (s *Sockets) Start(in <-chan Message, out chan<- Message) {
 
 //A message that came from inside this gogadgets system
 //is sent to outside clients (ui, connected gogadget systems)
-func (s *Sockets)sendMessageOut(msg Message) bool {
+func (s *Sockets) sendMessageOut(msg Message) bool {
 	keepGoing := true
 	if msg.Type == COMMAND && msg.Body == "shutdown" {
 		keepGoing = false
@@ -106,7 +106,7 @@ func (s *Sockets)sendMessageOut(msg Message) bool {
 //A message that came from outside clients (ui, connected
 //gogadget systems) is passed along to this gogadget
 //system
-func (s *Sockets)sendMessageIn(data [][]byte, out chan<- Message) {
+func (s *Sockets) sendMessageIn(data [][]byte, out chan<- Message) {
 	if len(data) == 2 {
 		msg := &Message{}
 		json.Unmarshal(data[1], msg)

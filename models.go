@@ -85,8 +85,8 @@ type GadgetConfig struct {
 }
 
 type Config struct {
-	Host string               `json:"host"`
-	PubPort    int            `json:"pubPort"`
-	SubPort    int            `json:"subPort"`
-	Gadgets    []GadgetConfig `json:"gadgets"`
+	Host    string         `json:"host"`
+	PubPort int            `json:"pubPort"`
+	SubPort int            `json:"subPort"`
+	Gadgets []GadgetConfig `json:"gadgets"`
 }

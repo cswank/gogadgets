@@ -1,19 +1,19 @@
 package gogadgets
 
 import (
-	"log"
-	"io/ioutil"
 	"encoding/json"
+	"io/ioutil"
+	"log"
 )
 
 //App holds all the gadgets and handles passing Messages
 //to them, and receiving messages from them.  It is the
 //central part of Gadgets system.
 type App struct {
-	Gadgets    []GoGadget
-	Host string
-	PubPort    int
-	SubPort    int
+	Gadgets []GoGadget
+	Host    string
+	PubPort int
+	SubPort int
 }
 
 //NewApp creates a new Gadgets system.  The cfg argument can be a
@@ -29,10 +29,10 @@ func NewApp(cfg interface{}) *App {
 	}
 	gadgets := GetGadgets(config.Gadgets)
 	return &App{
-		Host: config.Host,
-		PubPort:    config.PubPort,
-		SubPort:    config.SubPort,
-		Gadgets:    gadgets,
+		Host:    config.Host,
+		PubPort: config.PubPort,
+		SubPort: config.SubPort,
+		Gadgets: gadgets,
 	}
 }
 
@@ -58,7 +58,11 @@ func (a *App) Start() {
 	a.GoStart(x)
 }
 
-//Useful for tests of other libraries that use Gogadgets
+//GoStart enables a gadgets system to be started
+//by either a test suite that needs it to run
+//as a goroutine or a client app that starts
+//gogadget systems upon a command from a central
+//web app.
 func (a *App) GoStart(input <-chan Message) {
 	a.Gadgets = append(a.Gadgets, &Runner{})
 	var sockets *Sockets
@@ -79,7 +83,6 @@ func (a *App) GoStart(input <-chan Message) {
 	b.Start()
 }
 
-
 //Some systems might have a few GoGadgets that are not
 //built into the system (and hense can't be defined in
 //the config file).  This is a way to apss in an instance
@@ -87,7 +90,6 @@ func (a *App) GoStart(input <-chan Message) {
 func (a *App) AddGadget(gadget GoGadget) {
 	a.Gadgets = append(a.Gadgets, gadget)
 }
-
 
 func getConfig(config interface{}) *Config {
 	var c *Config

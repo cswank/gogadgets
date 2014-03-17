@@ -2,11 +2,11 @@ package gogadgets
 
 import (
 	"fmt"
+	"io/ioutil"
 	"math/rand"
+	"os"
 	"testing"
 	"time"
-	"os"
-	"io/ioutil"
 )
 
 type FakeOutput struct {
@@ -67,10 +67,10 @@ func TestGadgets(t *testing.T) {
 		UID: fmt.Sprintf("%s %s", location, name),
 	}
 	a := App{
-		Gadgets:    []GoGadget{p, s},
-		Host: "localhost",
-		SubPort:    port,
-		PubPort:    port + 1,
+		Gadgets: []GoGadget{p, s},
+		Host:    "localhost",
+		SubPort: port,
+		PubPort: port + 1,
 	}
 	go a.Start()
 	time.Sleep(1 * time.Second)

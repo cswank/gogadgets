@@ -29,7 +29,6 @@ var (
 
 type Comparitor func(msg *Message) bool
 
-
 //Each part of a Gadgets system that controls a single
 //piece of hardware (for example: a gpio pin) is represented
 //by Gadget.  A Gadget must have either an InputDevice or
