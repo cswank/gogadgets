@@ -32,8 +32,7 @@ func NewSwitch(pin *Pin) (InputDevice, error) {
 
 //The GPIO does the real waiting here.  This wraps it and adds
 //a delay so that the inevitable bounce in the signal from the
-//physical device is ignored.  Gadgets are not meant to be very
-//fast acting devices.
+//physical device is ignored.
 func (s *Switch) wait(out chan<- float64, err chan<- error) {
 	val, e := s.GPIO.Wait()
 	if e != nil {

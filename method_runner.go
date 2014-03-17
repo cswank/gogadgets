@@ -31,10 +31,10 @@ type comparitor func(value float64) bool
 
 //Another example would be
 //    'wait for boiler temperature >= 200 F'.
-//Runner would then wait for a message from the boiler that says
+//MethodRunner would then wait for a message from the boiler that says
 //its temperature is 200 F (or more).  It then sends the mext
 //message of the method
-type Runner struct {
+type MethodRunner struct {
 	Gadget
 	method      Method
 	stepChecker stepChecker
@@ -44,11 +44,11 @@ type Runner struct {
 	timeOut     chan bool
 }
 
-func (m *Runner) GetUID() string {
+func (m *MethodRunner) GetUID() string {
 	return "method runner"
 }
 
-func (m *Runner) Start(in <-chan Message, out chan<- Message) {
+func (m *MethodRunner) Start(in <-chan Message, out chan<- Message) {
 	m.uid = m.GetUID()
 	m.out = out
 	shutdown := false
@@ -64,7 +64,7 @@ func (m *Runner) Start(in <-chan Message, out chan<- Message) {
 	m.out <- Message{}
 }
 
-func (m *Runner) readMessage(msg *Message) (shutdown bool) {
+func (m *MethodRunner) readMessage(msg *Message) (shutdown bool) {
 	if msg.Type == METHOD {
 		m.method = msg.Method
 		m.step = -1
@@ -86,7 +86,7 @@ func (m *Runner) readMessage(msg *Message) (shutdown bool) {
 	return shutdown
 }
 
-func (m *Runner) sendUpdate() {
+func (m *MethodRunner) sendUpdate() {
 	m.method.Step = m.step
 	msg := Message{
 		Sender: m.GetUID(),
@@ -96,19 +96,19 @@ func (m *Runner) sendUpdate() {
 	m.out <- msg
 }
 
-func (m *Runner) checkUpdate(msg *Message) {
+func (m *MethodRunner) checkUpdate(msg *Message) {
 	if m.stepChecker != nil && m.stepChecker(msg) {
 		m.stepChecker = nil
 		m.runNextStep()
 	}
 }
 
-func (m *Runner) clear() {
+func (m *MethodRunner) clear() {
 	m.method = Method{}
 	m.step = -1
 }
 
-func (m *Runner) runNextStep() {
+func (m *MethodRunner) runNextStep() {
 	m.step += 1
 	m.out <- Message{
 		Sender: m.uid,
@@ -130,7 +130,7 @@ func (m *Runner) runNextStep() {
 	}
 }
 
-func (m *Runner) sendCommand(cmd string) {
+func (m *MethodRunner) sendCommand(cmd string) {
 	msg := Message{
 		Sender: m.uid,
 		Type:   COMMAND,
@@ -139,7 +139,7 @@ func (m *Runner) sendCommand(cmd string) {
 	m.out <- msg
 }
 
-func (m *Runner) readWaitCommand(cmd string) {
+func (m *MethodRunner) readWaitCommand(cmd string) {
 	waitTime, err := m.getWaitTime(cmd)
 	if strings.Index(cmd, "wait for user") == 0 {
 		m.setUserStepChecker(cmd)
@@ -150,13 +150,13 @@ func (m *Runner) readWaitCommand(cmd string) {
 	}
 }
 
-func (m *Runner) setUserStepChecker(cmd string) {
+func (m *MethodRunner) setUserStepChecker(cmd string) {
 	m.stepChecker = func(msg *Message) bool {
 		return msg.Body == cmd
 	}
 }
 
-func (m *Runner) setStepChecker(cmd string) {
+func (m *MethodRunner) setStepChecker(cmd string) {
 	uid, operator, value, err := m.parseWaitCommand(cmd)
 	if err == nil {
 		compare, err := m.getCompare(operator, value)
@@ -173,7 +173,7 @@ func (m *Runner) setStepChecker(cmd string) {
 	}
 }
 
-func (m *Runner) getCompare(operator string, value float64) (cmp comparitor, err error) {
+func (m *MethodRunner) getCompare(operator string, value float64) (cmp comparitor, err error) {
 	if operator == "<=" {
 		cmp = func(x float64) bool { return x <= value }
 	} else if operator == "<" {
@@ -190,7 +190,7 @@ func (m *Runner) getCompare(operator string, value float64) (cmp comparitor, err
 	return cmp, err
 }
 
-func (m *Runner) parseWaitCommand(cmd string) (uid string, operator string, value float64, err error) {
+func (m *MethodRunner) parseWaitCommand(cmd string) (uid string, operator string, value float64, err error) {
 	result := stepExp.FindStringSubmatch(cmd)
 	if len(result) == 4 {
 		uid = result[1]
@@ -200,7 +200,7 @@ func (m *Runner) parseWaitCommand(cmd string) (uid string, operator string, valu
 	return uid, operator, value, err
 }
 
-func (m *Runner) getWaitTime(cmd string) (waitTime time.Duration, err error) {
+func (m *MethodRunner) getWaitTime(cmd string) (waitTime time.Duration, err error) {
 	result := timeExp.FindStringSubmatch(cmd)
 	if len(result) != 3 {
 		err = errors.New(fmt.Sprintf("could not parse command %s", cmd))
@@ -222,7 +222,7 @@ func (m *Runner) getWaitTime(cmd string) (waitTime time.Duration, err error) {
 	return waitTime, err
 }
 
-func (m *Runner) doCountdown(waitTime time.Duration) {
+func (m *MethodRunner) doCountdown(waitTime time.Duration) {
 	t1 := time.Now()
 	sleepTime := time.Duration(1 * time.Second)
 	i := 0.0

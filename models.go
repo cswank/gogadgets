@@ -54,9 +54,9 @@ type Method struct {
 type Message struct {
 	Name        string    `json:"name"`
 	Location    string    `json:"location"`
+	Type        string    `json:"type"`
 	Sender      string    `json:"sender"`
 	Target      string    `json:"target"`
-	Type        string    `json:"type"`
 	Body        string    `json:"body"`
 	Method      Method    `json:"method"`
 	Timestamp   time.Time `json:"timestamp"`

@@ -6,7 +6,7 @@ import (
 )
 
 func TestReadWaitCommand(t *testing.T) {
-	m := Runner{}
+	m := MethodRunner{}
 	waitTime, err := m.getWaitTime("wait for 3.3 seconds")
 	if err != nil {
 		t.Error(err)
@@ -70,7 +70,7 @@ func TestStepExp(t *testing.T) {
 }
 
 func TestSetStepChecker(t *testing.T) {
-	m := Runner{}
+	m := MethodRunner{}
 	cmd := "wait for tank volume >= 5.4"
 	m.setStepChecker(cmd)
 	msg := &Message{
@@ -95,7 +95,7 @@ func TestSetStepChecker(t *testing.T) {
 }
 
 func TestParseWaitCommand(t *testing.T) {
-	m := Runner{}
+	m := MethodRunner{}
 	cmd := "wait for tank volume >= 5.4"
 	uid, operator, value, err := m.parseWaitCommand(cmd)
 	if err != nil {
@@ -129,7 +129,7 @@ func TestParseWaitCommand(t *testing.T) {
 func TestRunMethod(t *testing.T) {
 	in := make(chan Message)
 	out := make(chan Message)
-	m := Runner{}
+	m := MethodRunner{}
 	go m.Start(out, in)
 	msg := Message{
 		Type: METHOD,
@@ -178,7 +178,7 @@ func TestRunMethod(t *testing.T) {
 }
 
 func TestUserStepChecker(t *testing.T) {
-	m := Runner{}
+	m := MethodRunner{}
 	m.setUserStepChecker("wait for user to laugh")
 	msg := &Message{
 		Type: "update",
@@ -196,7 +196,7 @@ func TestUserStepChecker(t *testing.T) {
 func TestRunAnotherMethod(t *testing.T) {
 	in := make(chan Message)
 	out := make(chan Message)
-	m := Runner{}
+	m := MethodRunner{}
 	go m.Start(out, in)
 	msg := Message{
 		Type: METHOD,

@@ -64,7 +64,7 @@ func (a *App) Start() {
 //gogadget systems upon a command from a central
 //web app.
 func (a *App) GoStart(input <-chan Message) {
-	a.Gadgets = append(a.Gadgets, &Runner{})
+	a.Gadgets = append(a.Gadgets, &MethodRunner{})
 	var sockets *Sockets
 	sockets = &Sockets{
 		host:    a.Host,

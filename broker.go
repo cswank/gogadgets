@@ -54,17 +54,16 @@ func (b *Broker) collectMessages(in <-chan Message) {
 //be improved.
 func (b *Broker) dispenseMessages(out chan<- Message) {
 	for {
-		b.queue.cond.L.Lock()
+		b.queue.Lock()
 		if b.queue.Len() == 0 {
 			b.queue.Wait()
 		}
 		msg := b.queue.Get()
 		out <- *msg
-		b.queue.cond.L.Unlock()
+		b.queue.Unlock()
 	}
 }
 
-//This is where a new m
 func (b *Broker) sendMessage(msg Message) {
 	if msg.Target == "" {
 		for uid, channel := range b.channels {

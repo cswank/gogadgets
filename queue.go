@@ -24,10 +24,6 @@ func NewQueue() *Queue {
 	return q
 }
 
-func (q *Queue) Wait() {
-	q.cond.Wait()
-}
-
 func (q *Queue) Len() int {
 	q.lock.Lock()
 	defer q.lock.Unlock()
@@ -64,4 +60,17 @@ func (q *Queue) Get() *Message {
 	}
 	q.count--
 	return n.data
+	
+}
+
+func (q *Queue) Wait() {
+	q.cond.Wait()
+}
+
+func (q *Queue) Lock() {
+	q.cond.L.Lock()
+}
+
+func (q *Queue) Unlock() {
+	q.cond.L.Unlock()
 }
