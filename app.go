@@ -14,9 +14,7 @@ type App struct {
 	Host string
 	PubPort    int
 	SubPort    int
-	channels   map[string]chan Message
-	queue      *Queue
-}	
+}
 
 //NewApp creates a new Gadgets system.  The cfg argument can be a
 //path to a json file or a Config object itself.
@@ -70,71 +68,17 @@ func (a *App) GoStart(input <-chan Message) {
 		subPort: a.SubPort,
 	}
 	a.Gadgets = append(a.Gadgets, sockets)
-	in := make(chan Message)
 	collect := make(chan Message)
-	a.channels = make(map[string]chan Message)
+	channels := make(map[string]chan Message)
 	for _, gadget := range a.Gadgets {
 		out := make(chan Message)
-		a.channels[gadget.GetUID()] = out
+		channels[gadget.GetUID()] = out
 		go gadget.Start(out, collect)
 	}
-	a.queue = NewQueue()
-	go a.collectMessages(collect)
-	go a.dispenseMessages(in)
-	keepRunning := true
-	log.Println("started gagdgets")
-	for keepRunning {
-		select {
-		case msg := <-in:
-			a.sendMessage(msg)
-		case msg := <-input:
-			if msg.Type == "command" && msg.Body == "shutdown" {
-				keepRunning = false
-			}
-			a.sendMessage(msg)
-		}
-	}
+	b := NewBroker(channels, input, collect)
+	b.Start()
 }
 
-//Collects each message that is sent by the parts of the
-//system.
-func (a *App) collectMessages(in <-chan Message) {
-	for {
-		msg := <-in
-		a.queue.Push(&msg)
-	}
-}
-
-//After a message is collected by collectMessage, it is
-//then sent back to the rest of the system.  This can 
-//be improved.
-func (a *App) dispenseMessages(out chan<- Message) {
-	for {
-		a.queue.cond.L.Lock()
-		for a.queue.Len() == 0 {
-			a.queue.Wait()
-		}
-		msg := a.queue.Get()
-		out <- *msg
-		a.queue.cond.L.Unlock()
-	}
-}
-
-//This is where a new m
-func (a *App) sendMessage(msg Message) {
-	if msg.Target == "" {
-		for uid, channel := range a.channels {
-			if uid != msg.Sender {
-				channel <- msg
-			}
-		}
-	} else {
-		channel, ok := a.channels[msg.Target]
-		if ok {
-			channel <- msg
-		}
-	}
-}
 
 //Some systems might have a few GoGadgets that are not
 //built into the system (and hense can't be defined in
