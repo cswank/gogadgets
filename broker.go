@@ -1,8 +1,5 @@
 package gogadgets
 
-import (
-	"log"
-)
 
 //All the gadgets of the system push their messages here.
 type Broker struct {
@@ -22,7 +19,6 @@ func NewBroker(channels map[string]chan Message, input <-chan Message, collect c
 }
 
 func (b *Broker) Start() {
-	log.Println("started gagdgets")
 	in := make(chan Message)
 	go b.collectMessages(b.collect)
 	go b.dispenseMessages(in)

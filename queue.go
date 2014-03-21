@@ -34,7 +34,6 @@ func (q *Queue) Push(item *Message) {
 	q.lock.Lock()
 	defer q.lock.Unlock()
 	n := &queuenode{data: item}
-
 	if q.tail == nil {
 		q.tail = n
 		q.head = n
@@ -54,13 +53,11 @@ func (q *Queue) Get() *Message {
 	}
 	n := q.head
 	q.head = n.next
-
 	if q.head == nil {
 		q.tail = nil
 	}
 	q.count--
 	return n.data
-	
 }
 
 func (q *Queue) Wait() {

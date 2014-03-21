@@ -79,6 +79,7 @@ func (a *App) GoStart(input <-chan Message) {
 		channels[gadget.GetUID()] = out
 		go gadget.Start(out, collect)
 	}
+	log.Println("started gagdgets")
 	b := NewBroker(channels, input, collect)
 	b.Start()
 }
