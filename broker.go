@@ -1,6 +1,5 @@
 package gogadgets
 
-
 //All the gadgets of the system push their messages here.
 type Broker struct {
 	queue    *Queue

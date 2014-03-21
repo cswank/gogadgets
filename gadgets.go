@@ -35,24 +35,24 @@ type Comparitor func(msg *Message) bool
 //an OutputDevice.  Gadget fulfills the GoGaget interface.
 type Gadget struct {
 	GoGadget
-	Location   string       `json:"location"`
-	Name       string       `json:"name"`
-	Output     OutputDevice `json:"-"`
-	Input      InputDevice  `json:"-"`
-	Direction  string       `json:"direction"`
-	OnCommand  string       `json:"on"`
-	OffCommand string       `json:"off"`
-	UID        string       `json:"uid"`
-	status     bool
-	compare    Comparitor
-	shutdown   bool
+	Location       string       `json:"location"`
+	Name           string       `json:"name"`
+	Output         OutputDevice `json:"-"`
+	Input          InputDevice  `json:"-"`
+	Direction      string       `json:"direction"`
+	OnCommand      string       `json:"on"`
+	OffCommand     string       `json:"off"`
+	UID            string       `json:"uid"`
+	status         bool
+	compare        Comparitor
+	shutdown       bool
 	filterMessages bool
-	units      string
-	Operator   string
-	out        chan<- Message
-	devIn      chan Message
-	timerIn    chan bool
-	timerOut   chan bool
+	units          string
+	Operator       string
+	out            chan<- Message
+	devIn          chan Message
+	timerIn        chan bool
+	timerOut       chan bool
 }
 
 //There are 5 types of Input/Output devices build into
@@ -103,14 +103,14 @@ func NewOutputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
 	}
 	if err == nil {
 		gadget = &Gadget{
-			Location:   config.Location,
-			Name:       config.Name,
-			Direction:  "output",
-			OnCommand:  config.OnCommand,
-			OffCommand: config.OffCommand,
-			Output:     dev,
-			Operator:   ">=",
-			UID:        fmt.Sprintf("%s %s", config.Location, config.Name),
+			Location:       config.Location,
+			Name:           config.Name,
+			Direction:      "output",
+			OnCommand:      config.OnCommand,
+			OffCommand:     config.OffCommand,
+			Output:         dev,
+			Operator:       ">=",
+			UID:            fmt.Sprintf("%s %s", config.Location, config.Name),
 			filterMessages: config.Pin.Type != "recorder",
 		}
 	} else {
@@ -158,11 +158,11 @@ func (g *Gadget) doInputLoop(in <-chan Message) {
 			g.readMessage(&msg)
 		case val := <-devOut:
 			g.out <- Message{
-				Sender:   g.UID,
-				Type:     "update",
-				Location: g.Location,
-				Name:     g.Name,
-				Value:    val,
+				Sender:    g.UID,
+				Type:      "update",
+				Location:  g.Location,
+				Name:      g.Name,
+				Value:     val,
 				Timestamp: time.Now().UTC(),
 			}
 		}
@@ -209,7 +209,7 @@ func (g *Gadget) readMessage(msg *Message) {
 func (g *Gadget) readUpdate(msg *Message) {
 	if g.status && g.compare != nil && g.compare(msg) {
 		g.off()
-	} else if g.status && (msg.Location == g.Location  || !g.filterMessages) {
+	} else if g.status && (msg.Location == g.Location || !g.filterMessages) {
 		g.Output.Update(msg)
 	}
 }

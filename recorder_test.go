@@ -8,7 +8,7 @@ func TestCreate(t *testing.T) {
 	pin := &Pin{
 		Args: map[string]string{
 			"host": "localhost",
-			"db": "brewery",
+			"db":   "brewery",
 		},
 	}
 	r, err := NewRecorder(pin)

@@ -8,12 +8,12 @@ import (
 //in a mongodb.
 type Recorder struct {
 	OutputDevice
-	DBHost string
-	DBName string
-	session *mgo.Session
+	DBHost     string
+	DBName     string
+	session    *mgo.Session
 	collection *mgo.Collection
-	status bool
-	connected bool
+	status     bool
+	connected  bool
 }
 
 func NewRecorder(pin *Pin) (OutputDevice, error) {
@@ -49,15 +49,15 @@ func (r *Recorder) Status() interface{} {
 	return r.status
 }
 
-func (r *Recorder)save(msg *Message) {
+func (r *Recorder) save(msg *Message) {
 	r.collection.Insert(msg)
 }
 
-func (r *Recorder)connect() error {
+func (r *Recorder) connect() error {
 	session, err := mgo.Dial(r.DBHost)
 	if err != nil {
 		return err
-        }
+	}
 	r.session = session
 	r.collection = session.DB(r.DBName).C("updates")
 	return nil

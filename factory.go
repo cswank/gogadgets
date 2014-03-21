@@ -14,9 +14,9 @@ func NewAppFactory() *AppFactory {
 			"switch":      NewSwitch,
 		},
 		outputFactories: map[string]OutputDeviceFactory{
-			"gpio":   NewGPIO,
-			"heater": NewHeater,
-			"cooler": NewCooler,
+			"gpio":     NewGPIO,
+			"heater":   NewHeater,
+			"cooler":   NewCooler,
 			"recorder": NewRecorder,
 		},
 	}
