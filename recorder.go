@@ -38,7 +38,9 @@ func (r *Recorder) On(val *Value) error {
 }
 
 func (r *Recorder) Off() error {
-	r.session.Close()
+	if r.session != nil {
+		r.session.Close()
+	}
 	r.status = false
 	return nil
 }
