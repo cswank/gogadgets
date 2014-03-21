@@ -161,7 +161,7 @@ func (g *Gadget) doInputLoop(in <-chan Message) {
 				Location: g.Location,
 				Name:     g.Name,
 				Value:    val,
-				Timestamp: time.Now(),
+				Timestamp: time.Now().UTC(),
 			}
 		}
 	}
