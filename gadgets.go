@@ -46,6 +46,7 @@ type Gadget struct {
 	status     bool
 	compare    Comparitor
 	shutdown   bool
+	filterMessages bool
 	units      string
 	Operator   string
 	out        chan<- Message
@@ -110,6 +111,7 @@ func NewOutputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
 			Output:     dev,
 			Operator:   ">=",
 			UID:        fmt.Sprintf("%s %s", config.Location, config.Name),
+			filterMessages: config.Pin.Type != "recorder",
 		}
 	} else {
 		panic(err)
@@ -207,7 +209,7 @@ func (g *Gadget) readMessage(msg *Message) {
 func (g *Gadget) readUpdate(msg *Message) {
 	if g.status && g.compare != nil && g.compare(msg) {
 		g.off()
-	} else if g.status && msg.Location == g.Location {
+	} else if g.status && (msg.Location == g.Location  || !g.filterMessages) {
 		g.Output.Update(msg)
 	}
 }
