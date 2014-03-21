@@ -60,7 +60,7 @@ type Gadget struct {
 //type of Gadget.
 func NewGadget(config *GadgetConfig) (*Gadget, error) {
 	t := config.Pin.Type
-	if t == "heater" || t == "cooler" || t == "gpio" {
+	if t == "heater" || t == "cooler" || t == "gpio" || t == "recorder" {
 		return NewOutputGadget(config)
 	} else if t == "thermometer" || t == "switch" {
 		return NewInputGadget(config)
