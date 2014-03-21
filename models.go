@@ -66,14 +66,15 @@ type Message struct {
 }
 
 type Pin struct {
-	Type      string
-	Port      string
-	Pin       string
-	Direction string
-	Edge      string
-	OneWireId string
-	Value     interface{}
-	Units     string
+	Type      string  `json:"type"`
+	Port      string  `json:"port"`
+	Pin       string  `json:"pin"`
+	Direction string  `json:"direction"`
+	Edge      string  `json:"edge"`
+	OneWireId string  `json:"onewireId"`
+	Value     interface{}  `json:"value"`
+	Units     string  `json:"units"`
+	Args      map[string]string  `json:"args"`
 }
 
 type GadgetConfig struct {

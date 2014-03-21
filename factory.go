@@ -17,6 +17,7 @@ func NewAppFactory() *AppFactory {
 			"gpio":   NewGPIO,
 			"heater": NewHeater,
 			"cooler": NewCooler,
+			"recorder": NewRecorder,
 		},
 	}
 	return a
