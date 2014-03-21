@@ -24,14 +24,16 @@ func NewRecorder(pin *Pin) (OutputDevice, error) {
 }
 
 func (r *Recorder) Update(msg *Message) {
-	if msg.Type == "update" {
+	if r.status && msg.Type == "update" {
 		r.save(msg)
 	}
 }
 
 func (r *Recorder) On(val *Value) error {
 	err := r.connect()
-	r.status = true
+	if err != nil {
+		r.status = true
+	}
 	return err
 }
 
