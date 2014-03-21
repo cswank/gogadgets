@@ -31,7 +31,7 @@ func (r *Recorder) Update(msg *Message) {
 
 func (r *Recorder) On(val *Value) error {
 	err := r.connect()
-	if err != nil {
+	if err == nil {
 		r.status = true
 	}
 	return err
