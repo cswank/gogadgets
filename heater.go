@@ -5,7 +5,7 @@ import (
 )
 
 //Heater represnts an electic heating element.  It
-//provices a way to heat up something to a target
+//provides a way to heat up something to a target
 //temperature. In order to use this there must be
 //a thermometer in the same Location.
 type Heater struct {

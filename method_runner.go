@@ -18,22 +18,22 @@ var (
 type stepChecker func(msg *Message) bool
 type comparitor func(value float64) bool
 
-//Gadgets respond to the Robot Command Language (RCL) and a
-//list of RCL messages can be run to form a method.  Runner
-//takes a method as input and runs it.
-
-//If a RCL message starts with 'wait' runner pauses the method and
-//waits for the condition if the wait to be fulfilled.  For example,
-//if the RCL message
-//    'wait for 5 seconds'
-//is recieved, Runner waits for 5 seconds and continues with the the
-//rest of the message.
-
-//Another example would be
-//    'wait for boiler temperature >= 200 F'.
-//MethodRunner would then wait for a message from the boiler that says
-//its temperature is 200 F (or more).  It then sends the mext
-//message of the method
+//  Gadgets respond to the Robot Command Language (RCL) and a
+//  list of RCL messages can be run to form a method.  Runner
+//  takes a method as input and runs it.
+//
+//  If a RCL message starts with 'wait' runner pauses the method and
+//  waits for the condition if the wait to be fulfilled.  For example,
+//  if the RCL message
+//      'wait for 5 seconds'
+//  is recieved, Runner waits for 5 seconds and continues with the the
+//  rest of the message.
+//
+//  Another example would be
+//      'wait for boiler temperature >= 200 F'.
+//  MethodRunner would then wait for a message from the boiler that says
+//  its temperature is 200 F (or more).  It then sends the next
+//  message of the method
 type MethodRunner struct {
 	Gadget
 	method      Method
