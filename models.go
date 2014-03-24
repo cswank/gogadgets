@@ -28,7 +28,18 @@ type Value struct {
 }
 
 func (v *Value) ToFloat() (f float64, ok bool) {
-	f, ok = v.Value.(float64)
+	switch V := v.Value.(type) {
+	case bool:
+		if V {
+			f = 1.0
+		} else {
+			f = 0.0
+		}
+		ok = true
+	case float64:
+		f = V
+		ok = true
+	}
 	if v.Units == "F" || v.Units == "f" {
 		f = (f - 32.0) / 1.8
 	} else if v.Units == "Gallons" || v.Units == "gallons" || v.Units == "gal" {
