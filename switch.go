@@ -60,6 +60,13 @@ func (s *Switch) SendValue() {
 	}
 }
 
+func (s *Switch) GetValue() *Value {
+	return &Value{
+		Value: s.value,
+		Units: s.units,
+	}
+}
+
 func (s *Switch) Start(in <-chan Message, out chan<- Value) {
 	s.out = out
 	value := make(chan float64)
