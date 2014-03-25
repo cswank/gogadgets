@@ -12,11 +12,11 @@ import (
 
 var (
 	timeExp = regexp.MustCompile(`for (\d*\.?\d*) (seconds?|minutes?|hours?)`)
-	stepExp = regexp.MustCompile(`for (.+) (>=|>|==|<=|<) (\d*\.?\d*)`)
+	stepExp = regexp.MustCompile(`for (.+) (>=|>|==|<=|<) (.+)`)
 )
 
 type stepChecker func(msg *Message) bool
-type comparitor func(value float64) bool
+type comparitor func(value interface{}) bool
 
 //  Gadgets respond to the Robot Command Language (RCL) and a
 //  list of RCL messages can be run to form a method.  Runner
@@ -161,40 +161,59 @@ func (m *MethodRunner) setStepChecker(cmd string) {
 		compare, err := m.getCompare(operator, value)
 		if err == nil {
 			m.stepChecker = func(msg *Message) bool {
-				val, ok := msg.Value.Value.(float64)
-				return ok &&
-					msg.Sender == uid &&
-					compare(val)
+				return msg.Sender == uid &&
+					compare(value)
 			}
 		} else {
 			log.Println(err)
+			m.stepChecker = func(msg *Message) bool {
+				return false
+			}
 		}
+	} else {
+		log.Println(err)
 	}
 }
 
-func (m *MethodRunner) getCompare(operator string, value float64) (cmp comparitor, err error) {
+func (m *MethodRunner) getCompare(operator string, value interface{}) (cmp comparitor, err error) {
+	switch v := value.(type) {
+	case float64:
+		return m.getFloatCompare(operator, v)
+	default:
+		return func(x interface{}) bool {return x == v}, nil
+	}
+}
+
+func (m *MethodRunner) getFloatCompare(operator string, value float64) (cmp comparitor, err error) {
 	if operator == "<=" {
-		cmp = func(x float64) bool { return x <= value }
+		cmp = func(x interface{}) bool { return x.(float64) <= value }
 	} else if operator == "<" {
-		cmp = func(x float64) bool { return x < value }
+		cmp = func(x interface{}) bool { return x.(float64) < value }
 	} else if operator == "==" {
-		cmp = func(x float64) bool { return x == value }
+		cmp = func(x interface{}) bool { return x.(float64) == value }
 	} else if operator == ">=" {
-		cmp = func(x float64) bool { return x >= value }
+		cmp = func(x interface{}) bool { return x.(float64) >= value }
 	} else if operator == ">" {
-		cmp = func(x float64) bool { return x > value }
+		cmp = func(x interface{}) bool { return x.(float64) > value }
 	} else {
 		err = errors.New(fmt.Sprintf("invalid operator: %s", operator))
 	}
 	return cmp, err
 }
 
-func (m *MethodRunner) parseWaitCommand(cmd string) (uid string, operator string, value float64, err error) {
+func (m *MethodRunner) parseWaitCommand(cmd string) (uid string, operator string, value interface{}, err error) {
 	result := stepExp.FindStringSubmatch(cmd)
 	if len(result) == 4 {
 		uid = result[1]
 		operator = result[2]
-		value, err = strconv.ParseFloat(result[3], 64)
+		v := result[3]
+		if v == "true" {
+			value = true
+		} else if v == "false" {
+			value = false
+		} else {
+			value, err = strconv.ParseFloat(v, 64)
+		}
 	}
 	return uid, operator, value, err
 }

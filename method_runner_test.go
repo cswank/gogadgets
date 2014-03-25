@@ -94,6 +94,33 @@ func TestSetStepChecker(t *testing.T) {
 	}
 }
 
+
+func TestSetBoolStepChecker(t *testing.T) {
+	m := MethodRunner{}
+	cmd := "wait for lab switch == true"
+	m.setStepChecker(cmd)
+	msg := &Message{
+		Sender: "lab switch",
+		Value: Value{
+			Value: true,
+		},
+	}
+	if !m.stepChecker(msg) {
+		t.Error("should have been true")
+	}
+	
+	msg = &Message{
+		Sender: "fish tank volume",
+		Value: Value{
+			Value: 5.4,
+		},
+	}
+	if m.stepChecker(msg) {
+		t.Error("should have been false")
+	}
+}
+
+
 func TestParseWaitCommand(t *testing.T) {
 	m := MethodRunner{}
 	cmd := "wait for tank volume >= 5.4"

@@ -12,7 +12,7 @@ import (
 //happens it sends an update to the rest of the system.
 type Switch struct {
 	GPIO  Poller
-	Value float64
+	Value interface{}
 	Units string
 	out   chan<- Value
 }
@@ -28,7 +28,7 @@ func NewSwitch(pin *Pin) (InputDevice, error) {
 	if err == nil {
 		s = &Switch{
 			GPIO:  poller,
-			Value: pin.Value.(float64),
+			Value: pin.Value,
 			Units: pin.Units,
 		}
 	}
@@ -38,7 +38,7 @@ func NewSwitch(pin *Pin) (InputDevice, error) {
 //The GPIO does the real waiting here.  This wraps it and adds
 //a delay so that the inevitable bounce in the signal from the
 //physical device is ignored.
-func (s *Switch) wait(out chan<- float64, err chan<- error) {
+func (s *Switch) wait(out chan<- interface{}, err chan<- error) {
 	val, e := s.GPIO.Wait()
 	if e != nil {
 		err <- e
@@ -46,7 +46,11 @@ func (s *Switch) wait(out chan<- float64, err chan<- error) {
 		if val {
 			out <- s.Value
 		} else {
-			out <- 0.0
+			if s.Value == true {
+				out <- false
+			} else {
+				out <- 0.0
+			}
 		}
 	}
 	time.Sleep(200 * time.Millisecond)
@@ -68,7 +72,7 @@ func (s *Switch) GetValue() *Value {
 
 func (s *Switch) Start(in <-chan Message, out chan<- Value) {
 	s.out = out
-	value := make(chan float64)
+	value := make(chan interface{})
 	err := make(chan error)
 	keepGoing := true
 	for keepGoing {
