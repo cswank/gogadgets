@@ -62,8 +62,8 @@ func (s *Switch) SendValue() {
 
 func (s *Switch) GetValue() *Value {
 	return &Value{
-		Value: s.value,
-		Units: s.units,
+		Value: s.Value,
+		Units: s.Units,
 	}
 }
 
