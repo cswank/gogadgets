@@ -1,0 +1,26 @@
+{
+    "gadgets": [
+        {
+            "location": "lab",
+            "name": "led",
+            "pin": {
+                "type": "gpio",
+                "pin": "1l",
+                "direction": "out",
+                "platform": "rpi"
+            }
+        },
+        {
+            "location": "lab",
+            "name": "switch",
+            "pin": {
+                "type": "switch",
+                "pin": "13",
+                "direction": "in",
+                "edge": "rising",
+                "value": true,
+                "platform": "rpi"
+            }
+        }
+    ]
+}

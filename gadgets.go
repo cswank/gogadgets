@@ -35,14 +35,14 @@ type Comparitor func(msg *Message) bool
 //an OutputDevice.  Gadget fulfills the GoGaget interface.
 type Gadget struct {
 	GoGadget
-	Location       string       `json:"location"`
-	Name           string       `json:"name"`
-	Output         OutputDevice `json:"-"`
-	Input          InputDevice  `json:"-"`
-	Direction      string       `json:"direction"`
-	OnCommand      string       `json:"on"`
-	OffCommand     string       `json:"off"`
-	UID            string       `json:"uid"`
+	Location       string
+	Name           string
+	Output         OutputDevice
+	Input          InputDevice
+	Direction      string
+	OnCommand      string
+	OffCommand     string
+	UID            string
 	status         bool
 	compare        Comparitor
 	shutdown       bool

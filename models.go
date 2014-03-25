@@ -85,6 +85,7 @@ type Pin struct {
 	OneWireId string            `json:"onewireId"`
 	Value     interface{}       `json:"value"`
 	Units     string            `json:"units"`
+	Platform  string            `json:"platform"`
 	Args      map[string]string `json:"args"`
 }
 
