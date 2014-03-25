@@ -14,7 +14,6 @@ import (
 //Reads temperature from a Dallas 1-Wire thermometer and
 //sends that temperature to the rest of the system.
 type Thermometer struct {
-	InputDevice
 	devicePath string
 	units      string
 	value      float64

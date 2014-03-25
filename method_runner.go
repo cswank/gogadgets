@@ -35,7 +35,6 @@ type comparitor func(value float64) bool
 //  its temperature is 200 F (or more).  It then sends the next
 //  message of the method
 type MethodRunner struct {
-	Gadget
 	method      Method
 	stepChecker stepChecker
 	step        int

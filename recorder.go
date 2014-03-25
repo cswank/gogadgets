@@ -7,7 +7,6 @@ import (
 //Recorder takes all the update messages it receives and saves them
 //in a mongodb.
 type Recorder struct {
-	OutputDevice
 	DBHost     string
 	DBName     string
 	session    *mgo.Session

@@ -17,8 +17,6 @@ import (
 //GPIO also has a Wait method and can poll a pin and wait
 //for a change of direction.
 type GPIO struct {
-	OutputDevice
-	Poller
 	units         string
 	export        string
 	exportPath    string

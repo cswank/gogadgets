@@ -34,7 +34,6 @@ type Comparitor func(msg *Message) bool
 //by Gadget.  A Gadget must have either an InputDevice or
 //an OutputDevice.  Gadget fulfills the GoGaget interface.
 type Gadget struct {
-	GoGadget
 	Location       string
 	Name           string
 	Output         OutputDevice

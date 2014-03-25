@@ -3,7 +3,6 @@ package gogadgets
 import ()
 
 type Cooler struct {
-	OutputDevice
 	target float64
 	status bool
 	gpio   OutputDevice

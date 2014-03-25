@@ -9,7 +9,6 @@ import (
 //temperature. In order to use this there must be
 //a thermometer in the same Location.
 type Heater struct {
-	OutputDevice
 	target   float64
 	current  float64
 	duration time.Duration

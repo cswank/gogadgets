@@ -26,4 +26,8 @@ func TestSwitch(t *testing.T) {
 		Type: "command",
 		Body: "shutdown",
 	}
+	v := s.GetValue()
+	if v.Value.(float64) != 0.0 {
+		t.Error("should have been 0.0", v)
+	}
 }
