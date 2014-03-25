@@ -34,13 +34,14 @@ type GPIO struct {
 
 func NewGPIO(pin *Pin) (OutputDevice, error) {
 	var export string
+	var ok bool
 	if pin.Platform == "rpi" {
-		export, ok := PiPins[pin.Pin]
+		export, ok = PiPins[pin.Pin]
 		if !ok {
 			return nil, errors.New(fmt.Sprintf("no such pin: %s", pin.Pin))
 		}
 	} else {
-		portMap, ok := Pins["gpio"][pin.Port]
+		portMap, ok = Pins["gpio"][pin.Port]
 		if !ok {
 			return nil, errors.New(fmt.Sprintf("no such port: %s", pin.Port))
 		}
