@@ -11,6 +11,7 @@ import (
 
 var (
 	host = flag.String("h", "localhost", "gadgets host (for the send command)")
+	//config = flag.String("c", "", "config file for running a gadgets system")
 )
 
 func main() {
