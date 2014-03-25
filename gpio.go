@@ -34,7 +34,6 @@ type GPIO struct {
 
 func NewGPIO(pin *Pin) (OutputDevice, error) {
 	var export string
-	
 	var ok bool
 	if pin.Platform == "rpi" {
 		export, ok = PiPins[pin.Pin]

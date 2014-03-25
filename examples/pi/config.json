@@ -5,7 +5,7 @@
             "name": "led",
             "pin": {
                 "type": "gpio",
-                "pin": "1l",
+                "pin": "11",
                 "direction": "out",
                 "platform": "rpi"
             }
