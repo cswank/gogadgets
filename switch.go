@@ -29,9 +29,14 @@ func NewSwitch(pin *Pin) (InputDevice, error) {
 	if err == nil {
 		s = &Switch{
 			GPIO:  poller,
-			Value: pin.Value,
 			TrueValue: pin.Value,
 			Units: pin.Units,
+		}
+		switch s.TrueValue.(type) {
+		case bool:
+			s.Value = false
+		default:
+			s.Value = float64(0.0)
 		}
 	}
 	return s, err
