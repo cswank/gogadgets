@@ -327,6 +327,7 @@ func TestInputStart(t *testing.T) {
 	s := &Switch{
 		GPIO:  poller,
 		Value: 5.0,
+		TrueValue: 5.0,
 		Units: "liters",
 	}
 	g := Gadget{

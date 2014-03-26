@@ -13,6 +13,7 @@ import (
 type Switch struct {
 	GPIO  Poller
 	Value interface{}
+	TrueValue interface{}
 	Units string
 	out   chan<- Value
 }
@@ -29,6 +30,7 @@ func NewSwitch(pin *Pin) (InputDevice, error) {
 		s = &Switch{
 			GPIO:  poller,
 			Value: pin.Value,
+			TrueValue: pin.Value,
 			Units: pin.Units,
 		}
 	}
@@ -42,15 +44,16 @@ func (s *Switch) wait(out chan<- interface{}, err chan<- error) {
 	val, e := s.GPIO.Wait()
 	if e != nil {
 		err <- e
-	} else {
+		return
+	}
+	switch v := s.TrueValue.(type) {
+	case bool:
+		out <- val
+	default:
 		if val {
-			out <- s.Value
+			out <- v
 		} else {
-			if s.Value == true {
-				out <- false
-			} else {
-				out <- 0.0
-			}
+			out <- 0.0
 		}
 	}
 	time.Sleep(200 * time.Millisecond)

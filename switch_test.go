@@ -9,6 +9,7 @@ func TestSwitch(t *testing.T) {
 	s := &Switch{
 		GPIO:  poller,
 		Value: 5.0,
+		TrueValue: 5.0,
 		Units: "liters",
 	}
 	out := make(chan Message)
@@ -38,6 +39,7 @@ func TestBoolSwitch(t *testing.T) {
 	s := &Switch{
 		GPIO:  poller,
 		Value: true,
+		TrueValue: true,
 	}
 	out := make(chan Message)
 	in := make(chan Value)
