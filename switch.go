@@ -56,7 +56,6 @@ func (s *Switch) wait(out chan<- interface{}, err chan<- error) {
 			out <- 0.0
 		}
 	}
-	time.Sleep(200 * time.Millisecond)
 }
 
 func (s *Switch) SendValue() {
@@ -86,6 +85,7 @@ func (s *Switch) Start(in <-chan Message, out chan<- Value) {
 		case val := <-value:
 			s.Value = val
 			s.SendValue()
+			time.Sleep(100 * time.Millisecond)
 		case e := <-err:
 			log.Println(e)
 		}
