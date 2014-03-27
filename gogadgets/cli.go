@@ -27,7 +27,7 @@ func main() {
 }
 
 func runGadgets() {
-	a := gogadgets.NewApp(config)
+	a := gogadgets.NewApp(*config)
 	a.Start()
 }
 
