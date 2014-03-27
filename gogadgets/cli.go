@@ -1,8 +1,9 @@
 package main
 
 
+
 import (
-	"flag"
+	"github.com/droundy/goopt"
 	"time"
 	"fmt"
 	"bitbucket.org/cswank/gogadgets"
@@ -10,25 +11,23 @@ import (
 )
 
 var (
-	host = flag.String("h", "localhost", "gadgets host (for the send command)")
-	//config = flag.String("c", "", "config file for running a gadgets system")
+	host = goopt.String([]string{"-h", "--host"}, "localhost", "Name of Host")
+	config = goopt.String([]string{"-g", "--gadgets"}, "", "Path to a Gadgets config file")
+	cmd = goopt.String([]string{"-c", "--cmd"}, "", "a Robot Command Language string")
 )
 
 func main() {
-	flag.Parse()
-	sub := flag.Arg(0)
-	if sub == "run" {
+	goopt.Parse(nil)
+	fmt.Println(len(*config))
+	if len(*config) > 0 {
 		runGadgets()
-	} else if sub == "send" {
+	} else if len(*cmd) > 0 {
 		sendCommand()
-	} else if sub == "listen" {
-		listen()
 	}
 }
 
 func runGadgets() {
-	cfg := flag.Arg(1)
-	a := gogadgets.NewApp(cfg)
+	a := gogadgets.NewApp(config)
 	a.Start()
 }
 
@@ -38,10 +37,10 @@ func sendCommand() {
 	if err != nil {
 		panic(err)
 	}
-	time.Sleep(10 * time.Millisecond)
-	fmt.Println(flag.Arg(1), *host)
-	s.Send(flag.Arg(1))
-	time.Sleep(10 * time.Millisecond)
+	time.Sleep(100 * time.Millisecond)
+	fmt.Println(*cmd, "host", *host)
+	s.Send(*cmd)
+	time.Sleep(100 * time.Millisecond)
 	os.Exit(0)
 }
 
