@@ -6,7 +6,7 @@
             "pin": {
                 "type": "gpio",
                 "pin": "11",
-                "direction": "out",
+                "direction": "out"
             }
         },
         {
@@ -15,7 +15,7 @@
             "pin": {
                 "type": "gpio",
                 "pin": "13",
-                "direction": "out",
+                "direction": "out"
             }
         },
         {
@@ -24,7 +24,7 @@
             "pin": {
                 "type": "gpio",
                 "pin": "15",
-                "direction": "out",
+                "direction": "out"
             }
         },
         {
@@ -33,7 +33,7 @@
             "pin": {
                 "type": "gpio",
                 "pin": "16",
-                "direction": "out",
+                "direction": "out"
             }
         },
         {
@@ -42,7 +42,7 @@
             "pin": {
                 "type": "gpio",
                 "pin": "18",
-                "direction": "out",
+                "direction": "out"
             }
         }
     ]
