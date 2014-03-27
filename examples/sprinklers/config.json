@@ -6,6 +6,7 @@
             "pin": {
                 "type": "gpio",
                 "pin": "11",
+                "platform": "rpi",
                 "direction": "out"
             }
         },
@@ -15,6 +16,7 @@
             "pin": {
                 "type": "gpio",
                 "pin": "13",
+                "platform": "rpi",
                 "direction": "out"
             }
         },
@@ -24,6 +26,7 @@
             "pin": {
                 "type": "gpio",
                 "pin": "15",
+                "platform": "rpi",
                 "direction": "out"
             }
         },
@@ -33,6 +36,7 @@
             "pin": {
                 "type": "gpio",
                 "pin": "16",
+                "platform": "rpi",
                 "direction": "out"
             }
         },
@@ -42,6 +46,7 @@
             "pin": {
                 "type": "gpio",
                 "pin": "18",
+                "platform": "rpi",
                 "direction": "out"
             }
         }
