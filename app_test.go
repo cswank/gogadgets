@@ -60,9 +60,10 @@ func TestGadgets(t *testing.T) {
 		Location: location,
 		Name:     name,
 		Input: &Switch{
-			GPIO:  poller,
-			Value: 5.0,
-			Units: "liters",
+			GPIO:      poller,
+			Value:     5.0,
+			TrueValue: 5.0,
+			Units:     "liters",
 		},
 		UID: fmt.Sprintf("%s %s", location, name),
 	}

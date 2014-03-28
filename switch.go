@@ -1,8 +1,8 @@
 package gogadgets
 
 import (
-	"fmt"
 	"errors"
+	"fmt"
 	"log"
 	"time"
 )
@@ -11,10 +11,11 @@ import (
 //to change value (1 to 0 or 0 to 1).  When that change
 //happens it sends an update to the rest of the system.
 type Switch struct {
-	GPIO  Poller
-	Value interface{}
-	Units string
-	out   chan<- Value
+	GPIO      Poller
+	Value     interface{}
+	TrueValue interface{}
+	Units     string
+	out       chan<- Value
 }
 
 func NewSwitch(pin *Pin) (InputDevice, error) {
@@ -27,9 +28,15 @@ func NewSwitch(pin *Pin) (InputDevice, error) {
 	}
 	if err == nil {
 		s = &Switch{
-			GPIO:  poller,
-			Value: pin.Value,
-			Units: pin.Units,
+			GPIO:      poller,
+			TrueValue: pin.Value,
+			Units:     pin.Units,
+		}
+		switch s.TrueValue.(type) {
+		case bool:
+			s.Value = false
+		default:
+			s.Value = float64(0.0)
 		}
 	}
 	return s, err
@@ -42,18 +49,18 @@ func (s *Switch) wait(out chan<- interface{}, err chan<- error) {
 	val, e := s.GPIO.Wait()
 	if e != nil {
 		err <- e
-	} else {
+		return
+	}
+	switch v := s.TrueValue.(type) {
+	case bool:
+		out <- val
+	default:
 		if val {
-			out <- s.Value
+			out <- v
 		} else {
-			if s.Value == true {
-				out <- false
-			} else {
-				out <- 0.0
-			}
+			out <- 0.0
 		}
 	}
-	time.Sleep(200 * time.Millisecond)
 }
 
 func (s *Switch) SendValue() {
@@ -83,6 +90,7 @@ func (s *Switch) Start(in <-chan Message, out chan<- Value) {
 		case val := <-value:
 			s.Value = val
 			s.SendValue()
+			time.Sleep(100 * time.Millisecond)
 		case e := <-err:
 			log.Println(e)
 		}

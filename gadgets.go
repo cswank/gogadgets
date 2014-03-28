@@ -324,7 +324,7 @@ func (g *Gadget) sendUpdate(val *Value) {
 		Name:        g.Name,
 		Value:       *value,
 		TargetValue: val,
-		Timestamp: time.Now().UTC(),
+		Timestamp:   time.Now().UTC(),
 		Info: Info{
 			Direction: g.Direction,
 			On:        g.OnCommand,

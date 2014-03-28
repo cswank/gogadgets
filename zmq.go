@@ -1,6 +1,6 @@
 /*
-       board (master)         board 2
-   sub  pub               sub  pub
+       master             board 2 (or ui)
+   sub  pub  reply        sub  pub  reply
     |    |                 |    |
     |    -------------------    |
     -----------------------------
@@ -57,18 +57,16 @@ func (s *Sockets) Send(cmd string) {
 	}
 }
 
-//This is the main loop for Sockets.  It listens for chann Messages
-//from inside the system and sends it to external listeners (like a
-//UI), and listens for external messages and sends them along to
-//the internal system.
+//Sockets listens for chann Messages from inside the system and
+//sends it to external listeners (like a UI), and listens for
+//external messages and sends them along to the internal system.
 func (s *Sockets) Start(in <-chan Message, out chan<- Message) {
 	err := s.getSockets()
 	defer s.Close()
 	if err != nil {
 		log.Println("zmq sockets had a problem", err)
 	}
-	keepGoing := true
-	for keepGoing {
+	for {
 		select {
 		case data := <-s.subChan.In():
 			s.sendMessageIn(data, out)
@@ -97,6 +95,32 @@ func (s *Sockets) sendMessageOut(msg Message) bool {
 		}
 	}
 	return keepGoing
+}
+
+func NewClientSockets(host string) (*Sockets, error) {
+	s := &Sockets{
+		host:    host,
+		subPort: 6111,
+		pubPort: 6112,
+	}
+	err := s.getClientSockets()
+	return s, err
+}
+
+func (s *Sockets) Send(cmd string) {
+	msg := &Message{
+		Type: COMMAND,
+		Body: cmd,
+	}
+	b, err := json.Marshal(msg)
+	if err != nil {
+		fmt.Println("zmq sockets had a problem", err)
+	} else {
+		s.pub.Send([][]byte{
+			[]byte(msg.Type),
+			b,
+		})
+	}
 }
 
 //A message that came from outside clients (ui, connected
@@ -193,7 +217,6 @@ func (s *Sockets) getClientSockets() (err error) {
 	return err
 }
 
-//helps sockets fufill the Gogadget interface
 func (s *Sockets) GetUID() string {
 	return "zmq sockets"
 }

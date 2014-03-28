@@ -94,7 +94,6 @@ func TestSetStepChecker(t *testing.T) {
 	}
 }
 
-
 func TestSetBoolStepChecker(t *testing.T) {
 	m := MethodRunner{}
 	cmd := "wait for lab switch == true"
@@ -108,7 +107,7 @@ func TestSetBoolStepChecker(t *testing.T) {
 	if !m.stepChecker(msg) {
 		t.Error("should have been true")
 	}
-	
+
 	msg = &Message{
 		Sender: "fish tank volume",
 		Value: Value{
@@ -119,7 +118,6 @@ func TestSetBoolStepChecker(t *testing.T) {
 		t.Error("should have been false")
 	}
 }
-
 
 func TestParseWaitCommand(t *testing.T) {
 	m := MethodRunner{}

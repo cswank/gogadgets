@@ -180,7 +180,7 @@ func (m *MethodRunner) getCompare(operator string, value interface{}) (cmp compa
 	case float64:
 		return m.getFloatCompare(operator, v)
 	default:
-		return func(x interface{}) bool {return x == v}, nil
+		return func(x interface{}) bool { return x == v }, nil
 	}
 }
 

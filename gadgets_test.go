@@ -325,9 +325,10 @@ func TestInputStart(t *testing.T) {
 	name := "switch"
 	poller := &FakePoller{}
 	s := &Switch{
-		GPIO:  poller,
-		Value: 5.0,
-		Units: "liters",
+		GPIO:      poller,
+		Value:     5.0,
+		TrueValue: 5.0,
+		Units:     "liters",
 	}
 	g := Gadget{
 		Location: location,
