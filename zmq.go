@@ -1,6 +1,6 @@
 /*
        board (master)         board 2
-   sub  pub  reply        sub  pub  reply
+   sub  pub               sub  pub
     |    |                 |    |
     |    -------------------    |
     -----------------------------
@@ -39,10 +39,6 @@ func NewClientSockets(host string) (*Sockets, error) {
 	}
 	err := s.getClientSockets()
 	return s, err
-}
-
-func (s *Sockets) GetUID() string {
-	return "zmq sockets"
 }
 
 func (s *Sockets) Send(cmd string) {
@@ -137,8 +133,9 @@ func (s *Sockets) getSockets() (err error) {
 }
 
 //Two GoGadgets systems can be joined together into a single system.
-//One of the GoGadgets system must be declared as being the master,
-//and the zmq sockets for the master are created here.
+//The GoGadgets system that has it's App.Host set as "localhost" is
+//the master.  Other systems that wish to join need to be configured
+//with the IP address of the master system as App.Host.
 func (s *Sockets) getMasterSockets() (err error) {
 	s.ctx, err = zmq.NewContext()
 	if err != nil {
@@ -168,7 +165,7 @@ func (s *Sockets) getMasterSockets() (err error) {
 }
 
 //This creates the zmq sockets for a GoGadget system that is not the master
-//system.
+//system or a UI.
 func (s *Sockets) getClientSockets() (err error) {
 	s.ctx, err = zmq.NewContext()
 	if err != nil {
@@ -194,4 +191,9 @@ func (s *Sockets) getClientSockets() (err error) {
 	}
 	s.sub.Subscribe([]byte(""))
 	return err
+}
+
+//helps sockets fufill the Gogadget interface
+func (s *Sockets) GetUID() string {
+	return "zmq sockets"
 }
