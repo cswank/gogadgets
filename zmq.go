@@ -97,32 +97,6 @@ func (s *Sockets) sendMessageOut(msg Message) bool {
 	return keepGoing
 }
 
-func NewClientSockets(host string) (*Sockets, error) {
-	s := &Sockets{
-		host:    host,
-		subPort: 6111,
-		pubPort: 6112,
-	}
-	err := s.getClientSockets()
-	return s, err
-}
-
-func (s *Sockets) Send(cmd string) {
-	msg := &Message{
-		Type: COMMAND,
-		Body: cmd,
-	}
-	b, err := json.Marshal(msg)
-	if err != nil {
-		fmt.Println("zmq sockets had a problem", err)
-	} else {
-		s.pub.Send([][]byte{
-			[]byte(msg.Type),
-			b,
-		})
-	}
-}
-
 //A message that came from outside clients (ui, connected
 //gogadget systems) is passed along to this gogadget
 //system
