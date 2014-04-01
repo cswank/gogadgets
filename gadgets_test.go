@@ -44,6 +44,24 @@ func TestGetTimeValue(t *testing.T) {
 	}
 }
 
+func TestGetDuration(t *testing.T) {
+	g := Gadget{}
+	d := g.getDuration(2, "minutes")
+	e := time.Duration(2.0 * time.Minute)
+	if d != e {
+		t.Error(d, e)
+	}
+}
+
+func TestGetHourDuration(t *testing.T) {
+	g := Gadget{}
+	d := g.getDuration(1, "hour")
+	e := time.Duration(1.0 * time.Hour)
+	if d != e {
+		t.Error(d, e)
+	}
+}
+
 func TestStart(t *testing.T) {
 	location := "lab"
 	name := "led"

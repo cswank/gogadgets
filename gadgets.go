@@ -280,8 +280,17 @@ func (g *Gadget) setCompare(value float64, unit string, gadget string) {
 	}
 }
 
+func (g *Gadget) getDuration(value float64, unit string) time.Duration {
+	if unit == "minute" || unit == "minutes" {
+		value *= 60.0
+	} else if unit == "hour" || unit == "hours" {
+		value *= 3600.0
+	}
+	return time.Duration(value * float64(time.Second))
+}
+
 func (g *Gadget) startTimer(value float64, unit string, in <-chan bool, out chan<- bool) {
-	d := time.Duration(value * float64(time.Second))
+	d := g.getDuration(value, unit)
 	keepGoing := true
 	for keepGoing {
 		select {
