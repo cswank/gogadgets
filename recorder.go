@@ -2,7 +2,16 @@ package gogadgets
 
 import (
 	"labix.org/v2/mgo"
+	"strconv"
+	"strings"
+	"time"
 )
+
+type summary struct {
+	start time.Time
+	n int
+	v float64
+}
 
 //Recorder takes all the update messages it receives and saves them
 //in a mongodb.
@@ -13,13 +22,25 @@ type Recorder struct {
 	collection *mgo.Collection
 	status     bool
 	connected  bool
+	filter     []string
+	duration   time.Duration
+	history    map[string]summary
 }
 
 func NewRecorder(pin *Pin) (OutputDevice, error) {
-	return &Recorder{
+	i, err := strconv.ParseInt(pin.Args["summarize"], 10, 64)
+	var d time.Duration
+	if err == nil {
+		d = time.Duration(i) * time.Minute
+	}
+	r := &Recorder{
 		DBHost: pin.Args["host"],
 		DBName: pin.Args["db"],
-	}, nil
+		filter: getFilter(pin.Args["filter"]),
+		duration: d,
+		history: map[string]summary{},
+	}
+	return r, nil
 }
 
 func (r *Recorder) Update(msg *Message) {
@@ -49,6 +70,47 @@ func (r *Recorder) Status() interface{} {
 }
 
 func (r *Recorder) save(msg *Message) {
+	if len(r.filter) > 0 {
+		if !r.inFilter(msg) {
+			return
+		}
+	}
+	if r.duration > 0 {
+		r.summarize(msg)
+	} else {
+		r.doSave(msg)
+	}
+}
+
+func (r *Recorder) inFilter(msg *Message) bool {
+	for _, item := range r.filter {
+		if msg.Sender == item {
+			return true
+		}
+	}
+	return false
+}
+
+func (r *Recorder) summarize(msg *Message) {
+	now := time.Now()
+	s, ok := r.history[msg.Sender]
+	if !ok {
+		s = summary{start: now}
+	}
+	s.n += 1
+	f, _ := msg.Value.ToFloat()
+	s.v += f
+	lapsed := s.start.Sub(now)
+	if lapsed >= r.duration {
+		msg.Value.Value = s.v / float64(s.n)
+		r.doSave(msg)
+		delete(r.history, msg.Sender)
+	} else {
+		r.history[msg.Sender] = s
+	}
+}
+
+func (r *Recorder) doSave(msg *Message) {
 	r.collection.Insert(msg)
 }
 
@@ -60,4 +122,11 @@ func (r *Recorder) connect() error {
 	r.session = session
 	r.collection = session.DB(r.DBName).C("updates")
 	return nil
+}
+
+func getFilter(filterStr string) []string {
+	if len(filterStr) == 0 {
+		return []string{}
+	}
+	return strings.Split(filterStr, ",")
 }
