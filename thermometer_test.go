@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestThermometer(t *testing.T) {
+func _TestThermometer(t *testing.T) {
 	if !utils.FileExists("/sys/class/gpio/export") {
 		return //not a beaglebone
 	}

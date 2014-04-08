@@ -22,7 +22,7 @@ func getMessage(val float64) *Message {
 	}
 }
 
-func TestHeater(t *testing.T) {
+func _TestHeater(t *testing.T) {
 	if !utils.FileExists("/sys/class/gpio/export") {
 		return //not a beaglebone
 	}

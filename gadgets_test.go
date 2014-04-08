@@ -240,7 +240,7 @@ func TestStartWithTimeTriggerWithInterrupt(t *testing.T) {
 	}
 }
 
-func TestStartWithTimeTriggerForReals(t *testing.T) {
+func _TestStartWithTimeTriggerForReals(t *testing.T) {
 	if !utils.FileExists("/sys/class/gpio/export") {
 		return //not a beaglebone
 	}
@@ -282,7 +282,7 @@ func TestStartWithTimeTriggerForReals(t *testing.T) {
 	}
 }
 
-func TestRealInput(t *testing.T) {
+func _TestRealInput(t *testing.T) {
 	if !utils.FileExists("/sys/class/gpio/export") {
 		return //not a beaglebone
 	}

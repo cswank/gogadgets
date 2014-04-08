@@ -20,7 +20,7 @@ func TestGPIO(t *testing.T) {
 	g.Off()
 }
 
-func TestGPIOWait(t *testing.T) {
+func _TestGPIOWait(t *testing.T) {
 	if !utils.FileExists("/sys/class/gpio/export") {
 		return //not a beaglebone
 	}
