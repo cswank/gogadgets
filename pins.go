@@ -24,8 +24,19 @@ var (
 				"16": "51",
 			},
 		},
+		"pwm": map[string]map[string]string{
+			"8": map[string]string{
+				"13": "ocp.*/pwm_test_P8_13.*",
+				"19": "ocp.*/pwm_test_P8_19.*",
+			},
+			"9": map[string]string{
+				"14": "ocp.*/pwm_test_P9_14.*",
+				"16": "ocp.*/pwm_test_P9_16.*",
+				"21": "ocp.*/pwm_test_P9_21.*",
+				"22": "ocp.*/pwm_test_P9_22.*",
+			},
+		},
 	}
-
 	PiPins = map[string]string{
 		"11": "17",
 		"13": "27",
