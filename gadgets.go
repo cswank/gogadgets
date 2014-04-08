@@ -59,16 +59,8 @@ type Gadget struct {
 //NewGadget reads a GadgetConfig and creates the correct
 //type of Gadget.
 func NewGadget(config *GadgetConfig) (*Gadget, error) {
-	switch v := config.Pin.(type) {
-	case Pin:
-		return newGadget(v)
-	case MotorConfg:
-		
-	}
-
-func newGadget(config *GadgetConfig) (*Gadget, error) {
-	
-	if t == "heater" || t == "cooler" || t == "gpio" || t == "recorder" {
+	t := config.Pin.Type
+	if t == "heater" || t == "cooler" || t == "gpio" || t == "recorder" || t == "pwm" || t == "motor" {
 		return NewOutputGadget(config)
 	} else if t == "thermometer" || t == "switch" {
 		return NewInputGadget(config)

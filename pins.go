@@ -26,14 +26,14 @@ var (
 		},
 		"pwm": map[string]map[string]string{
 			"8": map[string]string{
-				"13": "ocp.*/pwm_test_P8_13.*",
-				"19": "ocp.*/pwm_test_P8_19.*",
+				"13": "bone_pwm_p8_13",
+				"19": "bone_pwm_p8_19",
 			},
 			"9": map[string]string{
-				"14": "ocp.*/pwm_test_P9_14.*",
-				"16": "ocp.*/pwm_test_P9_16.*",
-				"21": "ocp.*/pwm_test_P9_21.*",
-				"22": "ocp.*/pwm_test_P9_22.*",
+				"14": "bone_pwm_p9_14",
+				"16": "bone_pwm_p9_16",
+				"21": "bone_pwm_p9_21",
+				"22": "bone_pwm_p9_22",
 			},
 		},
 	}

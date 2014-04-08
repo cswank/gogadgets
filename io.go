@@ -24,16 +24,7 @@ type Poller interface {
 	Wait() (bool, error)
 }
 
-func NewOutputDevice(p interface{}) (dev OutputDevice, err error) {
-	switch v := p.(type) {
-	case Pin:
-		return newOutputDevice(&v)
-	case MotorConfig:
-		return NewMotor(&v)
-	}
-}
-
-func newOutputDevice(pin *Pin) (dev OutputDevice, err error) {
+func NewOutputDevice(pin *Pin) (dev OutputDevice, err error) {
 	if pin.Type == "gpio" {
 		dev, err = NewGPIO(pin)
 	} else if pin.Type == "heater" {
@@ -42,6 +33,10 @@ func newOutputDevice(pin *Pin) (dev OutputDevice, err error) {
 		dev, err = NewCooler(pin)
 	} else if pin.Type == "recorder" {
 		dev, err = NewRecorder(pin)
+	} else if pin.Type == "pwm" {
+		dev, err = NewPWM(pin)
+	} else if pin.Type == "motor" {
+		dev, err = NewMotor(pin)
 	} else {
 		dev, err = nil, errors.New("invalid pin type")
 	}

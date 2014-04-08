@@ -86,7 +86,9 @@ type Pin struct {
 	Value     interface{}       `json:"value"`
 	Units     string            `json:"units"`
 	Platform  string            `json:"platform"`
+	Frequency int               `json:"frequency"`
 	Args      map[string]string `json:"args"`
+	Pins      map[string]Pin    `json:"pins"`
 }
 
 type GadgetConfig struct {
@@ -94,7 +96,7 @@ type GadgetConfig struct {
 	Name       string `json:"name"`
 	OnCommand  string `json:"onCommand"`
 	OffCommand string `json:"offCommand"`
-	Pin        interface{}  `json:"pin"`
+	Pin        Pin    `json:"pin"`
 }
 
 type Config struct {

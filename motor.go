@@ -4,13 +4,6 @@ import (
 	
 )
 
-type MotorConfig struct {
-	GPIOA Pin
-	GPIOB Pin
-	PWM   Pin
-	Input Pin
-}
-
 type Motor struct {
 	gpioA GPIO
 	gpioB GPIO
@@ -19,7 +12,7 @@ type Motor struct {
 	status bool
 }
 
-func NewMotor(cnf *MotorConfig) (OutputDevice, error) {
+func NewMotor(pin *Pin) (OutputDevice, error) {
 	var m *Motor
 	var err error
 	return m, err
