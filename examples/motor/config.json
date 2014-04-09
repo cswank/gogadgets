@@ -1,0 +1,39 @@
+{
+    "gadgets": [
+        {
+            "location": "lab",
+            "name": "motor",
+            "pin": {
+                "type": "motor",
+                "pins": {
+                    "gpio_a": {
+                        "type": "gpio",
+                        "port": "8",
+                        "pin": "7",
+                        "direction": "out"
+                    },
+                    "gpio_b": {
+                        "type": "gpio",
+                        "port": "8",
+                        "pin": "8",
+                        "direction": "out"
+                    },
+                    "pwm": {
+                        "type": "pwm",
+                        "port": "8",
+                        "pin": "13",
+                        "frequency": 20000
+                    },
+                    "poller": {
+                        "type": "gpio",
+                        "port": "8",
+                        "pin": "9",
+                        "direction": "in",
+                        "edge": "rising",
+                        "value": true,
+                    }
+                }
+            }
+        }
+    ]
+}
