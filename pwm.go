@@ -50,6 +50,7 @@ func (p *PWM) Update(msg *Message) {
 }
 
 func (p *PWM) On(val *Value) error {
+	fmt.Println("pwm on", val)
 	if val.Units == "%" {
 		ioutil.WriteFile(p.runPath, []byte("0"), os.ModeDevice)
 		p.duty = p.getDuty(val.Value)
@@ -60,6 +61,8 @@ func (p *PWM) On(val *Value) error {
 }
 
 func (p *PWM) Off() error {
+	fmt.Println("pwm off")
+	ioutil.WriteFile(p.dutyPath, []byte("0"), os.ModeDevice)
 	return ioutil.WriteFile(p.runPath, []byte("0"), os.ModeDevice)
 }
 
