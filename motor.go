@@ -1,7 +1,7 @@
 package gogadgets
 
 import (
-	
+	"fmt"
 )
 
 type Motor struct {
@@ -47,8 +47,13 @@ func (m *Motor) Update(msg *Message) {
 }
 
 func (m *Motor) On(val *Value) error {
+	if val == nil {
+		val = &Value{Value:100.0, Units:"%"}
+	}
+	val.Units = "%"
 	v, ok := val.Value.(float64)
-	if ! ok {
+	fmt.Println("motor on", val, v, ok)
+	if !ok {
 		return nil
 	}
 	if v < 0.0 {
@@ -56,6 +61,7 @@ func (m *Motor) On(val *Value) error {
 		m.gpioA.Off()
 		m.gpioB.On(nil)
 	} else if v > 0.0 {
+		fmt.Println("v > 0", m.pwm)
 		m.pwm.On(val)
 		m.gpioA.On(nil)
 		m.gpioB.Off()
@@ -70,6 +76,7 @@ func (m *Motor) Status() interface{} {
 }
 
 func (m *Motor) Off() error {
+	fmt.Println("motor off")
 	m.pwm.Off()
 	m.gpioA.On(nil)
 	m.gpioB.On(nil)

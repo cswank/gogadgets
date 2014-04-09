@@ -86,6 +86,7 @@ func (g *GPIO) Update(msg *Message) {
 }
 
 func (g *GPIO) On(val *Value) error {
+	fmt.Println("gpio on")
 	return g.writeValue(g.valuePath, "1")
 }
 
@@ -95,6 +96,7 @@ func (g *GPIO) Status() interface{} {
 }
 
 func (g *GPIO) Off() error {
+	fmt.Println("gpio off")
 	return g.writeValue(g.valuePath, "0")
 }
 
