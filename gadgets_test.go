@@ -31,6 +31,19 @@ func TestParseCommand(t *testing.T) {
 	}
 }
 
+func TestParseNegativeCommand(t *testing.T) {
+	val, unit, err := ParseCommand("turn on lab led to -50 %")
+	if err != nil {
+		t.Error(err)
+	}
+	if val != -50.0 {
+		t.Error("incorrect value", val)
+	}
+	if unit != "%" {
+		t.Error("incorrect unit", unit)
+	}
+}
+
 func TestGetTimeValue(t *testing.T) {
 	val, unit, err := ParseCommand("turn on lab led for 1.1 minutes")
 	if err != nil {
