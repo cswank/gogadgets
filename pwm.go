@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"path"
+	"math"
 	"path/filepath"
 )
 
@@ -75,6 +76,7 @@ func (p *PWM) getDuty(val interface{}) []byte {
 	if !ok {
 		return []byte("0")
 	}
+	d = math.Abs(d)
 	f := (d / 100.0) * float64(p.period)
 	return []byte(fmt.Sprintf("%d", int(f)))
 }

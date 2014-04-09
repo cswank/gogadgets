@@ -24,6 +24,7 @@ var (
 		"second":     "time",
 		"minute":     "time",
 		"hour":       "time",
+		"%":          "power",
 	}
 )
 
@@ -61,7 +62,7 @@ type Gadget struct {
 func NewGadget(config *GadgetConfig) (*Gadget, error) {
 	t := config.Pin.Type
 	fmt.Println("type", t)
-	if t == "heater" || t == "cooler" || t == "gpio" || t == "recorder" || t == "pwm" || t == "motor" {
+	if t == "heater" || t == "cooler" || t == "gpio" || t == "recorder" || t == "pwm" || t == "motor" || t == "door" {
 		return NewOutputGadget(config)
 	} else if t == "thermometer" || t == "switch" {
 		return NewInputGadget(config)
@@ -252,6 +253,11 @@ func (g *Gadget) readOnArguments(cmd string) (*Value, error) {
 			go g.startTimer(value, unit, g.timerIn, g.timerOut)
 		} else if gadget == "volume" || gadget == "temperature" {
 			g.setCompare(value, unit, gadget)
+			val = &Value{
+				Value: value,
+				Units: unit,
+			}
+		} else if gadget == "power" {
 			val = &Value{
 				Value: value,
 				Units: unit,
