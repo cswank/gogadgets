@@ -3,6 +3,7 @@
         {
             "location": "lab",
             "name": "motor",
+            "type": "motor",
             "pin": {
                 "type": "motor",
                 "pins": {
@@ -30,7 +31,7 @@
                         "pin": "9",
                         "direction": "in",
                         "edge": "rising",
-                        "value": true,
+                        "value": true
                     }
                 }
             }
