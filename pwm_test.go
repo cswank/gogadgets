@@ -41,7 +41,7 @@ func TestGetDuty(t *testing.T) {
 	pwm := PWM{
 		period: 1000000000,
 	}
-	duty := pwm.getDuty(50)
+	duty := pwm.getDuty(50.0)
 	if string(duty) != "500000000" {
 		t.Error(string(duty))
 	}
