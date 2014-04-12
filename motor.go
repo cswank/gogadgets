@@ -1,7 +1,7 @@
 package gogadgets
 
 import (
-	
+
 )
 
 type Motor struct {
@@ -40,7 +40,7 @@ func (m *Motor) Update(msg *Message) {
 
 func (m *Motor) On(val *Value) error {
 	if val == nil {
-		val = &Value{Value:100.0}
+		val = &Value{Value:100.0, Units: "%"}
 	}
 	v, ok := val.Value.(float64)
 	if !ok {
