@@ -2,7 +2,6 @@ package gogadgets
 
 import (
 	"bitbucket.org/cswank/gogadgets/utils"
-	"os/exec"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -74,9 +73,6 @@ func NewThermometer(pin *Pin) (InputDevice, error) {
 	var therm *Thermometer
 	var err error
 	path := fmt.Sprintf("/sys/bus/w1/devices/%s/w1_slave", pin.OneWireId)
-	if !utils.FileExists(path) {
-		activateOneWire()
-	}
 	if pin.OneWireId == "" || !utils.FileExists(path) {
 		err = errors.New(fmt.Sprintf("invalid one-wire device path: %s", pin.OneWireId))
 		return therm, err
@@ -175,14 +171,3 @@ func (t *Thermometer) Start(in <-chan Message, out chan<- Value) {
 	}
 }
 
-func activateOneWire() {
-	cmd := "echo echo BB-W1:00A0 > /sys/devices/bone_capemgr.9/slots"
-	cmd := exec.Command("echo", "hi")
-	err := cmd.Start()
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("Waiting for command to finish...")
-	err = cmd.Wait()
-	log.Printf("Command finished with error: %v", err)
-}

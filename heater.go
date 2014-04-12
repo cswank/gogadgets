@@ -2,6 +2,7 @@ package gogadgets
 
 import (
 	"time"
+	"fmt"
 )
 
 //Heater represnts an electic heating element.  It
