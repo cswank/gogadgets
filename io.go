@@ -37,8 +37,6 @@ func NewOutputDevice(pin *Pin) (dev OutputDevice, err error) {
 		dev, err = NewPWM(pin)
 	} else if pin.Type == "motor" {
 		dev, err = NewMotor(pin)
-	} else if pin.Type == "door" {
-		dev, err = NewDoor(pin)
 	} else {
 		dev, err = nil, errors.New("invalid pin type")
 	}

@@ -1,7 +1,7 @@
 package gogadgets
 
 import (
-	"fmt"
+	
 )
 
 type Motor struct {
