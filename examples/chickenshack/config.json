@@ -12,18 +12,6 @@
         },
         {
             "location": "shack",
-            "name": "hall-sensor",
-            "pin": {
-                "type": "switch",
-                "port": "8",
-                "pin": "8",
-                "direction": "in",
-                "edge": "both",
-                "value": true
-            }
-        },
-        {
-            "location": "shack",
             "name": "temperature",
             "pin": {
                 "type": "thermometer",
@@ -35,9 +23,10 @@
 	    "location": "shack",
 	    "name": "heater",
 	    "pin": {
-		"type": "heater",
+		"type": "gpio",
 		"port": "8",
-		"pin": "9"
+		"pin": "9",
+                "direction": "out"
 	    }
         }
     ]
