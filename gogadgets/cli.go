@@ -3,7 +3,7 @@ package main
 
 
 import (
-	"github.com/droundy/goopt"
+	"flag"
 	"time"
 	"fmt"
 	"bitbucket.org/cswank/gogadgets"
@@ -11,14 +11,13 @@ import (
 )
 
 var (
-	host = goopt.String([]string{"-h", "--host"}, "localhost", "Name of Host")
-	config = goopt.String([]string{"-g", "--gadgets"}, "", "Path to a Gadgets config file")
-	cmd = goopt.String([]string{"-c", "--cmd"}, "", "a Robot Command Language string")
+	host = flag.String("h", "localhost", "Name of Host")
+	config = flag.String("g", "", "Path to a Gadgets config file")
+	cmd = flag.String("c", "", "a Robot Command Language string")
 )
 
 func main() {
-	goopt.Parse(nil)
-	fmt.Println(len(*config))
+	flag.Parse()
 	if len(*config) > 0 {
 		runGadgets()
 	} else if len(*cmd) > 0 {

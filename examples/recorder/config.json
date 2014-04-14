@@ -1,3 +1,15 @@
 {
-    "MasterHost": "brewery"
+    "gadgets": [
+        {
+	    "location": "brewery",
+	    "name": "recorder",
+	    "pin": {
+		"type": "recorder",
+		"args": {
+                    "host": "localhost",
+                    "db": "gadgetstest"
+                }
+	    }
+        }
+    ]
 }
