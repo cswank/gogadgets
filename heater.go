@@ -54,12 +54,10 @@ func (h *Heater) On(val *Value) error {
 	h.status = true
 	h.update = make(chan Message)
 	h.stop = make(chan bool)
-<<<<<<< HEAD
 	if h.target > 0.0 {
-=======
-	h.gpio.On(nil)
+		h.gpio.On(nil)
+	}		
 	if !h.watching {
->>>>>>> 2d76a77b8261bf52eb79b34169f731a2bd121bc1
 		go h.watchTemperature(h.update, h.stop)
 	}
 	return nil
