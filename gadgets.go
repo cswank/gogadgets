@@ -3,6 +3,7 @@ package gogadgets
 import (
 	"errors"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -16,6 +17,8 @@ var (
 		"gallon":     "volume",
 		"c":          "temperature",
 		"f":          "temperature",
+		"C":          "temperature",
+		"F":          "temperature",
 		"celcius":    "temperature",
 		"fahrenheit": "temperature",
 		"seconds":    "time",
@@ -42,6 +45,7 @@ type Gadget struct {
 	Direction      string
 	OnCommand      string
 	OffCommand     string
+	InitialValue   string
 	UID            string
 	status         bool
 	compare        Comparitor
@@ -108,6 +112,7 @@ func NewOutputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
 			Direction:      "output",
 			OnCommand:      config.OnCommand,
 			OffCommand:     config.OffCommand,
+			InitialValue:   config.InitialValue,
 			Output:         dev,
 			Operator:       ">=",
 			UID:            fmt.Sprintf("%s %s", config.Location, config.Name),
@@ -137,7 +142,11 @@ func (g *Gadget) Start(in <-chan Message, out chan<- Message) {
 	g.timerIn = make(chan bool)
 	g.timerOut = make(chan bool)
 	if g.Output != nil {
-		g.off()
+		if len(g.InitialValue) > 0 {
+			g.readInitialValue()
+		} else {
+			g.off()
+		}
 		g.doOutputLoop(in)
 	} else if g.Input != nil {
 		g.doInputLoop(in)
@@ -169,6 +178,13 @@ func (g *Gadget) doInputLoop(in <-chan Message) {
 	}
 }
 
+func (g *Gadget) readInitialValue() {
+	msg := &Message{
+		Body: g.InitialValue,
+	}
+	g.readCommand(msg)
+}
+
 func (g *Gadget) doOutputLoop(in <-chan Message) {
 	for !g.shutdown {
 		select {
@@ -181,8 +197,10 @@ func (g *Gadget) doOutputLoop(in <-chan Message) {
 }
 
 func (g *Gadget) on(val *Value) {
-	g.Output.On(val)
-	if !g.status {
+	err := g.Output.On(val)
+	if err != nil {
+		log.Println("on err", err)
+	} else if !g.status {
 		g.status = true
 		g.sendUpdate(val)
 	}
@@ -251,7 +269,9 @@ func (g *Gadget) readOnArguments(cmd string) (*Value, error) {
 		if gadget == "time" {
 			go g.startTimer(value, unit, g.timerIn, g.timerOut)
 		} else if gadget == "volume" || gadget == "temperature" {
-			g.setCompare(value, unit, gadget)
+			if gadget == "volume" {
+				g.setCompare(value, unit, gadget)
+			}
 			val = &Value{
 				Value: value,
 				Units: unit,
