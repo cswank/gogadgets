@@ -96,6 +96,7 @@ type GadgetConfig struct {
 	Name       string `json:"name"`
 	OnCommand  string `json:"onCommand"`
 	OffCommand string `json:"offCommand"`
+	InitialValue string `json:"initialValue"`
 	Pin        Pin    `json:"pin"`
 }
 

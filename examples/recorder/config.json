@@ -1,14 +1,34 @@
 {
     "gadgets": [
         {
-	    "location": "brewery",
+	    "location": "lab",
 	    "name": "recorder",
+            "initialValue": "turn on lab recorder",
 	    "pin": {
 		"type": "recorder",
 		"args": {
                     "host": "localhost",
-                    "db": "gadgetstest"
+                    "db": "test",
+                    "summarize": "1"
                 }
+	    }
+        },
+        {
+            "location": "lab",
+            "name": "temperature",
+            "pin": {
+                "type": "thermometer",
+		"onewireId": "28-0000047ade8f",
+		"units": "C"
+            }
+        },
+        {
+	    "location": "shack",
+	    "name": "heater",
+	    "pin": {
+		"type": "gpio",
+		"port": "8",
+		"pin": "9"
 	    }
         }
     ]
