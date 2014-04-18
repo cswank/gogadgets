@@ -26,7 +26,7 @@
 	    "location": "shack",
 	    "name": "heater",
 	    "pin": {
-		"type": "gpio",
+		"type": "heater",
 		"port": "8",
 		"pin": "9"
 	    }

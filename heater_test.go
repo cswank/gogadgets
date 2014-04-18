@@ -1,16 +1,12 @@
 package gogadgets
 
 import (
-	"bitbucket.org/cswank/gogadgets/utils"
+	"os"
 	"testing"
-	"time"
 )
 
-func TestCreateHeater(t *testing.T) {
-	_ = Heater{
-		gpio:   &FakeOutput{},
-		target: 100.0,
-	}
+func init() {
+	os.Setenv("PWMTESTDEVICEMODE", "perm")
 }
 
 func getMessage(val float64) *Message {
@@ -22,36 +18,16 @@ func getMessage(val float64) *Message {
 	}
 }
 
-func _TestHeater(t *testing.T) {
-	if !utils.FileExists("/sys/class/gpio/export") {
-		return //not a beaglebone
+func TestHeater(t *testing.T) {
+	p := &Pin{
+		Type: "heater",
+		Port: "8",
+		Pin: "13",
+		Frequency: 1,
 	}
-	g, err := NewGPIO(&Pin{Port: "9", Pin: "14", Direction: "out"})
+	d, err := NewHeater(p)
 	if err != nil {
-		t.Fatal(err)
+		t.Error(err, d)
 	}
-	h := Heater{
-		gpio:   g,
-		target: 100.0,
-	}
-	v := &Value{
-		Value: 85.0,
-		Units: "C",
-	}
-	h.On(v)
-	time.Sleep(1 * time.Second)
-	msg := getMessage(84.0)
-	h.Update(msg)
-	time.Sleep(5 * time.Second)
-	msg = getMessage(84.5)
-	h.Update(msg)
-	time.Sleep(5 * time.Second)
-	msg = getMessage(85.5)
-	h.Update(msg)
-	time.Sleep(5 * time.Second)
-	msg = getMessage(82.0)
-	h.Update(msg)
-	time.Sleep(5 * time.Second)
-	h.Off()
-
 }
+

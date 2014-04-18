@@ -381,6 +381,9 @@ func ParseCommand(cmd string) (float64, string, error) {
 
 func splitCommand(cmd string) (string, string, error) {
 	parts := strings.Split(cmd, " ")
+	if len(parts) != 2 {
+		return "", "", errors.New(fmt.Sprintf("invalide command: %s", cmd))
+	}
 	return parts[0], parts[1], nil
 }
 

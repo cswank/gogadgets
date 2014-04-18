@@ -13,10 +13,25 @@ import (
 
 const (
 	NANO = 1000000000.0
-	DEVPATH = "/sys/devices/ocp.*/pwm_test_P%s_%s.*"
+	//DEVPATH = "/sys/devices/ocp.*/pwm_test_P%s_%s.*"
+	DEVPATH = "/sys/devices/ocp.*/pwm_test_%s_%s.*"
 	TREEPATH = "/sys/devices/bone_capemgr.*/slots"
 )
 
+var (
+	pwmMode os.FileMode
+	
+)
+
+func init() {
+	mode := os.Getenv("PWMTESTDEVICEMODE")
+	if mode == "" {
+		pwmMode = os.ModeDevice
+	} else {
+		pwmMode = os.ModePerm
+	}
+	fmt.Println("mode", mode)
+}
 
 // echo am33xx_pwm > /sys/devices/bone_capemgr.9/slots
 // echo bone_pwm_P8_13 > /sys/devices/bone_capemgr.9/slots
@@ -93,7 +108,7 @@ func setupPWM(pin *Pin) (devPath string, period int, err error) {
 	period = int(NANO / float32(pin.Frequency))
 	fmt.Println("period", fmt.Sprintf("%d", period))
 	p := path.Join(devPath, "period")
-	err = ioutil.WriteFile(p, []byte(fmt.Sprintf("%d", period)), os.ModeDevice)
+	err = ioutil.WriteFile(p, []byte(fmt.Sprintf("%d", period)), pwmMode)
 	if err != nil {
 		return devPath, period, err
 	}
