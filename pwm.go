@@ -28,7 +28,7 @@ func init() {
 	if mode == "" {
 		pwmMode = os.ModeDevice
 	} else {
-		pwmMode = os.ModePerm
+		pwmMode = 0777
 	}
 	fmt.Println("mode", mode)
 }
@@ -67,19 +67,23 @@ func (p *PWM) Update(msg *Message) {
 
 func (p *PWM) On(val *Value) error {
 	fmt.Println("pwm on", val)
-	if val.Units == "%" {
-		ioutil.WriteFile(p.runPath, []byte("0"), os.ModeDevice)
+	if val != nil && val.Units == "%" {
+		ioutil.WriteFile(p.runPath, []byte("0"), pwmMode)
 		p.duty = p.getDuty(val.Value)
 		fmt.Println(string(p.duty))
-		ioutil.WriteFile(p.dutyPath, p.duty, os.ModeDevice)
+		ioutil.WriteFile(p.dutyPath, p.duty, pwmMode)
+	} else {
+		ioutil.WriteFile(p.runPath, []byte("0"), pwmMode)
+		fmt.Println("writing duty full", p.period)
+		ioutil.WriteFile(p.dutyPath, []byte(fmt.Sprintf("%d", p.period)), pwmMode)
 	}
-	return ioutil.WriteFile(p.runPath, []byte("1"), os.ModeDevice)
+	return ioutil.WriteFile(p.runPath, []byte("1"), pwmMode)
 }
 
 func (p *PWM) Off() error {
 	fmt.Println("pwm off")
-	ioutil.WriteFile(p.dutyPath, []byte("0"), os.ModeDevice)
-	return ioutil.WriteFile(p.runPath, []byte("0"), os.ModeDevice)
+	ioutil.WriteFile(p.dutyPath, []byte("0"), pwmMode)
+	return ioutil.WriteFile(p.runPath, []byte("0"), pwmMode)
 }
 
 func (p *PWM) Status() interface{} {
@@ -113,12 +117,12 @@ func setupPWM(pin *Pin) (devPath string, period int, err error) {
 		return devPath, period, err
 	}
 	p = path.Join(devPath, "duty")
-	err = ioutil.WriteFile(p, []byte(fmt.Sprintf("%d", period)), os.ModeDevice)
+	err = ioutil.WriteFile(p, []byte(fmt.Sprintf("%d", period)), pwmMode)
 	if err != nil {
 		return devPath, period, err
 	}
 	p = path.Join(devPath, "polarity")
-	err = ioutil.WriteFile(p, []byte("0"), os.ModeDevice)
+	err = ioutil.WriteFile(p, []byte("0"), pwmMode)
 	if err != nil {
 		return devPath, period, err
 	}
@@ -139,11 +143,11 @@ func writePWMDeviceTree(port, pin string) error {
 	if !ok {
 		return errors.New(fmt.Sprintf("invalid pin: %s", pin))
 	}
-	err = ioutil.WriteFile(treePath, []byte("am33xx_pwm"), os.ModeDevice)
+	err = ioutil.WriteFile(treePath, []byte("am33xx_pwm"), pwmMode)
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(treePath, []byte(val), os.ModeDevice)
+	return ioutil.WriteFile(treePath, []byte(val), pwmMode)
 }
 
 func getTreePath() (string, error) {

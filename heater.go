@@ -11,12 +11,13 @@ import (
 //a thermometer in the same Location.
 type Heater struct {
 	target   float64
+	currentTemp float64
 	duration time.Duration
 	status   bool
 	pwm      OutputDevice
 	doPWM    bool
 	update   chan Message
-	stop     chan bool
+	start     chan bool
 	watching bool
 }
 
@@ -31,7 +32,7 @@ func NewHeater(pin *Pin) (OutputDevice, error) {
 			target:  100.0,
 			doPWM:   doPWM,
 			update: make(chan Message),
-			stop: make(chan bool),
+			start: make(chan bool),
 		}
 	}
 	return h, err
@@ -44,20 +45,19 @@ func (h *Heater) Update(msg *Message) {
 }
 
 func (h *Heater) On(val *Value) error {
-	fmt.Println("heater on", val)
 	if val != nil {
 		target, ok := val.ToFloat()
 		if ok {
 			h.target = target
+		} else {
+			h.target = 100.0
 		}
 	}
 	h.status = true
-	if h.target > 0.0 {
-		h.pwm.On(nil)
-	}		
 	if !h.watching {
-		go h.watchTemperature(h.update, h.stop)
+		go h.watchTemperature(h.update, h.start)
 	}
+	h.start <- true
 	return nil
 }
 
@@ -66,15 +66,12 @@ func (h *Heater) Status() interface{} {
 }
 
 func (h *Heater) Off() error {
-	fmt.Println("heater is getting turned off")
-	if h.status {
-		h.stop <- true
-	}
 	h.target = 0.0
+	h.start <- false
 	return nil
 }
 
-func (h *Heater) watchTemperature(update <-chan Message, stop <-chan bool) {
+func (h *Heater) watchTemperature(update <-chan Message, start <-chan bool) {
 	fmt.Println("watching")
 	h.watching = true
 	for {
@@ -82,10 +79,14 @@ func (h *Heater) watchTemperature(update <-chan Message, stop <-chan bool) {
 		case msg := <-update:
 			fmt.Println("msg", msg)
 			h.readTemperature(msg)
-		case <-stop:
-			fmt.Println("got stop message")
-			h.pwm.Off()
-			h.status = false
+		case s := <-start:
+			h.status = s
+			fmt.Println("got start message", s)
+			if s {
+				h.toggle()
+			} else {
+				h.pwm.Off()
+			}
 		}
 	}
 }
@@ -94,21 +95,23 @@ func (h *Heater) readTemperature(msg Message) {
 	temp, ok := msg.Value.ToFloat()
 	fmt.Println(temp, ok)
 	if ok {
+		h.currentTemp = temp
+		fmt.Println("if status", h.status)
 		if h.status {
-			h.toggle(temp)
+			h.toggle()
 		}
 	}
 }
 	
-func (h *Heater) toggle(temp float64) {
-	fmt.Println("toggle", h.pwm.Status())
+func (h *Heater) toggle() {
+	fmt.Println("toggle", h.pwm.Status(), h.status)
 	if h.doPWM {
-		duty := h.getDuty(temp)
+		duty := h.getDuty()
 		val := &Value{Value:duty, Units:"%s"}
 		h.pwm.On(val)
 	} else {
-		diff := h.target - temp
-		fmt.Println(diff, h.target, temp)
+		diff := h.target - h.currentTemp
+		fmt.Println("diff", diff, h.target, h.currentTemp)
 		if diff > 0 {
 			h.pwm.On(nil)
 		} else {
@@ -119,8 +122,8 @@ func (h *Heater) toggle(temp float64) {
 
 //Once the heater approaches the target temperature the electricity
 //is applied PWM style so the target temperature isn't overshot.
-func (h *Heater) getDuty(temp float64) int {
-	diff := h.target - temp
+func (h *Heater) getDuty() int {
+	diff := h.target - h.currentTemp
 	duty := 100
 	if diff >= 1.0 {
 		duty = 50
