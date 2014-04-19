@@ -1,0 +1,22 @@
+{
+    "gadgets": [
+        {
+            "location": "shack",
+            "name": "temperature",
+            "pin": {
+                "type": "thermometer",
+		"onewireId": "28-0000047ade8f",
+		"units": "C"
+            }
+        },
+        {
+	    "location": "shack",
+	    "name": "heater",
+	    "pin": {
+		"type": "heater",
+		"port": "8",
+		"pin": "9"
+	    }
+        }
+    ]
+}
