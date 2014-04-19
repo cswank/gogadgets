@@ -16,6 +16,7 @@ type Heater struct {
 	gpio     OutputDevice
 	update   chan Message
 	stop     chan bool
+	watching bool
 }
 
 func NewHeater(pin *Pin) (OutputDevice, error) {
@@ -48,7 +49,9 @@ func (h *Heater) On(val *Value) error {
 	h.status = true
 	h.update = make(chan Message)
 	h.stop = make(chan bool)
-	go h.watchTemperature(h.update, h.stop)
+	if !h.watching {
+		go h.watchTemperature(h.update, h.stop)
+	}
 	return nil
 }
 
@@ -57,13 +60,13 @@ func (h *Heater) Status() interface{} {
 }
 
 func (h *Heater) Off() error {
-	if h.status {
-		h.stop <- true
-	}
+	h.status = false
+	h.gpio.Off()
 	return nil
 }
 
 func (h *Heater) watchTemperature(update <-chan Message, stop <-chan bool) {
+	h.watching = true
 	h.gpio.On(nil)
 	keepGoing := true
 	h.duration = time.Duration(60 * time.Second)
@@ -85,6 +88,9 @@ func (h *Heater) watchTemperature(update <-chan Message, stop <-chan bool) {
 }
 
 func (h *Heater) toggle() {
+	if !h.status {
+		return
+	}
 	on, off := h.getDurations()
 	status := h.gpio.Status().(bool)
 	if on == 0 && off != 0 {

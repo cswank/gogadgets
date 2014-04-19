@@ -40,11 +40,6 @@ func (v *Value) ToFloat() (f float64, ok bool) {
 		f = V
 		ok = true
 	}
-	if v.Units == "F" || v.Units == "f" {
-		f = (f - 32.0) / 1.8
-	} else if v.Units == "Gallons" || v.Units == "gallons" || v.Units == "gal" {
-		f = f * 3.78541
-	}
 	return f, ok
 }
 

@@ -92,7 +92,7 @@ func (r *Recorder) inFilter(msg *Message) bool {
 }
 
 func (r *Recorder) summarize(msg *Message) {
-	now := time.Now()
+	now := time.Now().UTC()
 	s, ok := r.history[msg.Sender]
 	if !ok {
 		s = summary{start: now}

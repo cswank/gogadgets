@@ -29,7 +29,7 @@ func NewThermometer(pin *Pin) (InputDevice, error) {
 	}
 	therm = &Thermometer{
 		devicePath: path,
-		units:      "C",
+		units:      pin.Units,
 	}
 	return therm, err
 }
@@ -91,6 +91,9 @@ func (t *Thermometer) parseValue(val string) (v *Value, err error) {
 	temperature, err := strconv.ParseFloat(temperatureStr, 64)
 	if err == nil {
 		t.value = temperature / 1000.0
+		if t.units == "F" || t.units == "f" {
+			t.value = t.value * 1.8 + 32.0
+		}
 		v = &Value{
 			Value: t.value,
 			Units: t.units,
