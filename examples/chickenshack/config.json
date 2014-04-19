@@ -1,0 +1,46 @@
+{
+    "gadgets": [
+	{
+	    "location": "shack",
+	    "name": "recorder",
+            "initialValue": "turn on lab recorder",
+	    "pin": {
+		"type": "recorder",
+		"args": {
+                    "host": "192.168.1.135",
+                    "db": "chickens",
+                    "summarize": "10"
+                }
+	    }
+        },
+        {
+            "location": "shack",
+            "name": "door",
+            "pin": {
+                "type": "gpio",
+                "port": "8",
+                "pin": "7",
+                "direction": "out"
+            }
+        },
+        {
+            "location": "shack",
+            "name": "temperature",
+            "pin": {
+                "type": "thermometer",
+		"onewireId": "28-0000047ade8f",
+		"units": "F"
+            }
+        },
+        {
+	    "location": "shack",
+	    "name": "heater",
+	    "pin": {
+		"type": "gpio",
+		"port": "8",
+		"pin": "9",
+                "direction": "out"
+	    }
+        }
+    ]
+}

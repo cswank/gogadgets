@@ -169,7 +169,6 @@ func (s *Sockets) getClientSockets() (err error) {
 	if err != nil {
 		return err
 	}
-
 	s.pub, err = s.ctx.Socket(zmq.Pub)
 	if err != nil {
 		return err

@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"syscall"
+	"strings"
 )
 
 //GPIO interacts with the linux sysfs interface for GPIO
@@ -86,17 +87,15 @@ func (g *GPIO) Update(msg *Message) {
 }
 
 func (g *GPIO) On(val *Value) error {
-	fmt.Println("gpio on")
 	return g.writeValue(g.valuePath, "1")
 }
 
 func (g *GPIO) Status() interface{} {
 	data, err := ioutil.ReadFile(g.valuePath)
-	return err == nil && string(data) == "1\n"
+	return err == nil && strings.Replace(string(data), "\n", "", -1) == "1"
 }
 
 func (g *GPIO) Off() error {
-	fmt.Println("gpio off")
 	return g.writeValue(g.valuePath, "0")
 }
 

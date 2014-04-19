@@ -1,20 +1,7 @@
 {
     "gadgets": [
         {
-	    "location": "lab",
-	    "name": "recorder",
-            "initialValue": "turn on lab recorder",
-	    "pin": {
-		"type": "recorder",
-		"args": {
-                    "host": "localhost",
-                    "db": "test",
-                    "summarize": "1"
-                }
-	    }
-        },
-        {
-            "location": "lab",
+            "location": "shack",
             "name": "temperature",
             "pin": {
                 "type": "thermometer",

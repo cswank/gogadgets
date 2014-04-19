@@ -10,24 +10,29 @@ import (
 //a thermometer in the same Location.
 type Heater struct {
 	target   float64
-	current  float64
+	currentTemp float64
 	duration time.Duration
 	status   bool
-	gpio     OutputDevice
+	doPWM    bool
+	pwm    OutputDevice
 	update   chan Message
-	stop     chan bool
+	start     chan bool
 	watching bool
 }
 
 func NewHeater(pin *Pin) (OutputDevice, error) {
-	var h *Heater
+     	var h *Heater
 	var err error
-	g, err := NewGPIO(pin)
+	var d OutputDevice
+	doPWM := pin.Args["pwm"] == "true"
+	d, err = NewPWM(pin)
 	if err == nil {
 		h = &Heater{
-			gpio:    g,
-			current: 0.0,
+			pwm:    d,
 			target:  100.0,
+			doPWM:   doPWM,
+			update: make(chan Message),
+			start: make(chan bool),
 		}
 	}
 	return h, err
@@ -44,14 +49,15 @@ func (h *Heater) On(val *Value) error {
 		target, ok := val.ToFloat()
 		if ok {
 			h.target = target
+		} else {
+			h.target = 100.0
 		}
 	}
 	h.status = true
-	h.update = make(chan Message)
-	h.stop = make(chan bool)
 	if !h.watching {
-		go h.watchTemperature(h.update, h.stop)
+		go h.watchTemperature(h.update, h.start)
 	}
+	h.start <- true
 	return nil
 }
 
@@ -60,65 +66,64 @@ func (h *Heater) Status() interface{} {
 }
 
 func (h *Heater) Off() error {
-	h.status = false
-	h.gpio.Off()
+	h.target = 0.0
+	h.start <- false
 	return nil
 }
 
-func (h *Heater) watchTemperature(update <-chan Message, stop <-chan bool) {
+func (h *Heater) watchTemperature(update <-chan Message, start <-chan bool) {
 	h.watching = true
-	h.gpio.On(nil)
-	keepGoing := true
-	h.duration = time.Duration(60 * time.Second)
-	for keepGoing {
+	for {
 		select {
 		case msg := <-update:
-			current, ok := msg.Value.ToFloat()
-			if ok {
-				h.current = current
+			h.readTemperature(msg)
+		case s := <-start:
+			h.status = s
+			if s {
 				h.toggle()
+			} else {
+				h.pwm.Off()
 			}
-		case <-stop:
-			h.gpio.Off()
-			keepGoing = false
-		case <-time.After(h.duration):
-			h.toggle()
 		}
 	}
 }
 
-func (h *Heater) toggle() {
-	if !h.status {
-		return
+func (h *Heater) readTemperature(msg Message) {
+	temp, ok := msg.Value.ToFloat()
+	if ok {
+		h.currentTemp = temp
+		if h.status {
+			h.toggle()
+		}
 	}
-	on, off := h.getDurations()
-	status := h.gpio.Status().(bool)
-	if on == 0 && off != 0 {
-		h.gpio.Off()
-		h.duration = off
-	} else if status && off != 0 {
-		h.gpio.Off()
-		h.duration = off
-	} else if !status && on != 0 {
-		h.gpio.On(nil)
-		h.duration = on
+}
+	
+func (h *Heater) toggle() {
+	if h.doPWM {
+		duty := h.getDuty()
+		val := &Value{Value:duty, Units:"%"}
+		h.pwm.On(val)
+	} else {
+		diff := h.target - h.currentTemp
+		if diff > 0 {
+			h.pwm.On(nil)
+		} else {
+			h.pwm.Off()
+		}
 	}
 }
 
 //Once the heater approaches the target temperature the electricity
 //is applied PWM style so the target temperature isn't overshot.
-func (h *Heater) getDurations() (on time.Duration, off time.Duration) {
-	diff := h.target - h.current
-	if diff >= 2.0 {
-		on = time.Duration(60.0 * float64(time.Second))
-	} else if diff >= 1.0 {
-		on = time.Duration(0.5 * float64(time.Second))
-		off = time.Duration(0.5 * float64(time.Second))
-	} else if diff > 0.0 {
-		on = time.Duration(0.25 * float64(time.Second))
-		off = time.Duration(0.75 * float64(time.Second))
-	} else if diff <= 0.0 {
-		off = time.Duration(60.0 * float64(time.Second))
+func (h *Heater) getDuty() float64 {
+	diff := h.target - h.currentTemp
+	duty := 100.0
+	if diff <= 0.0 {
+		duty = 0.0
+	} else if diff <= 1.0 {
+		duty = 25.0
+	} else if diff <= 2.0 {
+		duty = 50.0
 	}
-	return on, off
+	return duty
 }

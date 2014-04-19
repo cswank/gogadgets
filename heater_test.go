@@ -1,15 +1,21 @@
 package gogadgets
 
 import (
-	"bitbucket.org/cswank/gogadgets/utils"
-	"testing"
+	"os"
+	"fmt"
 	"time"
+	"io/ioutil"
+	"testing"
+	"bitbucket.org/cswank/gogadgets/utils"
 )
 
-func TestCreateHeater(t *testing.T) {
-	_ = Heater{
-		gpio:   &FakeOutput{},
-		target: 100.0,
+var (
+	testDevPath = "/tmp/sys/devices/ocp.3/pwm_test_P8_13.11"
+)
+
+func init() {
+	if !utils.FileExists(testDevPath) {
+		os.MkdirAll(testDevPath, 0777)
 	}
 }
 
@@ -22,36 +28,97 @@ func getMessage(val float64) *Message {
 	}
 }
 
-func _TestHeater(t *testing.T) {
-	if !utils.FileExists("/sys/class/gpio/export") {
-		return //not a beaglebone
-	}
-	g, err := NewGPIO(&Pin{Port: "9", Pin: "14", Direction: "out"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	h := Heater{
-		gpio:   g,
-		target: 100.0,
-	}
-	v := &Value{
-		Value: 85.0,
-		Units: "C",
-	}
-	h.On(v)
-	time.Sleep(1 * time.Second)
-	msg := getMessage(84.0)
-	h.Update(msg)
-	time.Sleep(5 * time.Second)
-	msg = getMessage(84.5)
-	h.Update(msg)
-	time.Sleep(5 * time.Second)
-	msg = getMessage(85.5)
-	h.Update(msg)
-	time.Sleep(5 * time.Second)
-	msg = getMessage(82.0)
-	h.Update(msg)
-	time.Sleep(5 * time.Second)
-	h.Off()
-
+func getValue(pth string) string {
+	d, _ := ioutil.ReadFile(fmt.Sprintf("%s/%s", testDevPath, pth))
+	return string(d)
 }
+
+func waitFor(f, val string) {
+	v := getValue(f)
+	for v != val {
+		v = getValue(f)
+		time.Sleep(10 * time.Millisecond)
+	}
+}
+
+func TestHeater(t *testing.T) {
+	pwmMode = 0777
+	PWM_DEVPATH = "/tmp/sys/devices/ocp.*/pwm_test_P%s_%s.*"
+	p := &Pin{
+		Type: "heater",
+		Port: "8",
+		Pin: "13",
+		Frequency: 1,
+	}
+	d, err := NewHeater(p)
+	if err != nil {
+		t.Error(err, d)
+	}
+	d.On(nil)
+	waitFor("run", "1")
+	d.Off()
+	waitFor("run", "0")
+	m := &Message{
+		Name: "temperature",
+		Value: Value{Value: 20.0, Units: "C"},
+	}
+	d.Update(m)
+	d.On(&Value{Value:30.0, Units: "C"})
+	waitFor("run", "1")
+	m = &Message{
+		Name: "temperature",
+		Value: Value{Value: 30.0, Units: "C"},
+	}
+	waitFor("duty", "1000000000")
+	d.Update(m)
+	waitFor("run", "0")
+	m = &Message{
+		Name: "temperature",
+		Value: Value{Value: 29.0, Units: "C"},
+	}
+	d.Update(m)
+	waitFor("duty", "1000000000")
+	waitFor("run", "1")
+}
+
+func TestPWMHeater(t *testing.T) {
+	pwmMode = 0777
+	PWM_DEVPATH = "/tmp/sys/devices/ocp.*/pwm_test_P%s_%s.*"
+	p := &Pin{
+		Type: "heater",
+		Port: "8",
+		Pin: "13",
+		Frequency: 1,
+		Args: map[string]string{"pwm":"true"},
+	}
+	d, err := NewHeater(p)
+	if err != nil {
+		t.Fatal(err, d)
+	}
+	d.On(nil)
+	waitFor("run", "1")
+	d.Off()
+	waitFor("run", "0")
+	m := &Message{
+		Name: "temperature",
+		Value: Value{Value: 20.0, Units: "C"},
+	}
+	d.Update(m)
+	d.On(&Value{Value:30.0, Units: "C"})
+	waitFor("run", "1")
+	m = &Message{
+		Name: "temperature",
+		Value: Value{Value: 30.0, Units: "C"},
+	}
+	waitFor("duty", "1000000000")
+	d.Update(m)
+	waitFor("duty", "0")
+	m = &Message{
+		Name: "temperature",
+		Value: Value{Value: 29.0, Units: "C"},
+	}
+	d.Update(m)
+	waitFor("duty", "250000000")
+	waitFor("run", "1")
+}
+

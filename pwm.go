@@ -6,13 +6,18 @@ import (
 	"errors"
 	"fmt"
 	"path"
+	"math"
 	"path/filepath"
 )
 
 
 const (
 	NANO = 1000000000.0
-	DEVPATH = "/sys/devices/ocp.*/pwm_test_P%s_%s.*"
+)
+
+var (
+	pwmMode = os.ModeDevice
+	PWM_DEVPATH = "/sys/devices/ocp.*/pwm_test_P%s_%s.*"
 	TREEPATH = "/sys/devices/bone_capemgr.*/slots"
 )
 
@@ -50,20 +55,20 @@ func (p *PWM) Update(msg *Message) {
 }
 
 func (p *PWM) On(val *Value) error {
-	fmt.Println("pwm on", val)
-	if val.Units == "%" {
-		ioutil.WriteFile(p.runPath, []byte("0"), os.ModeDevice)
+	if val != nil && val.Units == "%" {
+		ioutil.WriteFile(p.runPath, []byte("0"), pwmMode)
 		p.duty = p.getDuty(val.Value)
-		fmt.Println(string(p.duty))
-		ioutil.WriteFile(p.dutyPath, p.duty, os.ModeDevice)
+		ioutil.WriteFile(p.dutyPath, p.duty, pwmMode)
+	} else {
+		ioutil.WriteFile(p.runPath, []byte("0"), pwmMode)
+		ioutil.WriteFile(p.dutyPath, []byte(fmt.Sprintf("%d", p.period)), pwmMode)
 	}
-	return ioutil.WriteFile(p.runPath, []byte("1"), os.ModeDevice)
+	return ioutil.WriteFile(p.runPath, []byte("1"), pwmMode)
 }
 
 func (p *PWM) Off() error {
-	fmt.Println("pwm off")
-	ioutil.WriteFile(p.dutyPath, []byte("0"), os.ModeDevice)
-	return ioutil.WriteFile(p.runPath, []byte("0"), os.ModeDevice)
+	ioutil.WriteFile(p.dutyPath, []byte("0"), pwmMode)
+	return ioutil.WriteFile(p.runPath, []byte("0"), pwmMode)
 }
 
 func (p *PWM) Status() interface{} {
@@ -75,33 +80,33 @@ func (p *PWM) getDuty(val interface{}) []byte {
 	if !ok {
 		return []byte("0")
 	}
+	d = math.Abs(d)
 	f := (d / 100.0) * float64(p.period)
 	return []byte(fmt.Sprintf("%d", int(f)))
 }
 
 func setupPWM(pin *Pin) (devPath string, period int, err error) {
-	g, e := filepath.Glob(fmt.Sprintf(DEVPATH, pin.Port, pin.Pin))
+	g, e := filepath.Glob(fmt.Sprintf(PWM_DEVPATH, pin.Port, pin.Pin))
 	if e != nil {
 		return devPath, period, e
 	}
 	if len(g) != 1 {
-		return devPath, period, errors.New(fmt.Sprintf("couldn't find device path for PWM port %s pin %s", pin.Port, pin.Pin))
+		return devPath, period, errors.New(fmt.Sprintf("couldn't find device path for PWM port %s pin %s path %s", pin.Port, pin.Pin, PWM_DEVPATH))
 	}
 	devPath = g[0]
 	period = int(NANO / float32(pin.Frequency))
-	fmt.Println("period", fmt.Sprintf("%d", period))
 	p := path.Join(devPath, "period")
-	err = ioutil.WriteFile(p, []byte(fmt.Sprintf("%d", period)), os.ModeDevice)
+	err = ioutil.WriteFile(p, []byte(fmt.Sprintf("%d", period)), pwmMode)
 	if err != nil {
 		return devPath, period, err
 	}
 	p = path.Join(devPath, "duty")
-	err = ioutil.WriteFile(p, []byte(fmt.Sprintf("%d", period)), os.ModeDevice)
+	err = ioutil.WriteFile(p, []byte(fmt.Sprintf("%d", period)), pwmMode)
 	if err != nil {
 		return devPath, period, err
 	}
 	p = path.Join(devPath, "polarity")
-	err = ioutil.WriteFile(p, []byte("0"), os.ModeDevice)
+	err = ioutil.WriteFile(p, []byte("0"), pwmMode)
 	if err != nil {
 		return devPath, period, err
 	}
@@ -122,11 +127,11 @@ func writePWMDeviceTree(port, pin string) error {
 	if !ok {
 		return errors.New(fmt.Sprintf("invalid pin: %s", pin))
 	}
-	err = ioutil.WriteFile(treePath, []byte("am33xx_pwm"), os.ModeDevice)
+	err = ioutil.WriteFile(treePath, []byte("am33xx_pwm"), pwmMode)
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(treePath, []byte(val), os.ModeDevice)
+	return ioutil.WriteFile(treePath, []byte(val), pwmMode)
 }
 
 func getTreePath() (string, error) {
