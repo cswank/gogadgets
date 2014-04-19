@@ -100,7 +100,7 @@ func (r *Recorder) summarize(msg *Message) {
 	s.n += 1
 	f, _ := msg.Value.ToFloat()
 	s.v += f
-	lapsed := s.start.Sub(now)
+	lapsed := now.Sub(s.start)
 	if lapsed >= r.duration {
 		msg.Value.Value = s.v / float64(s.n)
 		r.doSave(msg)
