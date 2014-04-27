@@ -55,6 +55,7 @@ func (h *Heater) On(val *Value) error {
 	}
 	h.status = true
 	if !h.watching {
+		h.watching = true
 		go h.watchTemperature(h.update, h.start)
 	}
 	h.start <- true
@@ -72,7 +73,6 @@ func (h *Heater) Off() error {
 }
 
 func (h *Heater) watchTemperature(update <-chan Message, start <-chan bool) {
-	h.watching = true
 	for {
 		select {
 		case msg := <-update:

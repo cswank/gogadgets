@@ -46,20 +46,23 @@ func NewSwitch(pin *Pin) (InputDevice, error) {
 //a delay so that the inevitable bounce in the signal from the
 //physical device is ignored.
 func (s *Switch) wait(out chan<- interface{}, err chan<- error) {
-	val, e := s.GPIO.Wait()
-	if e != nil {
-		err <- e
-		return
-	}
-	switch v := s.TrueValue.(type) {
-	case bool:
-		out <- val
-	default:
-		if val {
-			out <- v
-		} else {
-			out <- 0.0
+	for {
+		val, e := s.GPIO.Wait()
+		if e != nil {
+			err <- e
+			return
 		}
+		switch v := s.TrueValue.(type) {
+		case bool:
+			out <- val
+		default:
+			if val {
+				out <- v
+			} else {
+				out <- 0.0
+			}
+		}
+		time.Sleep(100 * time.Millisecond)
 	}
 }
 
@@ -82,15 +85,14 @@ func (s *Switch) Start(in <-chan Message, out chan<- Value) {
 	value := make(chan interface{})
 	err := make(chan error)
 	keepGoing := true
+	go s.wait(value, err)
 	for keepGoing {
-		go s.wait(value, err)
 		select {
 		case <-in:
 			//do nothing
 		case val := <-value:
 			s.Value = val
-			s.SendValue()
-			time.Sleep(100 * time.Millisecond)
+			s.SendValue()			
 		case e := <-err:
 			log.Println(e)
 		}
