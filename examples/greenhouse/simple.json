@@ -50,7 +50,7 @@
             "Pin": {
                 "Type": "switch",
                 "Port": "8",
-                "Pin": "9",
+                "Pin": "10",
                 "Direction": "in",
                 "Edge": "both",
                 "OneWireId": "",
@@ -64,7 +64,7 @@
             "Pin": {
                 "Type": "switch",
                 "Port": "8",
-                "Pin": "10",
+                "Pin": "9",
                 "Direction": "in",
                 "Edge": "both",
                 "OneWireId": "",
