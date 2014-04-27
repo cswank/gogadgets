@@ -3,7 +3,7 @@
         {
 	    "location": "greenhouse",
 	    "name": "recorder",
-            "initialValue": "turn on lab recorder",
+            "initialValue": "turn on greenhouse recorder",
 	    "pin": {
 		"type": "recorder",
 		"args": {
