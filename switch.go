@@ -92,7 +92,7 @@ func (s *Switch) Start(in <-chan Message, out chan<- Value) {
 			//do nothing
 		case val := <-value:
 			s.Value = val
-			s.SendValue()			
+			s.SendValue()
 		case e := <-err:
 			log.Println(e)
 		}

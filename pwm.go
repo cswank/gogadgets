@@ -1,36 +1,34 @@
 package gogadgets
 
 import (
-	"io/ioutil"
-	"os"
 	"errors"
 	"fmt"
-	"path"
+	"io/ioutil"
 	"math"
+	"os"
+	"path"
 	"path/filepath"
 )
-
 
 const (
 	NANO = 1000000000.0
 )
 
 var (
-	pwmMode = os.ModeDevice
+	pwmMode     = os.ModeDevice
 	PWM_DEVPATH = "/sys/devices/ocp.*/pwm_test_P%s_%s.*"
-	TREEPATH = "/sys/devices/bone_capemgr.*/slots"
+	TREEPATH    = "/sys/devices/bone_capemgr.*/slots"
 )
-
 
 // echo am33xx_pwm > /sys/devices/bone_capemgr.9/slots
 // echo bone_pwm_P8_13 > /sys/devices/bone_capemgr.9/slots
 // /sys/devices/ocp.3/pwm_test_P8_13.15
 type PWM struct {
-	period int
-	duty []byte
-	status bool
-	runPath string
-	dutyPath string
+	period     int
+	duty       []byte
+	status     bool
+	runPath    string
+	dutyPath   string
 	periodPath string
 }
 
@@ -41,17 +39,17 @@ func NewPWM(pin *Pin) (OutputDevice, error) {
 	// }
 	devPath, period, err := setupPWM(pin)
 	pwm := &PWM{
-		period: period,
-		duty: []byte(fmt.Sprintf("%d", period)),
-		runPath: path.Join(devPath, "run"),
-		dutyPath: path.Join(devPath, "duty"),
+		period:     period,
+		duty:       []byte(fmt.Sprintf("%d", period)),
+		runPath:    path.Join(devPath, "run"),
+		dutyPath:   path.Join(devPath, "duty"),
 		periodPath: path.Join(devPath, "period"),
 	}
 	return pwm, err
 }
 
 func (p *PWM) Update(msg *Message) {
-	
+
 }
 
 func (p *PWM) On(val *Value) error {

@@ -72,27 +72,27 @@ type Message struct {
 }
 
 type Pin struct {
-	Type      string            `json:"type"`
-	Port      string            `json:"port"`
-	Pin       string            `json:"pin"`
-	Direction string            `json:"direction"`
-	Edge      string            `json:"edge"`
-	OneWireId string            `json:"onewireId"`
-	Value     interface{}       `json:"value"`
-	Units     string            `json:"units"`
-	Platform  string            `json:"platform"`
-	Frequency int               `json:"frequency"`
-	Args      map[string]string `json:"args"`
-	Pins      map[string]Pin    `json:"pins"`
+	Type      string                 `json:"type"`
+	Port      string                 `json:"port"`
+	Pin       string                 `json:"pin"`
+	Direction string                 `json:"direction"`
+	Edge      string                 `json:"edge"`
+	OneWireId string                 `json:"onewireId"`
+	Value     interface{}            `json:"value"`
+	Units     string                 `json:"units"`
+	Platform  string                 `json:"platform"`
+	Frequency int                    `json:"frequency"`
+	Args      map[string]interface{} `json:"args"`
+	Pins      map[string]Pin         `json:"pins"`
 }
 
 type GadgetConfig struct {
-	Location   string `json:"location"`
-	Name       string `json:"name"`
-	OnCommand  string `json:"onCommand"`
-	OffCommand string `json:"offCommand"`
+	Location     string `json:"location"`
+	Name         string `json:"name"`
+	OnCommand    string `json:"onCommand"`
+	OffCommand   string `json:"offCommand"`
 	InitialValue string `json:"initialValue"`
-	Pin        Pin    `json:"pin"`
+	Pin          Pin    `json:"pin"`
 }
 
 type Config struct {

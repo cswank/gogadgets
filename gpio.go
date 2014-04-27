@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"syscall"
 	"strings"
+	"syscall"
 )
 
 //GPIO interacts with the linux sysfs interface for GPIO

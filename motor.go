@@ -1,13 +1,11 @@
 package gogadgets
 
-import (
-
-)
+import ()
 
 type Motor struct {
-	gpioA OutputDevice
-	gpioB OutputDevice
-	pwm   OutputDevice
+	gpioA  OutputDevice
+	gpioB  OutputDevice
+	pwm    OutputDevice
 	status bool
 }
 
@@ -30,17 +28,17 @@ func NewMotor(pin *Pin) (OutputDevice, error) {
 	return &Motor{
 		gpioA: gpioA,
 		gpioB: gpioB,
-		pwm: pwm,
+		pwm:   pwm,
 	}, nil
 }
 
 func (m *Motor) Update(msg *Message) {
-	
+
 }
 
 func (m *Motor) On(val *Value) error {
 	if val == nil {
-		val = &Value{Value:100.0, Units: "%"}
+		val = &Value{Value: 100.0, Units: "%"}
 	}
 	v, ok := val.Value.(float64)
 	if !ok {
@@ -70,4 +68,3 @@ func (m *Motor) Off() error {
 	m.gpioB.On(nil)
 	return nil
 }
-

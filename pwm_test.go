@@ -1,8 +1,8 @@
 package gogadgets
 
 import (
-	"testing"
 	"bitbucket.org/cswank/gogadgets/utils"
+	"testing"
 	"time"
 )
 
@@ -11,8 +11,8 @@ func TestPWM(t *testing.T) {
 		return //not a beaglebone
 	}
 	p := &Pin{
-		Port: "8",
-		Pin: "13",
+		Port:      "8",
+		Pin:       "13",
 		Frequency: 1,
 	}
 	pwm, err := NewPWM(p)
@@ -34,7 +34,7 @@ func TestPWM(t *testing.T) {
 		t.Error(err)
 	}
 	time.Sleep(5 * time.Second)
-	
+
 }
 
 func TestGetDuty(t *testing.T) {

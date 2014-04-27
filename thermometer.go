@@ -15,8 +15,8 @@ import (
 sends that temperature to the rest of the system.
 
 on ubuntu install dtc (patched)
-  wget -c https://raw.github.com/RobertCNelson/tools/master/pkgs/dtc.sh 
-  chmod +x dtc.sh 
+  wget -c https://raw.github.com/RobertCNelson/tools/master/pkgs/dtc.sh
+  chmod +x dtc.sh
   ./dtc.sh
 
   echo '
@@ -142,7 +142,7 @@ func (t *Thermometer) parseValue(val string) (v *Value, err error) {
 	if err == nil {
 		t.value = temperature / 1000.0
 		if t.units == "F" || t.units == "f" {
-			t.value = t.value * 1.8 + 32.0
+			t.value = t.value*1.8 + 32.0
 		}
 		v = &Value{
 			Value: t.value,
@@ -169,4 +169,3 @@ func (t *Thermometer) Start(in <-chan Message, out chan<- Value) {
 		}
 	}
 }
-

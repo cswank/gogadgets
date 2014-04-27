@@ -9,30 +9,30 @@ import (
 //temperature. In order to use this there must be
 //a thermometer in the same Location.
 type Heater struct {
-	target   float64
+	target      float64
 	currentTemp float64
-	duration time.Duration
-	status   bool
-	doPWM    bool
-	pwm    OutputDevice
-	update   chan Message
-	start     chan bool
-	watching bool
+	duration    time.Duration
+	status      bool
+	doPWM       bool
+	pwm         OutputDevice
+	update      chan Message
+	start       chan bool
+	watching    bool
 }
 
 func NewHeater(pin *Pin) (OutputDevice, error) {
-     	var h *Heater
+	var h *Heater
 	var err error
 	var d OutputDevice
-	doPWM := pin.Args["pwm"] == "true"
+	doPWM := pin.Args["pwm"] == true
 	d, err = NewPWM(pin)
 	if err == nil {
 		h = &Heater{
 			pwm:    d,
-			target:  100.0,
-			doPWM:   doPWM,
+			target: 100.0,
+			doPWM:  doPWM,
 			update: make(chan Message),
-			start: make(chan bool),
+			start:  make(chan bool),
 		}
 	}
 	return h, err
@@ -97,11 +97,11 @@ func (h *Heater) readTemperature(msg Message) {
 		}
 	}
 }
-	
+
 func (h *Heater) toggle() {
 	if h.doPWM {
 		duty := h.getDuty()
-		val := &Value{Value:duty, Units:"%"}
+		val := &Value{Value: duty, Units: "%"}
 		h.pwm.On(val)
 	} else {
 		diff := h.target - h.currentTemp

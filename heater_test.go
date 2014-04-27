@@ -1,12 +1,12 @@
 package gogadgets
 
 import (
-	"os"
-	"fmt"
-	"time"
-	"io/ioutil"
-	"testing"
 	"bitbucket.org/cswank/gogadgets/utils"
+	"fmt"
+	"io/ioutil"
+	"os"
+	"testing"
+	"time"
 )
 
 var (
@@ -45,9 +45,9 @@ func TestHeater(t *testing.T) {
 	pwmMode = 0777
 	PWM_DEVPATH = "/tmp/sys/devices/ocp.*/pwm_test_P%s_%s.*"
 	p := &Pin{
-		Type: "heater",
-		Port: "8",
-		Pin: "13",
+		Type:      "heater",
+		Port:      "8",
+		Pin:       "13",
 		Frequency: 1,
 	}
 	d, err := NewHeater(p)
@@ -59,21 +59,21 @@ func TestHeater(t *testing.T) {
 	d.Off()
 	waitFor("run", "0")
 	m := &Message{
-		Name: "temperature",
+		Name:  "temperature",
 		Value: Value{Value: 20.0, Units: "C"},
 	}
 	d.Update(m)
-	d.On(&Value{Value:30.0, Units: "C"})
+	d.On(&Value{Value: 30.0, Units: "C"})
 	waitFor("run", "1")
 	m = &Message{
-		Name: "temperature",
+		Name:  "temperature",
 		Value: Value{Value: 30.0, Units: "C"},
 	}
 	waitFor("duty", "1000000000")
 	d.Update(m)
 	waitFor("run", "0")
 	m = &Message{
-		Name: "temperature",
+		Name:  "temperature",
 		Value: Value{Value: 29.0, Units: "C"},
 	}
 	d.Update(m)
@@ -85,11 +85,11 @@ func TestPWMHeater(t *testing.T) {
 	pwmMode = 0777
 	PWM_DEVPATH = "/tmp/sys/devices/ocp.*/pwm_test_P%s_%s.*"
 	p := &Pin{
-		Type: "heater",
-		Port: "8",
-		Pin: "13",
+		Type:      "heater",
+		Port:      "8",
+		Pin:       "13",
 		Frequency: 1,
-		Args: map[string]string{"pwm":"true"},
+		Args:      map[string]interface{}{"pwm": true},
 	}
 	d, err := NewHeater(p)
 	if err != nil {
@@ -100,25 +100,24 @@ func TestPWMHeater(t *testing.T) {
 	d.Off()
 	waitFor("run", "0")
 	m := &Message{
-		Name: "temperature",
+		Name:  "temperature",
 		Value: Value{Value: 20.0, Units: "C"},
 	}
 	d.Update(m)
-	d.On(&Value{Value:30.0, Units: "C"})
+	d.On(&Value{Value: 30.0, Units: "C"})
 	waitFor("run", "1")
 	m = &Message{
-		Name: "temperature",
+		Name:  "temperature",
 		Value: Value{Value: 30.0, Units: "C"},
 	}
 	waitFor("duty", "1000000000")
 	d.Update(m)
 	waitFor("duty", "0")
 	m = &Message{
-		Name: "temperature",
+		Name:  "temperature",
 		Value: Value{Value: 29.0, Units: "C"},
 	}
 	d.Update(m)
 	waitFor("duty", "250000000")
 	waitFor("run", "1")
 }
-

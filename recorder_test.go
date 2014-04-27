@@ -7,10 +7,12 @@ import (
 
 func TestCreate(t *testing.T) {
 	pin := &Pin{
-		Args: map[string]string{
+		Args: map[string]interface{} {
 			"host": "localhost",
 			"db":   "brewery",
-			"summarize": "10",
+			"summarize": map[string]interface{} {
+				"greenhouse temperature": 10,
+			},
 		},
 	}
 	r, err := NewRecorder(pin)
@@ -19,18 +21,17 @@ func TestCreate(t *testing.T) {
 	}
 }
 
-
 func TestSummarize(t *testing.T) {
 	r := Recorder{
-		duration: time.Hour,
-		history: map[string]summary{},
+		summaries: map[string]time.Duration{"greenhouse temperature": time.Minute},
+		history:  map[string]summary{},
 	}
-	for i := 1; i < 11; i ++ {
+	for i := 1; i < 11; i++ {
 		msg := &Message{
 			Sender: "me",
-			Value: Value{Value:float64(i)},
+			Value:  Value{Value: float64(i)},
 		}
-		r.summarize(msg)
+		r.summarize(msg, time.Minute)
 	}
 	if r.history["me"].v != 55.0 {
 		t.Error(r.history["me"].v)
@@ -38,7 +39,7 @@ func TestSummarize(t *testing.T) {
 }
 
 func TestGetFilter(t *testing.T) {
-	s := "lab led, lab temperature"
+	s := []string{"lab led", "lab temperature"}
 	f := getFilter(s)
 	if len(f) != 2 {
 		t.Error(f)
@@ -46,10 +47,9 @@ func TestGetFilter(t *testing.T) {
 	if f[0] != "lab led" {
 		t.Error(f)
 	}
-	s = ""
+	s = []string{}
 	f = getFilter(s)
 	if len(f) != 0 {
 		t.Error(f)
 	}
 }
-
