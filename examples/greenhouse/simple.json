@@ -1,0 +1,90 @@
+{
+    "Gadgets": [
+        {
+	    "location": "greenhouse",
+	    "name": "recorder",
+            "initialValue": "turn on lab recorder",
+	    "pin": {
+		"type": "recorder",
+		"args": {
+                    "host": "192.168.1.135",
+                    "db": "chickens",
+                    "summarize": {
+                        "fish tank temperature": 10,
+                        "greenhouse temperature": 10
+                    }
+                }
+	    }
+        },
+        {
+            "Location": "fish tank",
+            "Name": "temperature",
+            "Pin": {
+                "Type": "thermometer",
+                "Port": "",
+                "Pin": "",
+                "Direction": "",
+                "Edge": "",
+                "OneWireId": "28-0000025ed133",
+                "Value": null,
+                "Units": "C"
+            }
+        },
+        {
+            "Location": "greenhouse",
+            "Name": "temperature",
+            "Pin": {
+                "Type": "thermometer",
+                "Port": "",
+                "Pin": "",
+                "Direction": "",
+                "Edge": "",
+                "OneWireId": "28-00000479f8c6",
+                "Value": null,
+                "Units": "C"
+            }
+        },
+        {
+            "Location": "bed 1",
+            "Name": "switch",
+            "Pin": {
+                "Type": "switch",
+                "Port": "8",
+                "Pin": "9",
+                "Direction": "in",
+                "Edge": "both",
+                "OneWireId": "",
+                "Value": 1,
+                "Units": ""
+            }
+        },
+        {
+            "Location": "bed 2",
+            "Name": "switch",
+            "Pin": {
+                "Type": "switch",
+                "Port": "8",
+                "Pin": "10",
+                "Direction": "in",
+                "Edge": "both",
+                "OneWireId": "",
+                "Value": 1,
+                "Units": ""
+            }
+        },
+        {
+            "Location": "bed 3",
+            "Name": "switch",
+            "Pin": {
+                "Type": "switch",
+                "Port": "8",
+                "Pin": "11",
+                "Direction": "in",
+                "Edge": "both",
+                "OneWireId": "",
+                "Value": 1,
+                "Units": ""
+            }
+        }
+    ]
+}
