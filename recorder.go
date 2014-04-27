@@ -2,6 +2,7 @@ package gogadgets
 
 import (
 	"labix.org/v2/mgo"
+	"encoding/json"
 	"time"
 	"log"
 )
@@ -11,8 +12,6 @@ type summary struct {
 	n     int
 	v     float64
 }
-
-type summaries 	map[string]int
 
 //Recorder takes all the update messages it receives and saves them
 //in a mongodb.
@@ -40,13 +39,15 @@ func NewRecorder(pin *Pin) (OutputDevice, error) {
 }
 
 func getSummaries(s interface{}) map[string]time.Duration {
+	d, _ := json.Marshal(s)
+	vals := map[string]int{}
+	err := json.Unmarshal(d, &vals)
 	out := map[string]time.Duration{}
-	summaries, ok := s.(summaries)
-	if !ok {
-		log.Println("warning, could not read summary config", s)
+	if err != nil {
+		log.Println("WARNING, could not parse recorder summaires", s)
 		return out
 	}
-	for key, val := range summaries {
+	for key, val := range vals {
 		var d time.Duration
 		d = time.Duration(val) * time.Minute
 		out[key] = d
