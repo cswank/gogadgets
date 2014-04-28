@@ -1,6 +1,8 @@
-package gogadgets
+package output
 
-import ()
+import (
+	"bitbucket.org/cswank/gogadgets/models"
+)
 
 type Motor struct {
 	gpioA  OutputDevice
@@ -9,7 +11,7 @@ type Motor struct {
 	status bool
 }
 
-func NewMotor(pin *Pin) (OutputDevice, error) {
+func NewMotor(pin *models.Pin) (OutputDevice, error) {
 	p := pin.Pins["gpio_a"]
 	gpioA, err := NewGPIO(&p)
 	if err != nil {
@@ -32,13 +34,13 @@ func NewMotor(pin *Pin) (OutputDevice, error) {
 	}, nil
 }
 
-func (m *Motor) Update(msg *Message) {
+func (m *Motor) Update(msg *models.Message) {
 
 }
 
-func (m *Motor) On(val *Value) error {
+func (m *Motor) On(val *models.Value) error {
 	if val == nil {
-		val = &Value{Value: 100.0, Units: "%"}
+		val = &models.Value{Value: 100.0, Units: "%"}
 	}
 	v, ok := val.Value.(float64)
 	if !ok {

@@ -1,4 +1,4 @@
-package gogadgets
+package pins
 
 //The beaglebone black GPIO pins that are available by default.
 //You can use the device tree overlay to get more.

@@ -1,7 +1,8 @@
-package gogadgets
+package input
 
 import (
 	"bitbucket.org/cswank/gogadgets/utils"
+	"bitbucket.org/cswank/gogadgets/models"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -69,7 +70,7 @@ type Thermometer struct {
 	value      float64
 }
 
-func NewThermometer(pin *Pin) (InputDevice, error) {
+func NewThermometer(pin *models.Pin) (InputDevice, error) {
 	var therm *Thermometer
 	var err error
 	path := fmt.Sprintf("/sys/bus/w1/devices/%s/w1_slave", pin.OneWireId)
@@ -84,15 +85,15 @@ func NewThermometer(pin *Pin) (InputDevice, error) {
 	return therm, err
 }
 
-func (t *Thermometer) GetValue() *Value {
-	return &Value{
+func (t *Thermometer) GetValue() *models.Value {
+	return &models.Value{
 		Value: t.value,
 		Units: t.units,
 	}
 }
 
-func (t *Thermometer) getTemperature(out chan Value, err chan error) {
-	var previousTemperature *Value
+func (t *Thermometer) getTemperature(out chan models.Value, err chan error) {
+	var previousTemperature *models.Value
 	for {
 		val, e := t.readFile()
 		if e == nil && t.isValid(val, previousTemperature) {
@@ -108,7 +109,7 @@ func (t *Thermometer) getTemperature(out chan Value, err chan error) {
 //The 1-wire craps out once in a while and a value less than zero is a sign
 //that something went wrong.  Ususally the subsequent temperature value
 //is valid.
-func (t *Thermometer) isValid(value, previous *Value) (isValid bool) {
+func (t *Thermometer) isValid(value, previous *models.Value) (isValid bool) {
 	if previous == nil {
 		isValid = true
 	} else if value.Value.(float64) < 0.0 {
@@ -121,7 +122,7 @@ func (t *Thermometer) isValid(value, previous *Value) (isValid bool) {
 
 //Linux on a Beaglebone and Raspberry Pi have a file based interface
 //to the Dallas 1-wire devices.  This reads from that interface file.
-func (t *Thermometer) readFile() (v *Value, err error) {
+func (t *Thermometer) readFile() (v *models.Value, err error) {
 	b, err := ioutil.ReadFile(t.devicePath)
 	if err != nil {
 		return v, err
@@ -131,7 +132,7 @@ func (t *Thermometer) readFile() (v *Value, err error) {
 
 //parseValue gets the actual tempreature from the 1-wire interface
 //sysfs file.
-func (t *Thermometer) parseValue(val string) (v *Value, err error) {
+func (t *Thermometer) parseValue(val string) (v *models.Value, err error) {
 	start := strings.Index(val, "t=")
 	if start == -1 {
 		return v, errors.New("could not parse temp")
@@ -144,7 +145,7 @@ func (t *Thermometer) parseValue(val string) (v *Value, err error) {
 		if t.units == "F" || t.units == "f" {
 			t.value = t.value*1.8 + 32.0
 		}
-		v = &Value{
+		v = &models.Value{
 			Value: t.value,
 			Units: t.units,
 		}
@@ -153,8 +154,8 @@ func (t *Thermometer) parseValue(val string) (v *Value, err error) {
 }
 
 //This is an InputDevice, so it must have a Start.
-func (t *Thermometer) Start(in <-chan Message, out chan<- Value) {
-	temperature := make(chan Value)
+func (t *Thermometer) Start(in <-chan models.Message, out chan<- models.Value) {
+	temperature := make(chan models.Value)
 
 	e := make(chan error)
 	go t.getTemperature(temperature, e)

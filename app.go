@@ -1,6 +1,7 @@
 package gogadgets
 
 import (
+	"bitbucket.org/cswank/gogadgets/models"
 	"encoding/json"
 	"io/ioutil"
 	"log"
@@ -10,7 +11,7 @@ import (
 //to them, and receiving messages from them.  It is the
 //central part of Gadgets system.
 type App struct {
-	Gadgets []GoGadget
+	Gadgets []models.GoGadget
 	Host    string
 	PubPort int
 	SubPort int
@@ -38,8 +39,8 @@ func NewApp(cfg interface{}) *App {
 
 //This is a factory fuction that reads a GadgtConfig
 //and creates all the Gadgets that are defined in it.
-func GetGadgets(configs []GadgetConfig) []GoGadget {
-	g := make([]GoGadget, len(configs))
+func GetGadgets(configs []models.GadgetConfig) []models.GoGadget {
+	g := make([]models.GoGadget, len(configs))
 	for i, config := range configs {
 		gadget, err := NewGadget(&config)
 		if err != nil {
@@ -54,7 +55,7 @@ func GetGadgets(configs []GadgetConfig) []GoGadget {
 //a chan in case the system is started as a goroutine,
 //but it can just be called directly.
 func (a *App) Start() {
-	x := make(chan Message)
+	x := make(chan models.Message)
 	a.GoStart(x)
 }
 
@@ -63,7 +64,7 @@ func (a *App) Start() {
 //as a goroutine or a client app that starts
 //gogadget systems upon a command from a central
 //web app.
-func (a *App) GoStart(input <-chan Message) {
+func (a *App) GoStart(input <-chan models.Message) {
 	a.Gadgets = append(a.Gadgets, &MethodRunner{})
 	var sockets *Sockets
 	sockets = &Sockets{
@@ -72,10 +73,10 @@ func (a *App) GoStart(input <-chan Message) {
 		subPort: a.SubPort,
 	}
 	a.Gadgets = append(a.Gadgets, sockets)
-	collect := make(chan Message)
-	channels := make(map[string]chan Message)
+	collect := make(chan models.Message)
+	channels := make(map[string]chan models.Message)
 	for _, gadget := range a.Gadgets {
-		out := make(chan Message)
+		out := make(chan models.Message)
 		channels[gadget.GetUID()] = out
 		go gadget.Start(out, collect)
 	}
@@ -88,16 +89,16 @@ func (a *App) GoStart(input <-chan Message) {
 //built into the system (and hense can't be defined in
 //the config file).  This is a way to apss in an instance
 //of a gadget that is not part of the GoGadgets system.
-func (a *App) AddGadget(gadget GoGadget) {
+func (a *App) AddGadget(gadget models.GoGadget) {
 	a.Gadgets = append(a.Gadgets, gadget)
 }
 
-func getConfig(config interface{}) *Config {
-	var c *Config
+func getConfig(config interface{}) *models.Config {
+	var c *models.Config
 	switch v := config.(type) {
 	case string:
 		c = getConfigFromFile(v)
-	case *Config:
+	case *models.Config:
 		c = v
 	default:
 		panic("invalid config")
@@ -105,8 +106,8 @@ func getConfig(config interface{}) *Config {
 	return c
 }
 
-func getConfigFromFile(configPath string) *Config {
-	c := &Config{}
+func getConfigFromFile(configPath string) *models.Config {
+	c := &models.Config{}
 	b, err := ioutil.ReadFile(configPath)
 	if err != nil {
 		panic(err)

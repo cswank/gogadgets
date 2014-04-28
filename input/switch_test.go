@@ -1,8 +1,22 @@
-package gogadgets
+package input
 
 import (
+	"time"
 	"testing"
+	"bitbucket.org/cswank/gogadgets/models"
 )
+
+type FakePoller struct {
+	Poller
+	val bool
+}
+
+func (f *FakePoller) Wait() (bool, error) {
+	time.Sleep(100 * time.Millisecond)
+	f.val = !f.val
+	return f.val, nil
+}
+
 
 func TestSwitch(t *testing.T) {
 	poller := &FakePoller{}
@@ -12,8 +26,8 @@ func TestSwitch(t *testing.T) {
 		TrueValue: 5.0,
 		Units:     "liters",
 	}
-	out := make(chan Message)
-	in := make(chan Value)
+	out := make(chan models.Message)
+	in := make(chan models.Value)
 	go s.Start(out, in)
 	val := <-in
 	if val.Value.(float64) != 5.0 {
@@ -23,7 +37,7 @@ func TestSwitch(t *testing.T) {
 	if val.Value.(float64) != 0.0 {
 		t.Error("should have been 0.0", val)
 	}
-	out <- Message{
+	out <- models.Message{
 		Type: "command",
 		Body: "shutdown",
 	}
@@ -40,8 +54,8 @@ func TestBoolSwitch(t *testing.T) {
 		Value:     true,
 		TrueValue: true,
 	}
-	out := make(chan Message)
-	in := make(chan Value)
+	out := make(chan models.Message)
+	in := make(chan models.Value)
 	go s.Start(out, in)
 	val := <-in
 	if val.Value != true {
@@ -51,7 +65,7 @@ func TestBoolSwitch(t *testing.T) {
 	if val.Value != false {
 		t.Error("should have been false", val)
 	}
-	out <- Message{
+	out <- models.Message{
 		Type: "command",
 		Body: "shutdown",
 	}

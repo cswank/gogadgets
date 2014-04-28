@@ -1,6 +1,7 @@
-package gogadgets
+package output
 
 import (
+	"bitbucket.org/cswank/gogadgets/models"
 	"time"
 )
 
@@ -15,12 +16,12 @@ type Heater struct {
 	status      bool
 	doPWM       bool
 	pwm         OutputDevice
-	update      chan Message
+	update      chan models.Message
 	start       chan bool
 	watching    bool
 }
 
-func NewHeater(pin *Pin) (OutputDevice, error) {
+func NewHeater(pin *models.Pin) (OutputDevice, error) {
 	var h *Heater
 	var err error
 	var d OutputDevice
@@ -31,20 +32,20 @@ func NewHeater(pin *Pin) (OutputDevice, error) {
 			pwm:    d,
 			target: 100.0,
 			doPWM:  doPWM,
-			update: make(chan Message),
+			update: make(chan models.Message),
 			start:  make(chan bool),
 		}
 	}
 	return h, err
 }
 
-func (h *Heater) Update(msg *Message) {
+func (h *Heater) Update(msg *models.Message) {
 	if h.status && msg.Name == "temperature" {
 		h.update <- *msg
 	}
 }
 
-func (h *Heater) On(val *Value) error {
+func (h *Heater) On(val *models.Value) error {
 	if val != nil {
 		target, ok := val.ToFloat()
 		if ok {
@@ -72,7 +73,7 @@ func (h *Heater) Off() error {
 	return nil
 }
 
-func (h *Heater) watchTemperature(update <-chan Message, start <-chan bool) {
+func (h *Heater) watchTemperature(update <-chan models.Message, start <-chan bool) {
 	for {
 		select {
 		case msg := <-update:
@@ -88,7 +89,7 @@ func (h *Heater) watchTemperature(update <-chan Message, start <-chan bool) {
 	}
 }
 
-func (h *Heater) readTemperature(msg Message) {
+func (h *Heater) readTemperature(msg models.Message) {
 	temp, ok := msg.Value.ToFloat()
 	if ok {
 		h.currentTemp = temp
@@ -101,7 +102,7 @@ func (h *Heater) readTemperature(msg Message) {
 func (h *Heater) toggle() {
 	if h.doPWM {
 		duty := h.getDuty()
-		val := &Value{Value: duty, Units: "%"}
+		val := &models.Value{Value: duty, Units: "%"}
 		h.pwm.On(val)
 	} else {
 		diff := h.target - h.currentTemp

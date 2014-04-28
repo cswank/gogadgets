@@ -1,7 +1,8 @@
-package gogadgets
+package input
 
 import (
 	"bitbucket.org/cswank/gogadgets/utils"
+	"bitbucket.org/cswank/gogadgets/models"
 	"fmt"
 	"testing"
 )
@@ -10,22 +11,22 @@ func _TestThermometer(t *testing.T) {
 	if !utils.FileExists("/sys/class/gpio/export") {
 		return //not a beaglebone
 	}
-	pin := &Pin{
+	pin := &models.Pin{
 		OneWireId: "28-0000047ade8f",
 	}
 	therm, err := NewThermometer(pin)
 	if err != nil {
 		t.Error(err)
 	}
-	out := make(chan Message)
-	in := make(chan Value)
+	out := make(chan models.Message)
+	in := make(chan models.Value)
 	go therm.Start(out, in)
 	val := <-in
 	if val.Units != "C" {
 		t.Error("units should have been 'C'", val)
 	}
 	fmt.Println("the temperature is:", val.Value)
-	out <- Message{
+	out <- models.Message{
 		Type: "command",
 		Body: "shutdown",
 	}

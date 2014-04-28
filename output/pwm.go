@@ -1,4 +1,4 @@
-package gogadgets
+package output
 
 import (
 	"errors"
@@ -8,6 +8,8 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"bitbucket.org/cswank/gogadgets/models"
+	"bitbucket.org/cswank/gogadgets/pins"
 )
 
 const (
@@ -32,7 +34,7 @@ type PWM struct {
 	periodPath string
 }
 
-func NewPWM(pin *Pin) (OutputDevice, error) {
+func NewPWM(pin *models.Pin) (OutputDevice, error) {
 	// err := writePWMDeviceTree(pin.Port, pin.Pin)
 	// if err != nil {
 	// 	return nil, err
@@ -48,11 +50,11 @@ func NewPWM(pin *Pin) (OutputDevice, error) {
 	return pwm, err
 }
 
-func (p *PWM) Update(msg *Message) {
+func (p *PWM) Update(msg *models.Message) {
 
 }
 
-func (p *PWM) On(val *Value) error {
+func (p *PWM) On(val *models.Value) error {
 	if val != nil && val.Units == "%" {
 		ioutil.WriteFile(p.runPath, []byte("0"), pwmMode)
 		p.duty = p.getDuty(val.Value)
@@ -83,7 +85,7 @@ func (p *PWM) getDuty(val interface{}) []byte {
 	return []byte(fmt.Sprintf("%d", int(f)))
 }
 
-func setupPWM(pin *Pin) (devPath string, period int, err error) {
+func setupPWM(pin *models.Pin) (devPath string, period int, err error) {
 	g, e := filepath.Glob(fmt.Sprintf(PWM_DEVPATH, pin.Port, pin.Pin))
 	if e != nil {
 		return devPath, period, e
@@ -116,7 +118,7 @@ func writePWMDeviceTree(port, pin string) error {
 	if err != nil {
 		return err
 	}
-	pwm := Pins["pwm"]
+	pwm := pins.Pins["pwm"]
 	p, ok := pwm[port]
 	if !ok {
 		return errors.New(fmt.Sprintf("invalid port: %s", p))

@@ -1,12 +1,13 @@
-package gogadgets
+package output
 
 import (
+	"bitbucket.org/cswank/gogadgets/models"
 	"testing"
 	"time"
 )
 
 func TestCreate(t *testing.T) {
-	pin := &Pin{
+	pin := &models.Pin{
 		Args: map[string]interface{} {
 			"host": "localhost",
 			"db":   "brewery",
@@ -27,9 +28,9 @@ func TestSummarize(t *testing.T) {
 		history:  map[string]summary{},
 	}
 	for i := 1; i < 11; i++ {
-		msg := &Message{
+		msg := &models.Message{
 			Sender: "me",
-			Value:  Value{Value: float64(i)},
+			Value:  models.Value{Value: float64(i)},
 		}
 		r.summarize(msg, time.Minute)
 	}

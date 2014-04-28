@@ -1,7 +1,9 @@
-package gogadgets
+package output
 
 import (
 	"bitbucket.org/cswank/gogadgets/utils"
+	"bitbucket.org/cswank/gogadgets/models"
+	"bitbucket.org/cswank/gogadgets/pins"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -31,17 +33,17 @@ type GPIO struct {
 	buf           []byte
 }
 
-func NewGPIO(pin *Pin) (OutputDevice, error) {
+func NewGPIO(pin *models.Pin) (OutputDevice, error) {
 	var export string
 	var ok bool
 	if pin.Platform == "rpi" {
-		export, ok = PiPins[pin.Pin]
+		export, ok = pins.PiPins[pin.Pin]
 		if !ok {
 			return nil, errors.New(fmt.Sprintf("no such pin: %s", pin.Pin))
 		}
 	} else {
 		var portMap map[string]string
-		portMap, ok = Pins["gpio"][pin.Port]
+		portMap, ok = pins.Pins["gpio"][pin.Port]
 		if !ok {
 			return nil, errors.New(fmt.Sprintf("no such port: %s", pin.Port))
 		}
@@ -82,11 +84,11 @@ func (g *GPIO) Init() error {
 	return err
 }
 
-func (g *GPIO) Update(msg *Message) {
+func (g *GPIO) Update(msg *models.Message) {
 
 }
 
-func (g *GPIO) On(val *Value) error {
+func (g *GPIO) On(val *models.Value) error {
 	return g.writeValue(g.valuePath, "1")
 }
 

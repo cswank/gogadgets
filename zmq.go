@@ -12,6 +12,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/vaughan0/go-zmq"
+	"bitbucket.org/cswank/gogadgets/models"
 	"log"
 )
 
@@ -42,8 +43,8 @@ func NewClientSockets(host string) (*Sockets, error) {
 }
 
 func (s *Sockets) Send(cmd string) {
-	msg := &Message{
-		Type: COMMAND,
+	msg := &models.Message{
+		Type: models.COMMAND,
 		Body: cmd,
 	}
 	b, err := json.Marshal(msg)
@@ -60,7 +61,7 @@ func (s *Sockets) Send(cmd string) {
 //Sockets listens for chann Messages from inside the system and
 //sends it to external listeners (like a UI), and listens for
 //external messages and sends them along to the internal system.
-func (s *Sockets) Start(in <-chan Message, out chan<- Message) {
+func (s *Sockets) Start(in <-chan models.Message, out chan<- models.Message) {
 	err := s.getSockets()
 	defer s.Close()
 	if err != nil {
@@ -80,9 +81,9 @@ func (s *Sockets) Start(in <-chan Message, out chan<- Message) {
 
 //A message that came from inside this gogadgets system
 //is sent to outside clients (ui, connected gogadget systems)
-func (s *Sockets) sendMessageOut(msg Message) bool {
+func (s *Sockets) sendMessageOut(msg models.Message) bool {
 	keepGoing := true
-	if msg.Type == COMMAND && msg.Body == "shutdown" {
+	if msg.Type == models.COMMAND && msg.Body == "shutdown" {
 		keepGoing = false
 	}
 	b, err := json.Marshal(msg)
@@ -100,9 +101,9 @@ func (s *Sockets) sendMessageOut(msg Message) bool {
 //A message that came from outside clients (ui, connected
 //gogadget systems) is passed along to this gogadget
 //system
-func (s *Sockets) sendMessageIn(data [][]byte, out chan<- Message) {
+func (s *Sockets) sendMessageIn(data [][]byte, out chan<- models.Message) {
 	if len(data) == 2 {
-		msg := &Message{}
+		msg := &models.Message{}
 		json.Unmarshal(data[1], msg)
 		msg.Sender = "zmq sockets"
 		out <- *msg

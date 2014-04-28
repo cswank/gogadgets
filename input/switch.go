@@ -1,10 +1,12 @@
-package gogadgets
+package input
 
 import (
 	"errors"
 	"fmt"
 	"log"
 	"time"
+	"bitbucket.org/cswank/gogadgets/models"
+	"bitbucket.org/cswank/gogadgets/output"
 )
 
 //Switch is an input device that waits for a GPIO pin
@@ -15,13 +17,13 @@ type Switch struct {
 	Value     interface{}
 	TrueValue interface{}
 	Units     string
-	out       chan<- Value
+	out       chan<- models.Value
 }
 
-func NewSwitch(pin *Pin) (InputDevice, error) {
+func NewSwitch(pin *models.Pin) (InputDevice, error) {
 	var err error
 	var s *Switch
-	gpio, err := NewGPIO(pin)
+	gpio, err := output.NewGPIO(pin)
 	poller, ok := gpio.(Poller)
 	if !ok {
 		return nil, errors.New(fmt.Sprintf("couldn't create a poller: %s", pin))
@@ -67,20 +69,20 @@ func (s *Switch) wait(out chan<- interface{}, err chan<- error) {
 }
 
 func (s *Switch) SendValue() {
-	s.out <- Value{
+	s.out <- models.Value{
 		Value: s.Value,
 		Units: s.Units,
 	}
 }
 
-func (s *Switch) GetValue() *Value {
-	return &Value{
+func (s *Switch) GetValue() *models.Value {
+	return &models.Value{
 		Value: s.Value,
 		Units: s.Units,
 	}
 }
 
-func (s *Switch) Start(in <-chan Message, out chan<- Value) {
+func (s *Switch) Start(in <-chan models.Message, out chan<- models.Value) {
 	s.out = out
 	value := make(chan interface{})
 	err := make(chan error)

@@ -7,18 +7,19 @@ import (
 	"os"
 	"testing"
 	"time"
+	"bitbucket.org/cswank/gogadgets/models"
+	"bitbucket.org/cswank/gogadgets/input"
 )
 
 type FakeOutput struct {
-	OutputDevice
 	on bool
 }
 
-func (f *FakeOutput) Update(msg *Message) {
+func (f *FakeOutput) Update(msg *models.Message) {
 
 }
 
-func (f *FakeOutput) On(val *Value) error {
+func (f *FakeOutput) On(val *models.Value) error {
 	f.on = true
 	return nil
 }
@@ -33,7 +34,6 @@ func (f *FakeOutput) Status() interface{} {
 }
 
 type FakePoller struct {
-	Poller
 	val bool
 }
 
@@ -59,7 +59,7 @@ func TestGadgets(t *testing.T) {
 	s := &Gadget{
 		Location: location,
 		Name:     name,
-		Input: &Switch{
+		Input: &input.Switch{
 			GPIO:      poller,
 			Value:     5.0,
 			TrueValue: 5.0,
@@ -68,7 +68,7 @@ func TestGadgets(t *testing.T) {
 		UID: fmt.Sprintf("%s %s", location, name),
 	}
 	a := App{
-		Gadgets: []GoGadget{p, s},
+		Gadgets: []models.GoGadget{p, s},
 		Host:    "localhost",
 		SubPort: port,
 		PubPort: port + 1,

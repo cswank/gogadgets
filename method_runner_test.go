@@ -3,6 +3,7 @@ package gogadgets
 import (
 	"testing"
 	"time"
+	"bitbucket.org/cswank/gogadgets/models"
 )
 
 func TestReadWaitCommand(t *testing.T) {
@@ -73,9 +74,9 @@ func TestSetStepChecker(t *testing.T) {
 	m := MethodRunner{}
 	cmd := "wait for tank volume >= 5.4"
 	m.setStepChecker(cmd)
-	msg := &Message{
+	msg := &models.Message{
 		Sender: "tank volume",
-		Value: Value{
+		Value: models.Value{
 			Value: 5.4,
 		},
 	}
@@ -83,9 +84,9 @@ func TestSetStepChecker(t *testing.T) {
 		t.Error("should have been true")
 	}
 
-	msg = &Message{
+	msg = &models.Message{
 		Sender: "fish tank volume",
-		Value: Value{
+		Value: models.Value{
 			Value: 5.4,
 		},
 	}
@@ -98,9 +99,9 @@ func TestSetBoolStepChecker(t *testing.T) {
 	m := MethodRunner{}
 	cmd := "wait for lab switch == true"
 	m.setStepChecker(cmd)
-	msg := &Message{
+	msg := &models.Message{
 		Sender: "lab switch",
-		Value: Value{
+		Value: models.Value{
 			Value: true,
 		},
 	}
@@ -108,9 +109,9 @@ func TestSetBoolStepChecker(t *testing.T) {
 		t.Error("should have been true")
 	}
 
-	msg = &Message{
+	msg = &models.Message{
 		Sender: "fish tank volume",
-		Value: Value{
+		Value: models.Value{
 			Value: 5.4,
 		},
 	}
@@ -152,13 +153,13 @@ func TestParseWaitCommand(t *testing.T) {
 }
 
 func TestRunMethod(t *testing.T) {
-	in := make(chan Message)
-	out := make(chan Message)
+	in := make(chan models.Message)
+	out := make(chan models.Message)
 	m := MethodRunner{}
 	go m.Start(out, in)
-	msg := Message{
-		Type: METHOD,
-		Method: Method{
+	msg := models.Message{
+		Type: models.METHOD,
+		Method: models.Method{
 			Steps: []string{
 				"fill boiler to 3.3 gallons",
 				"heat boiler to 95 C",
@@ -178,10 +179,10 @@ func TestRunMethod(t *testing.T) {
 	if msg.Type != "command" && msg.Body != "heat boiler to 95 C" {
 		t.Error(msg)
 	}
-	msg = Message{
+	msg = models.Message{
 		Type:   "update",
 		Sender: "boiler temperature",
-		Value: Value{
+		Value: models.Value{
 			Value: 96.0,
 			Units: "C",
 		},
@@ -193,7 +194,7 @@ func TestRunMethod(t *testing.T) {
 	if msg.Type != "command" && msg.Body != "stop heating boiler" {
 		t.Error(msg)
 	}
-	msg = Message{
+	msg = models.Message{
 		Type: "command",
 		Body: "shutdown",
 	}
@@ -205,7 +206,7 @@ func TestRunMethod(t *testing.T) {
 func TestUserStepChecker(t *testing.T) {
 	m := MethodRunner{}
 	m.setUserStepChecker("wait for user to laugh")
-	msg := &Message{
+	msg := &models.Message{
 		Type: "update",
 		Body: "wait for user to cry",
 	}
@@ -219,13 +220,13 @@ func TestUserStepChecker(t *testing.T) {
 }
 
 func TestRunAnotherMethod(t *testing.T) {
-	in := make(chan Message)
-	out := make(chan Message)
+	in := make(chan models.Message)
+	out := make(chan models.Message)
 	m := MethodRunner{}
 	go m.Start(out, in)
-	msg := Message{
-		Type: METHOD,
-		Method: Method{
+	msg := models.Message{
+		Type: models.METHOD,
+		Method: models.Method{
 			Steps: []string{
 				"turn on lab led",
 				"wait for 0.1 seconds",
@@ -265,7 +266,7 @@ func TestRunAnotherMethod(t *testing.T) {
 	if msg.Type != "method update" || msg.Method.Step != 3 {
 		t.Error(msg)
 	}
-	out <- Message{
+	out <- models.Message{
 		Type: "update",
 		Body: "wait for user to turn off power",
 	}

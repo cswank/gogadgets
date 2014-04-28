@@ -1,6 +1,7 @@
-package gogadgets
+package output
 
 import (
+	"bitbucket.org/cswank/gogadgets/models"
 	"labix.org/v2/mgo"
 	"encoding/json"
 	"time"
@@ -27,7 +28,7 @@ type Recorder struct {
 	history    map[string]summary
 }
 
-func NewRecorder(pin *Pin) (OutputDevice, error) {
+func NewRecorder(pin *models.Pin) (OutputDevice, error) {
 	r := &Recorder{
 		DBHost:    pin.Args["host"].(string),
 		DBName:    pin.Args["db"].(string),
@@ -55,13 +56,13 @@ func getSummaries(s interface{}) map[string]time.Duration {
 	return out
 }
 
-func (r *Recorder) Update(msg *Message) {
+func (r *Recorder) Update(msg *models.Message) {
 	if r.status && msg.Type == "update" {
 		r.save(msg)
 	}
 }
 
-func (r *Recorder) On(val *Value) error {
+func (r *Recorder) On(val *models.Value) error {
 	err := r.connect()
 	if err == nil {
 		r.status = true
@@ -81,7 +82,7 @@ func (r *Recorder) Status() interface{} {
 	return r.status
 }
 
-func (r *Recorder) save(msg *Message) {
+func (r *Recorder) save(msg *models.Message) {
 	if len(r.filter) > 0 {
 		if !r.inFilter(msg) {
 			return
@@ -95,7 +96,7 @@ func (r *Recorder) save(msg *Message) {
 	}
 }
 
-func (r *Recorder) inFilter(msg *Message) bool {
+func (r *Recorder) inFilter(msg *models.Message) bool {
 	for _, item := range r.filter {
 		if msg.Sender == item {
 			return true
@@ -104,7 +105,7 @@ func (r *Recorder) inFilter(msg *Message) bool {
 	return false
 }
 
-func (r *Recorder) summarize(msg *Message, duration time.Duration) {
+func (r *Recorder) summarize(msg *models.Message, duration time.Duration) {
 	now := time.Now().UTC()
 	s, ok := r.history[msg.Sender]
 	if !ok {
@@ -123,7 +124,7 @@ func (r *Recorder) summarize(msg *Message, duration time.Duration) {
 	}
 }
 
-func (r *Recorder) doSave(msg *Message) {
+func (r *Recorder) doSave(msg *models.Message) {
 	r.collection.Insert(msg)
 }
 

@@ -1,4 +1,4 @@
-package gogadgets
+package models
 
 import (
 	"time"
@@ -12,9 +12,9 @@ var (
 	METHODUPDATE = "method update"
 )
 
-type InputDeviceFactory func(pin *Pin) (InputDevice, error)
 
-type OutputDeviceFactory func(pin *Pin) (OutputDevice, error)
+
+
 
 type GoGadget interface {
 	GetUID() string

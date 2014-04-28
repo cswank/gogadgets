@@ -1,6 +1,8 @@
-package gogadgets
+package output
 
-import ()
+import (
+	"bitbucket.org/cswank/gogadgets/models"
+)
 
 type Cooler struct {
 	target float64
@@ -8,7 +10,7 @@ type Cooler struct {
 	gpio   OutputDevice
 }
 
-func NewCooler(pin *Pin) (OutputDevice, error) {
+func NewCooler(pin *models.Pin) (OutputDevice, error) {
 	var c *Cooler
 	var err error
 	g, err := NewGPIO(pin)
@@ -21,7 +23,7 @@ func NewCooler(pin *Pin) (OutputDevice, error) {
 	return c, err
 }
 
-func (c *Cooler) Update(msg *Message) {
+func (c *Cooler) Update(msg *models.Message) {
 	temperature, ok := msg.Value.Value.(float64)
 	if ok && c.status {
 		if temperature <= c.target {
@@ -32,7 +34,7 @@ func (c *Cooler) Update(msg *Message) {
 	}
 }
 
-func (c *Cooler) On(val *Value) error {
+func (c *Cooler) On(val *models.Value) error {
 	if val != nil {
 		target, ok := val.Value.(float64)
 		if ok {

@@ -1,7 +1,8 @@
-package gogadgets
+package output
 
 import (
 	"bitbucket.org/cswank/gogadgets/utils"
+	"bitbucket.org/cswank/gogadgets/models"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -19,10 +20,10 @@ func init() {
 	}
 }
 
-func getMessage(val float64) *Message {
-	return &Message{
+func getMessage(val float64) *models.Message {
+	return &models.Message{
 		Name: "temperature",
-		Value: Value{
+		Value: models.Value{
 			Value: val,
 		},
 	}
@@ -44,7 +45,7 @@ func waitFor(f, val string) {
 func TestHeater(t *testing.T) {
 	pwmMode = 0777
 	PWM_DEVPATH = "/tmp/sys/devices/ocp.*/pwm_test_P%s_%s.*"
-	p := &Pin{
+	p := &models.Pin{
 		Type:      "heater",
 		Port:      "8",
 		Pin:       "13",
@@ -58,23 +59,23 @@ func TestHeater(t *testing.T) {
 	waitFor("run", "1")
 	d.Off()
 	waitFor("run", "0")
-	m := &Message{
+	m := &models.Message{
 		Name:  "temperature",
-		Value: Value{Value: 20.0, Units: "C"},
+		Value: models.Value{Value: 20.0, Units: "C"},
 	}
 	d.Update(m)
-	d.On(&Value{Value: 30.0, Units: "C"})
+	d.On(&models.Value{Value: 30.0, Units: "C"})
 	waitFor("run", "1")
-	m = &Message{
+	m = &models.Message{
 		Name:  "temperature",
-		Value: Value{Value: 30.0, Units: "C"},
+		Value: models.Value{Value: 30.0, Units: "C"},
 	}
 	waitFor("duty", "1000000000")
 	d.Update(m)
 	waitFor("run", "0")
-	m = &Message{
+	m = &models.Message{
 		Name:  "temperature",
-		Value: Value{Value: 29.0, Units: "C"},
+		Value: models.Value{Value: 29.0, Units: "C"},
 	}
 	d.Update(m)
 	waitFor("duty", "1000000000")
@@ -84,7 +85,7 @@ func TestHeater(t *testing.T) {
 func TestPWMHeater(t *testing.T) {
 	pwmMode = 0777
 	PWM_DEVPATH = "/tmp/sys/devices/ocp.*/pwm_test_P%s_%s.*"
-	p := &Pin{
+	p := &models.Pin{
 		Type:      "heater",
 		Port:      "8",
 		Pin:       "13",
@@ -99,23 +100,23 @@ func TestPWMHeater(t *testing.T) {
 	waitFor("run", "1")
 	d.Off()
 	waitFor("run", "0")
-	m := &Message{
+	m := &models.Message{
 		Name:  "temperature",
-		Value: Value{Value: 20.0, Units: "C"},
+		Value: models.Value{Value: 20.0, Units: "C"},
 	}
 	d.Update(m)
-	d.On(&Value{Value: 30.0, Units: "C"})
+	d.On(&models.Value{Value: 30.0, Units: "C"})
 	waitFor("run", "1")
-	m = &Message{
+	m = &models.Message{
 		Name:  "temperature",
-		Value: Value{Value: 30.0, Units: "C"},
+		Value: models.Value{Value: 30.0, Units: "C"},
 	}
 	waitFor("duty", "1000000000")
 	d.Update(m)
 	waitFor("duty", "0")
-	m = &Message{
+	m = &models.Message{
 		Name:  "temperature",
-		Value: Value{Value: 29.0, Units: "C"},
+		Value: models.Value{Value: 29.0, Units: "C"},
 	}
 	d.Update(m)
 	waitFor("duty", "250000000")

@@ -1,4 +1,4 @@
-package gogadgets
+package pins
 
 import (
 	"testing"
