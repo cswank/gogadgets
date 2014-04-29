@@ -23,6 +23,13 @@ func NewCooler(pin *models.Pin) (OutputDevice, error) {
 	return c, err
 }
 
+func (c *Cooler) Config() models.Pin {
+	return models.Pin{
+		Port: "port",
+		Pin: "pin",
+	}
+}
+
 func (c *Cooler) Update(msg *models.Message) {
 	temperature, ok := msg.Value.Value.(float64)
 	if ok && c.status {

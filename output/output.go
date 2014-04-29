@@ -14,6 +14,7 @@ type OutputDevice interface {
 	Off() error
 	Update(msg *models.Message)
 	Status() interface{}
+	Config() models.Pin
 }
 
 func NewOutputDevice(pin *models.Pin) (dev OutputDevice, err error) {

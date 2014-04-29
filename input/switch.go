@@ -21,6 +21,7 @@ type Switch struct {
 }
 
 func NewSwitch(pin *models.Pin) (InputDevice, error) {
+	pin.Direction = "input"
 	var err error
 	var s *Switch
 	gpio, err := output.NewGPIO(pin)
@@ -42,6 +43,15 @@ func NewSwitch(pin *models.Pin) (InputDevice, error) {
 		}
 	}
 	return s, err
+}
+
+func (s *Switch) Config() models.Pin {
+	return models.Pin{
+		Value: true,
+		Port: "port",
+		Pin: "pin",
+		Edge: "rising, falling, both",
+	}
 }
 
 //The GPIO does the real waiting here.  This wraps it and adds
@@ -100,3 +110,4 @@ func (s *Switch) Start(in <-chan models.Message, out chan<- models.Value) {
 		}
 	}
 }
+

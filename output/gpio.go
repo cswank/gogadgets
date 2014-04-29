@@ -68,6 +68,13 @@ func NewGPIO(pin *models.Pin) (OutputDevice, error) {
 	return g, err
 }
 
+func (g *GPIO) Config() models.Pin {
+	return models.Pin{
+		Port: "port",
+		Pin: "pin",
+	}
+}
+
 func (g *GPIO) Init() error {
 	var err error
 	if !utils.FileExists(g.directionPath) {

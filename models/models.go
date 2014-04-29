@@ -13,18 +13,15 @@ var (
 )
 
 
-
-
-
 type GoGadget interface {
 	GetUID() string
 	Start(input <-chan Message, output chan<- Message)
 }
 
 type Value struct {
-	Value interface{} `json:"value"`
-	Units string      `json:"units"`
-	ID    string      `json:"id"`
+	Value interface{} `json:"value,omitempty"`
+	Units string      `json:"units,omitempty"`
+	ID    string      `json:"id,omitempty"`
 }
 
 func (v *Value) ToFloat() (f float64, ok bool) {
@@ -44,60 +41,60 @@ func (v *Value) ToFloat() (f float64, ok bool) {
 }
 
 type Info struct {
-	Direction string `json:"direction"`
-	On        string `json:"on"`
-	Off       string `json:"off"`
+	Direction string `json:"direction,omitempty"`
+	On        string `json:"on,omitempty"`
+	Off       string `json:"off,omitempty"`
 }
 
 type Method struct {
-	Step  int      `json:"step"`
-	Steps []string `json:"steps"`
-	Time  int      `json:"time"`
+	Step  int      `json:"step,omitempty"`
+	Steps []string `json:"steps,omitempty"`
+	Time  int      `json:"time,omitempty"`
 }
 
 //Message is what all Gadgets pass around to each
 //other.
 type Message struct {
-	Name        string    `json:"name"`
-	Location    string    `json:"location"`
-	Type        string    `json:"type"`
-	Sender      string    `json:"sender"`
-	Target      string    `json:"target"`
-	Body        string    `json:"body"`
-	Method      Method    `json:"method"`
-	Timestamp   time.Time `json:"timestamp"`
-	Value       Value     `json:"value"`
-	TargetValue *Value    `json:"targetValue"`
-	Info        Info      `json:"info"`
+	Name        string    `json:"name,omitempty"`
+	Location    string    `json:"location,omitempty"`
+	Type        string    `json:"type,omitempty"`
+	Sender      string    `json:"sender,omitempty"`
+	Target      string    `json:"target,omitempty"`
+	Body        string    `json:"body,omitempty"`
+	Method      Method    `json:"method,omitempty"`
+	Timestamp   time.Time `json:"timestamp,omitempty"`
+	Value       Value     `json:"value,omitempty"`
+	TargetValue *Value    `json:"targetValue,omitempty"`
+	Info        Info      `json:"info,omitempty"`
 }
 
 type Pin struct {
-	Type      string                 `json:"type"`
-	Port      string                 `json:"port"`
-	Pin       string                 `json:"pin"`
-	Direction string                 `json:"direction"`
-	Edge      string                 `json:"edge"`
-	OneWireId string                 `json:"onewireId"`
-	Value     interface{}            `json:"value"`
-	Units     string                 `json:"units"`
-	Platform  string                 `json:"platform"`
-	Frequency int                    `json:"frequency"`
-	Args      map[string]interface{} `json:"args"`
-	Pins      map[string]Pin         `json:"pins"`
+	Type      string                 `json:"type,omitempty"`
+	Port      string                 `json:"port,omitempty"`
+	Pin       string                 `json:"pin,omitempty"`
+	Direction string                 `json:"direction,omitempty"`
+	Edge      string                 `json:"edge,omitempty"`
+	OneWireId string                 `json:"onewireId,omitempty"`
+	Value     interface{}            `json:"value,omitempty"`
+	Units     string                 `json:"units,omitempty"`
+	Platform  string                 `json:"platform,omitempty"`
+	Frequency int                    `json:"frequency,omitempty"`
+	Args      map[string]interface{} `json:"args,omitempty"`
+	Pins      map[string]Pin         `json:"pins,omitempty"`
 }
 
 type GadgetConfig struct {
-	Location     string `json:"location"`
-	Name         string `json:"name"`
-	OnCommand    string `json:"onCommand"`
-	OffCommand   string `json:"offCommand"`
-	InitialValue string `json:"initialValue"`
-	Pin          Pin    `json:"pin"`
+	Location     string `json:"location,omitempty"`
+	Name         string `json:"name,omitempty"`
+	OnCommand    string `json:"onCommand,omitempty"`
+	OffCommand   string `json:"offCommand,omitempty"`
+	InitialValue string `json:"initialValue,omitempty"`
+	Pin          Pin    `json:"pin,omitempty"`
 }
 
 type Config struct {
-	Host    string         `json:"host"`
-	PubPort int            `json:"pubPort"`
-	SubPort int            `json:"subPort"`
-	Gadgets []GadgetConfig `json:"gadgets"`
+	Host    string         `json:"host,omitempty"`
+	PubPort int            `json:"pubPort,omitempty"`
+	SubPort int            `json:"subPort,omitempty"`
+	Gadgets []GadgetConfig `json:"gadgets,omitempty"`
 }

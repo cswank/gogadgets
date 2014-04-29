@@ -39,6 +39,13 @@ func NewHeater(pin *models.Pin) (OutputDevice, error) {
 	return h, err
 }
 
+func (h *Heater) Config() models.Pin {
+	return models.Pin{
+		Port: "port",
+		Pin: "pin",
+	}
+}
+
 func (h *Heater) Update(msg *models.Message) {
 	if h.status && msg.Name == "temperature" {
 		h.update <- *msg

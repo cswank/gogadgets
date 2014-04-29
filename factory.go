@@ -26,6 +26,29 @@ func NewAppFactory() *AppFactory {
 	return a
 }
 
+//Each input and output device has a config method that returns a models.Pin with
+//the required fields poplulated with helpful values.
+func GetConfigs() map[string]map[string]models.Pin {
+	t := input.Thermometer{}
+	s := input.Switch{}
+	g := output.GPIO{}
+	h := output.Heater{}
+	c := output.Cooler{}
+	r := output.Recorder{}
+	return map[string]map[string]Pin{
+		"input": map[string]Pin{
+			"thermometer": t.Config(),
+			"switch":      s.Config(),
+		},
+		"output": map[string]Pin{
+			"gpio": g.Config(),
+			"heater": h.Config(),
+			"cooler": c.Config(),
+			"recorder": r.Config(),
+		},
+	}
+}
+
 func (f *AppFactory) RegisterInputFactory(name string, factory input.InputDeviceFactory) {
 	f.inputFactories[name] = factory
 }

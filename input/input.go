@@ -12,6 +12,7 @@ type InputDeviceFactory func(pin *models.Pin) (InputDevice, error)
 type InputDevice interface {
 	Start(<-chan models.Message, chan<- models.Value)
 	GetValue() *models.Value
+	Config() models.Pin
 }
 
 type Poller interface {

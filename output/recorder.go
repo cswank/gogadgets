@@ -39,6 +39,18 @@ func NewRecorder(pin *models.Pin) (OutputDevice, error) {
 	return r, nil
 }
 
+func (r *Recorder) Config() models.Pin {
+	return models.Pin{
+		Args: map[string]string{
+			"host": "db host",
+			"db": "db name",
+			"summarize": map[string]int{
+				"device name": 1,
+			},
+		},
+	}
+}
+
 func getSummaries(s interface{}) map[string]time.Duration {
 	d, _ := json.Marshal(s)
 	vals := map[string]int{}

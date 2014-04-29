@@ -50,6 +50,14 @@ func NewPWM(pin *models.Pin) (OutputDevice, error) {
 	return pwm, err
 }
 
+func (p *PWM) Config() models.Pin {
+	return models.Pin{
+		Port: "port",
+		Pin: "pin",
+		Frequency: 1,
+	}
+}
+
 func (p *PWM) Update(msg *models.Message) {
 
 }
