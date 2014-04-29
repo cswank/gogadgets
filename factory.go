@@ -1,6 +1,7 @@
 package gogadgets
 
 import (
+	"bitbucket.org/cswank/gogadgets/models"
 	"bitbucket.org/cswank/gogadgets/input"
 	"bitbucket.org/cswank/gogadgets/output"
 )
@@ -35,12 +36,12 @@ func GetConfigs() map[string]map[string]models.Pin {
 	h := output.Heater{}
 	c := output.Cooler{}
 	r := output.Recorder{}
-	return map[string]map[string]Pin{
-		"input": map[string]Pin{
+	return map[string]map[string]models.Pin{
+		"input": map[string]models.Pin{
 			"thermometer": t.Config(),
 			"switch":      s.Config(),
 		},
-		"output": map[string]Pin{
+		"output": map[string]models.Pin{
 			"gpio": g.Config(),
 			"heater": h.Config(),
 			"cooler": c.Config(),

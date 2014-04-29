@@ -36,15 +36,15 @@ func NewMotor(pin *models.Pin) (OutputDevice, error) {
 
 func (m *Motor) Config() models.Pin {
 	g := GPIO{}
-	gpio = g.Config()
+	gpio := g.Config()
 	p := PWM{}
 	pwm := p.Config()
 	return models.Pin{
-		Pins: map[string]Pin{
+		Pins: map[string]models.Pin{
 			"gpio_a": gpio,
 			"gpio_b": gpio,
 			"pwm":    pwm,
-		}
+		},
 	}
 }
 

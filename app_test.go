@@ -15,6 +15,10 @@ type FakeOutput struct {
 	on bool
 }
 
+func (f *FakeOutput) Config() models.Pin {
+	return models.Pin{}
+}
+
 func (f *FakeOutput) Update(msg *models.Message) {
 
 }

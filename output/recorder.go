@@ -41,7 +41,7 @@ func NewRecorder(pin *models.Pin) (OutputDevice, error) {
 
 func (r *Recorder) Config() models.Pin {
 	return models.Pin{
-		Args: map[string]string{
+		Args: map[string]interface{}{
 			"host": "db host",
 			"db": "db name",
 			"summarize": map[string]int{

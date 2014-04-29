@@ -21,12 +21,7 @@
             "Name": "temperature",
             "Pin": {
                 "Type": "thermometer",
-                "Port": "",
-                "Pin": "",
-                "Direction": "",
-                "Edge": "",
                 "OneWireId": "28-0000025ed133",
-                "Value": null,
                 "Units": "C"
             }
         },
@@ -35,12 +30,7 @@
             "Name": "temperature",
             "Pin": {
                 "Type": "thermometer",
-                "Port": "",
-                "Pin": "",
-                "Direction": "",
-                "Edge": "",
                 "OneWireId": "28-00000479f8c6",
-                "Value": null,
                 "Units": "C"
             }
         },
@@ -53,9 +43,7 @@
                 "Pin": "10",
                 "Direction": "in",
                 "Edge": "both",
-                "OneWireId": "",
                 "Value": 1,
-                "Units": ""
             }
         },
         {
@@ -67,9 +55,7 @@
                 "Pin": "9",
                 "Direction": "in",
                 "Edge": "both",
-                "OneWireId": "",
                 "Value": 1,
-                "Units": ""
             }
         },
         {
@@ -81,9 +67,7 @@
                 "Pin": "11",
                 "Direction": "in",
                 "Edge": "both",
-                "OneWireId": "",
                 "Value": 1,
-                "Units": ""
             }
         }
     ]
