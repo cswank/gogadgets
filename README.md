@@ -16,6 +16,8 @@ apt-get update
 apt-get install build-essential
 apt-get install libzmq3-dev
 apt-get install git
+apt-get install bzr
+apt-get install golang
 mkdir gadgets
 adduser craig
 chown craig:craig gadgets/
@@ -25,9 +27,8 @@ hostname greenhouse
 su craig
     
 git clone git@bitbucket.org:cswank/gogadgets.git
-sudo apt-get install golang
 export GOPATH=/opt/gadgets/
 cd ../src/bitbucket.org/cswank/gogadgets/
 go get
 cd gogadgets/
-go install   
+go install
