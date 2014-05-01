@@ -43,7 +43,7 @@
                 "Pin": "10",
                 "Direction": "in",
                 "Edge": "both",
-                "Value": 1,
+                "Value": 1
             }
         },
         {
@@ -55,7 +55,7 @@
                 "Pin": "9",
                 "Direction": "in",
                 "Edge": "both",
-                "Value": 1,
+                "Value": 1
             }
         },
         {
@@ -67,7 +67,7 @@
                 "Pin": "11",
                 "Direction": "in",
                 "Edge": "both",
-                "Value": 1,
+                "Value": 1
             }
         }
     ]
