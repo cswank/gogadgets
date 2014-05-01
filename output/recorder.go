@@ -4,6 +4,7 @@ import (
 	"bitbucket.org/cswank/gogadgets/models"
 	"labix.org/v2/mgo"
 	"encoding/json"
+	"errors"
 	"time"
 	"log"
 )
@@ -26,6 +27,7 @@ type Recorder struct {
 	filter     []string
 	summaries  map[string]time.Duration
 	history    map[string]summary
+	retries    int
 }
 
 func NewRecorder(pin *models.Pin) (OutputDevice, error) {
@@ -137,7 +139,18 @@ func (r *Recorder) summarize(msg *models.Message, duration time.Duration) {
 }
 
 func (r *Recorder) doSave(msg *models.Message) {
-	r.collection.Insert(msg)
+     	err := r.collection.Insert(msg)
+	if err != nil {
+		if r.retries > 5 {
+			panic(errors.New("couldn't connect to the db"))
+		}
+		r.session.Close()
+		r.connect()
+		r.doSave(msg)
+		r.retries += 1
+	} else {
+		r.retries = 0
+	}
 }
 
 func (r *Recorder) connect() error {
