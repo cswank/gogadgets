@@ -21,7 +21,7 @@ type Switch struct {
 }
 
 func NewSwitch(pin *models.Pin) (InputDevice, error) {
-	pin.Direction = "input"
+	pin.Direction = "in"
 	var err error
 	var s *Switch
 	gpio, err := output.NewGPIO(pin)

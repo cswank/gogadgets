@@ -41,7 +41,6 @@
                 "type": "switch",
                 "port": "8",
                 "pin": "10",
-                "direction": "in",
                 "edge": "both",
                 "value": 1
             }
@@ -53,7 +52,6 @@
                 "type": "switch",
                 "port": "8",
                 "pin": "9",
-                "direction": "in",
                 "edge": "both",
                 "value": 1
             }
@@ -65,7 +63,6 @@
                 "type": "switch",
                 "port": "8",
                 "pin": "11",
-                "direction": "in",
                 "edge": "both",
                 "value": 1
             }
