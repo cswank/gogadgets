@@ -51,9 +51,10 @@ func listen() {
 	if err != nil {
 		panic(err)
 	}
-	time.Sleep(1 * time.Second)
+	defer s.Close()
+	time.Sleep(100 * time.Millisecond)
 	fmt.Println("waiting for message")
 	msg := s.Recv()
 	fmt.Println("got a msg", msg)
-	s.Close()
+	
 }

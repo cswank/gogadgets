@@ -135,11 +135,15 @@ func (s *Sockets) sendMessageIn(data [][]byte, out chan<- models.Message) {
 }
 
 func (s *Sockets) Close() {
-	s.ctx.Close()
 	s.sub.Close()
 	s.pub.Close()
-	s.subChan.Close()
-	s.pubChan.Close()
+	if s.subChan != nil {
+		s.subChan.Close()
+	}
+	if s.pubChan != nil {
+		s.pubChan.Close()
+	}
+	s.ctx.Close()
 }
 
 func (s *Sockets) getSockets() (err error) {
