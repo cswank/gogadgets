@@ -49,8 +49,7 @@ func (b *Broker) collectMessages(in <-chan models.Message) {
 }
 
 //After a message is collected by collectMessage, it is
-//then sent back to the rest of the system.  This can
-//be improved.
+//then sent back to the rest of the system.
 func (b *Broker) dispenseMessages(out chan<- models.Message) {
 	for {
 		b.queue.Lock()

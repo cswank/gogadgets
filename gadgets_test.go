@@ -1,10 +1,10 @@
 package gogadgets
 
 import (
-	"bitbucket.org/cswank/gogadgets/utils"
+	"bitbucket.org/cswank/gogadgets/input"
 	"bitbucket.org/cswank/gogadgets/models"
 	"bitbucket.org/cswank/gogadgets/output"
-	"bitbucket.org/cswank/gogadgets/input"
+	"bitbucket.org/cswank/gogadgets/utils"
 	"fmt"
 	"testing"
 	"time"

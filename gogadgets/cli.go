@@ -1,7 +1,5 @@
 package main
 
-
-
 import (
 	"flag"
 	"time"
@@ -22,6 +20,8 @@ func main() {
 		runGadgets()
 	} else if len(*cmd) > 0 {
 		sendCommand()
+	} else {
+		listen()
 	}
 }
 
@@ -47,5 +47,13 @@ func sendCommand() {
 //config.  When one is recieved it is parsed and a
 //a gogadgts system is started.
 func listen() {
-	
+	s, err := gogadgets.NewSockets()
+	if err != nil {
+		panic(err)
+	}
+	time.Sleep(1 * time.Second)
+	fmt.Println("waiting for message")
+	msg := s.Recv()
+	fmt.Println("got a msg", msg)
+	s.Close()
 }

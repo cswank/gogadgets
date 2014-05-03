@@ -9,10 +9,10 @@
 package gogadgets
 
 import (
+	"bitbucket.org/cswank/gogadgets/models"
 	"encoding/json"
 	"fmt"
 	"github.com/vaughan0/go-zmq"
-	"bitbucket.org/cswank/gogadgets/models"
 	"log"
 )
 
@@ -32,6 +32,16 @@ type Sockets struct {
 	pubChan *zmq.Channels
 }
 
+func NewSockets() (*Sockets, error) {
+	s := &Sockets{
+		host:    "localhost",
+		subPort: 6111,
+		pubPort: 6112,
+	}
+	err := s.getMasterSockets()
+	return s, err
+}
+
 func NewClientSockets(host string) (*Sockets, error) {
 	s := &Sockets{
 		host:    host,
@@ -41,6 +51,7 @@ func NewClientSockets(host string) (*Sockets, error) {
 	err := s.getClientSockets()
 	return s, err
 }
+
 
 func (s *Sockets) Send(cmd string) {
 	msg := &models.Message{
@@ -56,6 +67,17 @@ func (s *Sockets) Send(cmd string) {
 			b,
 		})
 	}
+}
+
+
+func (s *Sockets) Recv() *models.Message {
+	data, err := s.sub.Recv()
+	if err != nil {
+		panic(err)
+	}
+	msg := &models.Message{}
+	json.Unmarshal(data[1], msg)
+	return msg
 }
 
 //Sockets listens for chann Messages from inside the system and
@@ -122,7 +144,7 @@ func (s *Sockets) Close() {
 
 func (s *Sockets) getSockets() (err error) {
 	if s.host == "localhost" || s.host == "" {
-		err = s.getMasterSockets()
+		err = s.getMasterChannels()
 	} else {
 		err = s.getClientSockets()
 		s.subChan = s.sub.Channels()
@@ -135,12 +157,21 @@ func (s *Sockets) getSockets() (err error) {
 //The GoGadgets system that has it's App.Host set as "localhost" is
 //the master.  Other systems that wish to join need to be configured
 //with the IP address of the master system as App.Host.
+func (s *Sockets) getMasterChannels() (err error) {
+	err = s.getMasterSockets()
+	if err != nil {
+		return err
+	}
+	s.pubChan = s.pub.Channels()
+	s.subChan = s.sub.Channels()
+	return err
+}
+
 func (s *Sockets) getMasterSockets() (err error) {
 	s.ctx, err = zmq.NewContext()
 	if err != nil {
 		return err
 	}
-
 	s.pub, err = s.ctx.Socket(zmq.Pub)
 	if err != nil {
 		return err
@@ -148,8 +179,6 @@ func (s *Sockets) getMasterSockets() (err error) {
 	if err = s.pub.Bind(fmt.Sprintf("tcp://*:%d", s.pubPort)); err != nil {
 		return err
 	}
-	s.pubChan = s.pub.Channels()
-
 	sub, err := s.ctx.Socket(zmq.Sub)
 	if err != nil {
 		return err
@@ -159,7 +188,6 @@ func (s *Sockets) getMasterSockets() (err error) {
 		return err
 	}
 	s.sub.Subscribe([]byte(""))
-	s.subChan = s.sub.Channels()
 	return err
 }
 

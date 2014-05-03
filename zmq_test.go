@@ -1,10 +1,10 @@
 package gogadgets
 
 import (
+	"bitbucket.org/cswank/gogadgets/models"
 	"encoding/json"
 	"fmt"
 	"github.com/vaughan0/go-zmq"
-	"bitbucket.org/cswank/gogadgets/models"
 	"math/rand"
 	"testing"
 	"time"

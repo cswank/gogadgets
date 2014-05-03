@@ -1,6 +1,7 @@
 package gogadgets
 
 import (
+	"bitbucket.org/cswank/gogadgets/models"
 	"errors"
 	"fmt"
 	"log"
@@ -8,7 +9,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"bitbucket.org/cswank/gogadgets/models"
 )
 
 var (

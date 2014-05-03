@@ -86,8 +86,8 @@ func (a *App) GoStart(input <-chan models.Message) {
 }
 
 //Some systems might have a few GoGadgets that are not
-//built into the system (and hense can't be defined in
-//the config file).  This is a way to apss in an instance
+//built into the system (and hence can't be defined in
+//the config file).  This is a way to add in an instance
 //of a gadget that is not part of the GoGadgets system.
 func (a *App) AddGadget(gadget models.GoGadget) {
 	a.Gadgets = append(a.Gadgets, gadget)

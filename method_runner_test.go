@@ -1,9 +1,9 @@
 package gogadgets
 
 import (
+	"bitbucket.org/cswank/gogadgets/models"
 	"testing"
 	"time"
-	"bitbucket.org/cswank/gogadgets/models"
 )
 
 func TestReadWaitCommand(t *testing.T) {

@@ -9,9 +9,9 @@ var (
 	METHOD       = "method"
 	DONE         = "done"
 	UPDATE       = "update"
+	GADGET       = "gadget"
 	METHODUPDATE = "method update"
 )
-
 
 type GoGadget interface {
 	GetUID() string
@@ -55,17 +55,18 @@ type Method struct {
 //Message is what all Gadgets pass around to each
 //other.
 type Message struct {
-	Name        string    `json:"name,omitempty"`
-	Location    string    `json:"location,omitempty"`
-	Type        string    `json:"type,omitempty"`
-	Sender      string    `json:"sender,omitempty"`
-	Target      string    `json:"target,omitempty"`
-	Body        string    `json:"body,omitempty"`
-	Method      Method    `json:"method,omitempty"`
-	Timestamp   time.Time `json:"timestamp,omitempty"`
-	Value       Value     `json:"value,omitempty"`
-	TargetValue *Value    `json:"targetValue,omitempty"`
-	Info        Info      `json:"info,omitempty"`
+	Name        string       `json:"name,omitempty"`
+	Location    string       `json:"location,omitempty"`
+	Type        string       `json:"type,omitempty"`
+	Sender      string       `json:"sender,omitempty"`
+	Target      string       `json:"target,omitempty"`
+	Body        string       `json:"body,omitempty"`
+	Method      Method       `json:"method,omitempty"`
+	Timestamp   time.Time    `json:"timestamp,omitempty"`
+	Value       Value        `json:"value,omitempty"`
+	TargetValue *Value       `json:"targetValue,omitempty"`
+	Info        Info         `json:"info,omitempty"`
+	Config      GadgetConfig `json:"config,omitempty"`
 }
 
 type Pin struct {

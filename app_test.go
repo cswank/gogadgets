@@ -1,14 +1,14 @@
 package gogadgets
 
 import (
+	"bitbucket.org/cswank/gogadgets/input"
+	"bitbucket.org/cswank/gogadgets/models"
 	"fmt"
 	"io/ioutil"
 	"math/rand"
 	"os"
 	"testing"
 	"time"
-	"bitbucket.org/cswank/gogadgets/models"
-	"bitbucket.org/cswank/gogadgets/input"
 )
 
 type FakeOutput struct {
