@@ -31,29 +31,44 @@ type Recorder struct {
 }
 
 func NewRecorder(pin *models.Pin) (OutputDevice, error) {
+	s := getSummaries(pin.Args["summarize"])
 	r := &Recorder{
-		DBHost:    pin.Args["host"].(string),
-		DBName:    pin.Args["db"].(string),
+		DBHost:    getDbHost(pin.Args["host"]),
+		DBName:    getDbName(pin.Args["db"]),
 		filter:    getFilter(pin.Args["filter"]),
 		history:   map[string]summary{},
-		summaries: getSummaries(pin.Args["summarize"]),
+		summaries: s,
 	}
 	return r, nil
 }
 
-func (r *Recorder) Config() models.Pin {
-	return models.Pin{
+func getDbHost(host interface{}) string {
+	if host == nil {
+		return "localhost"
+	}
+	return host.(string)
+}
+
+func getDbName(db interface{}) string {
+	if db == nil {
+		return "gogadgets"
+	}
+	return db.(string)
+}
+
+func (r *Recorder) Config() models.ConfigHelper {
+	return models.ConfigHelper{
 		Args: map[string]interface{}{
-			"host": "db host",
-			"db": "db name",
-			"summarize": map[string]int{
-				"device name": 1,
-			},
+			"host": []string{},
+			"db": []string{},
 		},
 	}
 }
 
 func getSummaries(s interface{}) map[string]time.Duration {
+	if s == nil {
+		return map[string]time.Duration{}
+	}
 	d, _ := json.Marshal(s)
 	vals := map[string]int{}
 	err := json.Unmarshal(d, &vals)
@@ -164,6 +179,9 @@ func (r *Recorder) connect() error {
 }
 
 func getFilter(f interface{}) []string {
+	if f == nil {
+		return []string{}
+	}
 	filters, ok := f.([]string)
 	if !ok {
 		return []string{}

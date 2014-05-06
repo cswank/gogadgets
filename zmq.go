@@ -54,10 +54,14 @@ func NewClientSockets(host string) (*Sockets, error) {
 
 
 func (s *Sockets) Send(cmd string) {
-	msg := &models.Message{
+	msg := models.Message{
 		Type: models.COMMAND,
 		Body: cmd,
 	}
+	s.SendMessage(msg)
+}
+
+func (s *Sockets) SendMessage(msg models.Message) {
 	b, err := json.Marshal(msg)
 	if err != nil {
 		fmt.Println("zmq sockets had a problem", err)

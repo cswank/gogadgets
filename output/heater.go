@@ -39,10 +39,13 @@ func NewHeater(pin *models.Pin) (OutputDevice, error) {
 	return h, err
 }
 
-func (h *Heater) Config() models.Pin {
-	return models.Pin{
-		Port: "port",
-		Pin: "pin",
+func (h *Heater) Config() models.ConfigHelper {
+	return models.ConfigHelper{
+		Fields: map[string][]string{
+			"port": []string{},
+			"pin":  []string{},
+		},
+		Units: []string{"C", "F"},
 	}
 }
 

@@ -85,10 +85,12 @@ func NewThermometer(pin *models.Pin) (InputDevice, error) {
 	return therm, err
 }
 
-func (t *Thermometer) Config() models.Pin {
-	return models.Pin{
-		Units: "C or F",
-		OneWireId: "1-wire uid",
+func (t *Thermometer) Config() models.ConfigHelper {
+	return models.ConfigHelper{
+		Fields: map[string][]string{
+			"oneWireId": []string{},
+		},
+		Units: []string{"C", "F"},
 	}
 }
 

@@ -23,10 +23,13 @@ func NewCooler(pin *models.Pin) (OutputDevice, error) {
 	return c, err
 }
 
-func (c *Cooler) Config() models.Pin {
-	return models.Pin{
-		Port: "port",
-		Pin: "pin",
+func (c *Cooler) Config() models.ConfigHelper {
+	return models.ConfigHelper{
+		Fields: map[string][]string{
+			"port": []string{},
+			"pin":  []string{},
+		},
+		Units: []string{"C", "F"},
 	}
 }
 

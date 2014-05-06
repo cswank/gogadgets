@@ -66,7 +66,7 @@ type Message struct {
 	Value       Value        `json:"value,omitempty"`
 	TargetValue *Value       `json:"targetValue,omitempty"`
 	Info        Info         `json:"info,omitempty"`
-	Config      GadgetConfig `json:"config,omitempty"`
+	Config      Config       `json:"config,omitempty"`
 }
 
 type Pin struct {
@@ -98,4 +98,11 @@ type Config struct {
 	PubPort int            `json:"pubPort,omitempty"`
 	SubPort int            `json:"subPort,omitempty"`
 	Gadgets []GadgetConfig `json:"gadgets,omitempty"`
+}
+
+type ConfigHelper struct {
+	Fields map[string][]string `json:"fields"`
+	Units []string `json:"units,omitempty"`
+	Args map[string]interface{} `json:"args,omitempty"`
+	Pins map[string]ConfigHelper `json:"pins,omitempty"`
 }

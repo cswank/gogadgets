@@ -45,12 +45,13 @@ func NewSwitch(pin *models.Pin) (InputDevice, error) {
 	return s, err
 }
 
-func (s *Switch) Config() models.Pin {
-	return models.Pin{
-		Value: true,
-		Port: "port",
-		Pin: "pin",
-		Edge: "rising, falling, both",
+func (s *Switch) Config() models.ConfigHelper {
+	return models.ConfigHelper{
+		Fields: map[string][]string{
+			"port": []string{},
+			"pin":  []string{},
+			"edge": []string{"rising", "falling", "both"},
+		},
 	}
 }
 

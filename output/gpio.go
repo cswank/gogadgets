@@ -68,10 +68,12 @@ func NewGPIO(pin *models.Pin) (OutputDevice, error) {
 	return g, err
 }
 
-func (g *GPIO) Config() models.Pin {
-	return models.Pin{
-		Port: "port",
-		Pin: "pin",
+func (g *GPIO) Config() models.ConfigHelper {
+	return models.ConfigHelper{
+		Fields: map[string][]string{
+			"port": []string{},
+			"pin":  []string{},
+		},
 	}
 }
 

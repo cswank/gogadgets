@@ -4,8 +4,17 @@ import (
 	"flag"
 	"time"
 	"fmt"
+	"log"
 	"bitbucket.org/cswank/gogadgets"
+	"bitbucket.org/cswank/gogadgets/utils"
 	"os"
+	"io/ioutil"
+	"encoding/json"
+)
+
+const (
+	defaultDir = "~/.gadgets"
+	defaultConfig = "/Users/Cswank/.gadgets/config.json"
 )
 
 var (
@@ -16,18 +25,32 @@ var (
 
 func main() {
 	flag.Parse()
-	if len(*config) > 0 {
-		runGadgets()
-	} else if len(*cmd) > 0 {
+	if len(*cmd) > 0 {
 		sendCommand()
 	} else {
-		listen()
+		runGadgets()
 	}
 }
 
 func runGadgets() {
-	a := gogadgets.NewApp(*config)
-	a.Start()
+	cfg := getConfig()
+	if cfg == "" {
+		listen()
+	} else {
+		a := gogadgets.NewApp(cfg)
+		a.Start()
+	}
+}
+
+func getConfig() string {
+	cfg := *config
+	if cfg != "" {
+		return cfg
+	}
+	if utils.FileExists(defaultConfig) {
+		return defaultConfig
+	}
+	return ""
 }
 
 func sendCommand() {	
@@ -41,20 +64,30 @@ func sendCommand() {
 	s.Send(*cmd)
 	time.Sleep(100 * time.Millisecond)
 	os.Exit(0)
+	
 }
 
 //Waits for a zmq message that contains a gogadgets
-//config.  When one is recieved it is parsed and a
-//a gogadgts system is started.
+//config.  When one is recieved it is written to the
+//default config path and a a gogadgts system is started.
 func listen() {
 	s, err := gogadgets.NewSockets()
 	if err != nil {
 		panic(err)
 	}
-	defer s.Close()
 	time.Sleep(100 * time.Millisecond)
-	fmt.Println("waiting for message")
+	log.Println("listening for new gadgets")
 	msg := s.Recv()
-	fmt.Println("got a msg", msg)
-	
+	d, err := json.Marshal(&msg.Config)
+	if err != nil {
+		panic(err)
+	}
+	os.Mkdir(defaultDir, 0644)
+	err = ioutil.WriteFile(defaultConfig, d, 0644)
+	if err != nil {
+		panic(err)
+	}
+	s.Close()
+	time.Sleep(100 * time.Millisecond)
+	runGadgets()
 }
