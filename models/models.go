@@ -105,4 +105,5 @@ type ConfigHelper struct {
 	Units []string `json:"units,omitempty"`
 	Args map[string]interface{} `json:"args,omitempty"`
 	Pins map[string]map[string]string `json:"pins,omitempty"`
+	PinType string `json:"pinType"`
 }

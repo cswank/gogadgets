@@ -87,6 +87,7 @@ func NewThermometer(pin *models.Pin) (InputDevice, error) {
 
 func (t *Thermometer) Config() models.ConfigHelper {
 	return models.ConfigHelper{
+		PinType: "thermometer",
 		Fields: map[string][]string{
 			"oneWireId": []string{},
 		},

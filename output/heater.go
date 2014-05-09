@@ -42,6 +42,7 @@ func NewHeater(pin *models.Pin) (OutputDevice, error) {
 
 func (h *Heater) Config() models.ConfigHelper {
 	return models.ConfigHelper{
+		PinType: "pwm",
 		Units: []string{"C", "F"},
 		Pins: pins.Pins["pwm"],
 	}

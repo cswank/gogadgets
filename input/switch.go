@@ -7,6 +7,7 @@ import (
 	"time"
 	"bitbucket.org/cswank/gogadgets/models"
 	"bitbucket.org/cswank/gogadgets/output"
+	"bitbucket.org/cswank/gogadgets/pins"
 )
 
 //Switch is an input device that waits for a GPIO pin
@@ -47,9 +48,9 @@ func NewSwitch(pin *models.Pin) (InputDevice, error) {
 
 func (s *Switch) Config() models.ConfigHelper {
 	return models.ConfigHelper{
+		PinType: "pwm",
+		Pins: pins.Pins["gpio"],
 		Fields: map[string][]string{
-			"port": []string{},
-			"pin":  []string{},
 			"edge": []string{"rising", "falling", "both"},
 		},
 	}

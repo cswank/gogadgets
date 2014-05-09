@@ -70,6 +70,7 @@ func NewGPIO(pin *models.Pin) (OutputDevice, error) {
 
 func (g *GPIO) Config() models.ConfigHelper {
 	return models.ConfigHelper{
+		PinType: "gpio",
 		Pins: pins.Pins["gpio"],
 	}
 }

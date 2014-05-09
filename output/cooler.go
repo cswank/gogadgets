@@ -26,6 +26,7 @@ func NewCooler(pin *models.Pin) (OutputDevice, error) {
 
 func (c *Cooler) Config() models.ConfigHelper {
 	return models.ConfigHelper{
+		PinType: "gpio",
 		Units: []string{"C", "F"},
 		Pins: pins.Pins["gpio"],
 	}

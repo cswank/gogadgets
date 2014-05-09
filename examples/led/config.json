@@ -7,7 +7,6 @@
                 "type": "gpio",
                 "port": "8",
                 "pin": "9",
-                "direction": "out"
             }
         }
     ]
