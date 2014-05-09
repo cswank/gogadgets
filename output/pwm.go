@@ -53,10 +53,9 @@ func NewPWM(pin *models.Pin) (OutputDevice, error) {
 func (p *PWM) Config() models.ConfigHelper {
 	return models.ConfigHelper{
 		Fields: map[string][]string{
-			"port": []string{},
-			"pin":  []string{},
 			"frequency": []string{},
 		},
+		Pins: pins.Pins["pwm"],
 	}
 }
 

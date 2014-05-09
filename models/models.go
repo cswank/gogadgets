@@ -104,5 +104,5 @@ type ConfigHelper struct {
 	Fields map[string][]string `json:"fields"`
 	Units []string `json:"units,omitempty"`
 	Args map[string]interface{} `json:"args,omitempty"`
-	Pins map[string]ConfigHelper `json:"pins,omitempty"`
+	Pins map[string]map[string]string `json:"pins,omitempty"`
 }

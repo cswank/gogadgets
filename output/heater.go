@@ -2,6 +2,7 @@ package output
 
 import (
 	"bitbucket.org/cswank/gogadgets/models"
+	"bitbucket.org/cswank/gogadgets/pins"
 	"time"
 )
 
@@ -41,11 +42,8 @@ func NewHeater(pin *models.Pin) (OutputDevice, error) {
 
 func (h *Heater) Config() models.ConfigHelper {
 	return models.ConfigHelper{
-		Fields: map[string][]string{
-			"port": []string{},
-			"pin":  []string{},
-		},
 		Units: []string{"C", "F"},
+		Pins: pins.Pins["pwm"],
 	}
 }
 

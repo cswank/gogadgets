@@ -2,6 +2,7 @@ package output
 
 import (
 	"bitbucket.org/cswank/gogadgets/models"
+	"bitbucket.org/cswank/gogadgets/pins"
 )
 
 type Cooler struct {
@@ -25,11 +26,8 @@ func NewCooler(pin *models.Pin) (OutputDevice, error) {
 
 func (c *Cooler) Config() models.ConfigHelper {
 	return models.ConfigHelper{
-		Fields: map[string][]string{
-			"port": []string{},
-			"pin":  []string{},
-		},
 		Units: []string{"C", "F"},
+		Pins: pins.Pins["gpio"],
 	}
 }
 
