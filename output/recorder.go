@@ -172,7 +172,7 @@ func (r *Recorder) doSave(msg *models.Message) {
 	}
 }
 
-func (r *Recorder) close(msg *models.Message) error {
+func (r *Recorder) close() {
 	r.session.Close()
 	r.session = nil
 	r.collection = nil
