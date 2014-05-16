@@ -4,7 +4,6 @@ import (
 	"bitbucket.org/cswank/gogadgets/models"
 	"labix.org/v2/mgo"
 	"encoding/json"
-	"errors"
 	"time"
 	"log"
 )
@@ -101,7 +100,7 @@ func (r *Recorder) On(val *models.Value) error {
 
 func (r *Recorder) Off() error {
 	if r.session != nil {
-		r.session.Close()
+		r.close()
 	}
 	r.status = false
 	return nil
@@ -154,18 +153,39 @@ func (r *Recorder) summarize(msg *models.Message, duration time.Duration) {
 }
 
 func (r *Recorder) doSave(msg *models.Message) {
-     	err := r.collection.Insert(msg)
+	err := r.write(msg)
 	if err != nil {
 		if r.retries > 5 {
-			panic(errors.New("couldn't connect to the db"))
+			log.Println("couldn't connect to the db")
+			return
 		}
-		r.session.Close()
-		r.connect()
+		r.close()
+		err = r.connect()
+		if err != nil {
+			log.Println("couldn't connect to the db")
+			return
+		}
 		r.doSave(msg)
 		r.retries += 1
 	} else {
 		r.retries = 0
 	}
+}
+
+func (r *Recorder) close(msg *models.Message) error {
+	r.session.Close()
+	r.session = nil
+	r.collection = nil
+}
+
+func (r *Recorder) write(msg *models.Message) error {
+	var err error
+	if r.collection == nil {
+		if err = r.connect(); err != nil {
+			return err
+		}
+	}
+	return r.collection.Insert(msg)
 }
 
 func (r *Recorder) connect() error {
@@ -188,3 +208,4 @@ func getFilter(f interface{}) []string {
 	}
 	return filters
 }
+
