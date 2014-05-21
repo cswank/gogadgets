@@ -26,9 +26,9 @@
             }
         },
         {
-            "location": "fish tank",
+            "location": "greenhouse",
             "name": "cooler",
-            "initialvalue": "turn on fish tank cooler to 20 C",
+            "initialvalue": "turn on greenhouse cooler to 20 C",
             "pin": {
                 "type": "cooler",
                 "units": "C",
