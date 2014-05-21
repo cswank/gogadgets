@@ -31,9 +31,9 @@
             "initialvalue": "turn on fish tank cooler to 80 C",
             "pin": {
                 "type": "cooler",
-                "units": "c"
+                "units": "C",
                 "port": "8",
-                "pin": "10",
+                "pin": "10"
             }
         },
         {
