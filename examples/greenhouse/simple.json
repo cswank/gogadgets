@@ -33,7 +33,7 @@
                 "type": "cooler",
                 "units": "C",
                 "port": "8",
-                "pin": "10"
+                "pin": "14"
             }
         },
         {
