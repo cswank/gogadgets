@@ -26,6 +26,17 @@
             }
         },
         {
+            "location": "fish tank",
+            "name": "cooler",
+            "initialvalue": "turn on fish tank cooler to 80 C",
+            "pin": {
+                "type": "cooler",
+                "units": "c"
+                "port": "8",
+                "pin": "10",
+            }
+        },
+        {
             "location": "greenhouse",
             "name": "temperature",
             "pin": {
