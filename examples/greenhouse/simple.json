@@ -28,7 +28,7 @@
         {
             "location": "fish tank",
             "name": "cooler",
-            "initialvalue": "turn on fish tank cooler to 80 C",
+            "initialvalue": "turn on fish tank cooler to 20 C",
             "pin": {
                 "type": "cooler",
                 "units": "C",
