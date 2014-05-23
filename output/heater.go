@@ -17,9 +17,6 @@ type Heater struct {
 	status      bool
 	doPWM       bool
 	pwm         OutputDevice
-	update      chan models.Message
-	start       chan bool
-	watching    bool
 }
 
 func NewHeater(pin *models.Pin) (OutputDevice, error) {
@@ -33,8 +30,6 @@ func NewHeater(pin *models.Pin) (OutputDevice, error) {
 			pwm:    d,
 			target: 100.0,
 			doPWM:  doPWM,
-			update: make(chan models.Message),
-			start:  make(chan bool),
 		}
 	}
 	return h, err
@@ -50,7 +45,7 @@ func (h *Heater) Config() models.ConfigHelper {
 
 func (h *Heater) Update(msg *models.Message) {
 	if h.status && msg.Name == "temperature" {
-		h.update <- *msg
+		h.readTemperature(msg)
 	}
 }
 
@@ -63,12 +58,8 @@ func (h *Heater) On(val *models.Value) error {
 			h.target = 100.0
 		}
 	}
+	h.setPWM()
 	h.status = true
-	if !h.watching {
-		h.watching = true
-		go h.watchTemperature(h.update, h.start)
-	}
-	h.start <- true
 	return nil
 }
 
@@ -78,37 +69,22 @@ func (h *Heater) Status() interface{} {
 
 func (h *Heater) Off() error {
 	h.target = 0.0
-	h.start <- false
+	h.status = false
+	h.pwm.Off()
 	return nil
 }
 
-func (h *Heater) watchTemperature(update <-chan models.Message, start <-chan bool) {
-	for {
-		select {
-		case msg := <-update:
-			h.readTemperature(msg)
-		case s := <-start:
-			h.status = s
-			if s {
-				h.toggle()
-			} else {
-				h.pwm.Off()
-			}
-		}
-	}
-}
-
-func (h *Heater) readTemperature(msg models.Message) {
+func (h *Heater) readTemperature(msg *models.Message) {
 	temp, ok := msg.Value.ToFloat()
 	if ok {
 		h.currentTemp = temp
 		if h.status {
-			h.toggle()
+			h.setPWM()
 		}
 	}
 }
 
-func (h *Heater) toggle() {
+func (h *Heater) setPWM() {
 	if h.doPWM {
 		duty := h.getDuty()
 		val := &models.Value{Value: duty, Units: "%"}
