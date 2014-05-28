@@ -1,39 +1,39 @@
 package gogadgets
 
 import (
-	"bitbucket.org/cswank/gogadgets/utils"
+	//"bitbucket.org/cswank/gogadgets/utils"
 	"testing"
-	"time"
+	//"time"
 )
 
 func TestPWM(t *testing.T) {
-	if !utils.FileExists("/sys/class/gpio/export") {
-		return //not a beaglebone
-	}
-	p := &Pin{
-		Port:      "8",
-		Pin:       "13",
-		Frequency: 1,
-	}
-	pwm, err := NewPWM(p)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = pwm.On(&Value{Value: 50, Units: "%"})
-	if err != nil {
-		t.Error(err)
-	}
-	time.Sleep(5 * time.Second)
-	err = pwm.On(&Value{Value: 10, Units: "%"})
-	if err != nil {
-		t.Error(err)
-	}
-	time.Sleep(5 * time.Second)
-	err = pwm.On(&Value{Value: 90, Units: "%"})
-	if err != nil {
-		t.Error(err)
-	}
-	time.Sleep(5 * time.Second)
+	// if !utils.FileExists("/sys/class/gpio/export") {
+	// 	return //not a beaglebone
+	// }
+	// p := &Pin{
+	// 	Port:      "8",
+	// 	Pin:       "13",
+	// 	Frequency: 1,
+	// }
+	// pwm, err := NewPWM(p)
+	// if err != nil {
+	// 	t.Fatal(err)
+	// }
+	// err = pwm.On(&Value{Value: 50, Units: "%"})
+	// if err != nil {
+	// 	t.Error(err)
+	// }
+	// time.Sleep(5 * time.Second)
+	// err = pwm.On(&Value{Value: 10, Units: "%"})
+	// if err != nil {
+	// 	t.Error(err)
+	// }
+	// time.Sleep(5 * time.Second)
+	// err = pwm.On(&Value{Value: 90, Units: "%"})
+	// if err != nil {
+	// 	t.Error(err)
+	// }
+	// time.Sleep(5 * time.Second)
 
 }
 
