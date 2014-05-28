@@ -24,6 +24,9 @@ func NewHeater(pin *models.Pin) (OutputDevice, error) {
 	var err error
 	var d OutputDevice
 	doPWM := pin.Args["pwm"] == true
+	if pin.Frequency == 0 {
+		pin.Frequency = 1
+	}
 	d, err = NewPWM(pin)
 	if err == nil {
 		h = &Heater{
