@@ -14,7 +14,6 @@ import (
 //to change value (1 to 0 or 0 to 1).  When that change
 //happens it sends an update to the rest of the system.
 type Switch struct {
-	GPIO      Poller
 	Value     interface{}
 	TrueValue interface{}
 	Units     string
