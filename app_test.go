@@ -1,8 +1,6 @@
 package gogadgets
 
 import (
-	"bitbucket.org/cswank/gogadgets/input"
-	"bitbucket.org/cswank/gogadgets/models"
 	"fmt"
 	"io/ioutil"
 	"math/rand"
@@ -15,15 +13,15 @@ type FakeOutput struct {
 	on bool
 }
 
-func (f *FakeOutput) Config() models.ConfigHelper {
-	return models.ConfigHelper{}
+func (f *FakeOutput) Config() ConfigHelper {
+	return ConfigHelper{}
 }
 
-func (f *FakeOutput) Update(msg *models.Message) {
+func (f *FakeOutput) Update(msg *Message) {
 
 }
 
-func (f *FakeOutput) On(val *models.Value) error {
+func (f *FakeOutput) On(val *Value) error {
 	f.on = true
 	return nil
 }
@@ -63,7 +61,7 @@ func TestGadgets(t *testing.T) {
 	s := &Gadget{
 		Location: location,
 		Name:     name,
-		Input: &input.Switch{
+		Input: &Switch{
 			GPIO:      poller,
 			Value:     5.0,
 			TrueValue: 5.0,
@@ -72,7 +70,7 @@ func TestGadgets(t *testing.T) {
 		UID: fmt.Sprintf("%s %s", location, name),
 	}
 	a := App{
-		Gadgets: []models.GoGadget{p, s},
+		Gadgets: []GoGadget{p, s},
 		Host:    "localhost",
 		SubPort: port,
 		PubPort: port + 1,

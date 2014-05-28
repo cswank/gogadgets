@@ -1,9 +1,6 @@
 package gogadgets
 
 import (
-	"bitbucket.org/cswank/gogadgets/input"
-	"bitbucket.org/cswank/gogadgets/models"
-	"bitbucket.org/cswank/gogadgets/output"
 	"bitbucket.org/cswank/gogadgets/utils"
 	"fmt"
 	"testing"
@@ -90,14 +87,14 @@ func TestStart(t *testing.T) {
 		Output:     &FakeOutput{},
 		UID:        fmt.Sprintf("%s %s", location, name),
 	}
-	input := make(chan models.Message)
-	output := make(chan models.Message)
+	input := make(chan Message)
+	output := make(chan Message)
 	go g.Start(input, output)
 	update := <-output
 	if update.Value.Value != false {
 		t.Error("shoulda been off", update.Value.Value)
 	}
-	msg := models.Message{
+	msg := Message{
 		Type: "command",
 		Body: "turn on lab led",
 	}
@@ -107,7 +104,7 @@ func TestStart(t *testing.T) {
 		t.Fatal("shoulda been on", update)
 	}
 
-	msg = models.Message{
+	msg = Message{
 		Type: "command",
 		Body: "turn off lab led",
 	}
@@ -116,7 +113,7 @@ func TestStart(t *testing.T) {
 	if update.Value.Value != false {
 		t.Error("shoulda been off", update.Value.Value)
 	}
-	msg = models.Message{
+	msg = Message{
 		Type: "command",
 		Body: "shutdown",
 	}
@@ -136,14 +133,14 @@ func TestStartWithTrigger(t *testing.T) {
 		Output:     &FakeOutput{},
 		UID:        fmt.Sprintf("%s %s", location, name),
 	}
-	input := make(chan models.Message)
-	output := make(chan models.Message)
+	input := make(chan Message)
+	output := make(chan Message)
 	go g.Start(input, output)
 	update := <-output
 	if update.Value.Value != false {
 		t.Error("shoulda been off", update.Value.Value)
 	}
-	msg := models.Message{
+	msg := Message{
 		Type: "command",
 		Body: "fill tank to 4.4 liters",
 	}
@@ -153,12 +150,12 @@ func TestStartWithTrigger(t *testing.T) {
 		t.Error("shoulda been on", update)
 	}
 	//make a message that should trigger the trigger and stop the device
-	msg = models.Message{
+	msg = Message{
 		Sender:   "tank volume",
-		Type:     models.UPDATE,
+		Type:     UPDATE,
 		Location: "tank",
 		Name:     "volume",
-		Value: models.Value{
+		Value: Value{
 			Units: "liters",
 			Value: 4.4,
 		},
@@ -182,14 +179,14 @@ func TestStartWithTimeTrigger(t *testing.T) {
 		Output:     &FakeOutput{},
 		UID:        fmt.Sprintf("%s %s", location, name),
 	}
-	input := make(chan models.Message)
-	output := make(chan models.Message)
+	input := make(chan Message)
+	output := make(chan Message)
 	go g.Start(input, output)
 	update := <-output
 	if update.Value.Value != false {
 		t.Error("shoulda been off", update.Value.Value)
 	}
-	msg := models.Message{
+	msg := Message{
 		Type: "command",
 		Body: "turn on lab led for 0.01 seconds",
 	}
@@ -216,14 +213,14 @@ func TestStartWithTimeTriggerWithInterrupt(t *testing.T) {
 		Output:     &FakeOutput{},
 		UID:        fmt.Sprintf("%s %s", location, name),
 	}
-	input := make(chan models.Message)
-	output := make(chan models.Message)
+	input := make(chan Message)
+	output := make(chan Message)
 	go g.Start(input, output)
 	update := <-output
 	if update.Value.Value != false {
 		t.Error("shoulda been off", update.Value.Value)
 	}
-	msg := models.Message{
+	msg := Message{
 		Type: "command",
 		Body: "turn on lab led for 30 seconds",
 	}
@@ -233,19 +230,19 @@ func TestStartWithTimeTriggerWithInterrupt(t *testing.T) {
 		t.Error("shoulda been on", update)
 	}
 
-	msg = models.Message{
+	msg = Message{
 		Type: "command",
 		Body: "turn on lab led",
 	}
 	input <- msg
 
-	msg = models.Message{
+	msg = Message{
 		Type: "update",
 		Body: "",
 	}
 	input <- msg
 
-	msg = models.Message{
+	msg = Message{
 		Type: "command",
 		Body: "turn off lab led",
 	}
@@ -260,8 +257,8 @@ func _TestStartWithTimeTriggerForReals(t *testing.T) {
 	if !utils.FileExists("/sys/class/gpio/export") {
 		return //not a beaglebone
 	}
-	pin := &models.Pin{Type: "gpio", Port: "9", Pin: "15"}
-	gpio, err := output.NewGPIO(pin)
+	pin := &Pin{Type: "gpio", Port: "9", Pin: "15"}
+	gpio, err := NewGPIO(pin)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -275,14 +272,14 @@ func _TestStartWithTimeTriggerForReals(t *testing.T) {
 		Output:     gpio,
 		UID:        fmt.Sprintf("%s %s", location, name),
 	}
-	input := make(chan models.Message)
-	output := make(chan models.Message)
+	input := make(chan Message)
+	output := make(chan Message)
 	go g.Start(input, output)
 	update := <-output
 	if update.Value.Value != false {
 		t.Error("shoulda been off", update.Value.Value)
 	}
-	msg := models.Message{
+	msg := Message{
 		Type: "command",
 		Body: "turn on lab led for 0.1 seconds",
 	}
@@ -303,20 +300,20 @@ func _TestRealInput(t *testing.T) {
 		return //not a beaglebone
 	}
 
-	gpioConfig := &models.Pin{
+	gpioConfig := &Pin{
 		Type: "gpio",
 		Port: "9",
 		Pin:  "15",
 	}
-	gpio, err := output.NewGPIO(gpioConfig)
+	gpio, err := NewGPIO(gpioConfig)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	config := &models.GadgetConfig{
+	config := &GadgetConfig{
 		Location: "lab",
 		Name:     "switch",
-		Pin: models.Pin{
+		Pin: Pin{
 			Type:      "switch",
 			Port:      "9",
 			Pin:       "16",
@@ -330,8 +327,8 @@ func _TestRealInput(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	input := make(chan models.Message)
-	output := make(chan models.Message)
+	input := make(chan Message)
+	output := make(chan Message)
 
 	go s.Start(input, output)
 	update := <-output
@@ -358,7 +355,7 @@ func TestInputStart(t *testing.T) {
 	location := "lab"
 	name := "switch"
 	poller := &FakePoller{}
-	s := &input.Switch{
+	s := &Switch{
 		GPIO:      poller,
 		Value:     5.0,
 		TrueValue: 5.0,
@@ -370,8 +367,8 @@ func TestInputStart(t *testing.T) {
 		Input:    s,
 		UID:      fmt.Sprintf("%s %s", location, name),
 	}
-	input := make(chan models.Message)
-	output := make(chan models.Message)
+	input := make(chan Message)
+	output := make(chan Message)
 	go g.Start(input, output)
 	val := <-output
 	if val.Value.Value.(float64) != 5.0 {

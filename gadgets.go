@@ -1,9 +1,6 @@
 package gogadgets
 
 import (
-	"bitbucket.org/cswank/gogadgets/input"
-	"bitbucket.org/cswank/gogadgets/models"
-	"bitbucket.org/cswank/gogadgets/output"
 	"errors"
 	"fmt"
 	"log"
@@ -34,7 +31,7 @@ var (
 	}
 )
 
-type Comparitor func(msg *models.Message) bool
+type Comparitor func(msg *Message) bool
 
 //Each part of a Gadgets system that controls a single
 //piece of hardware (for example: a gpio pin) is represented
@@ -43,8 +40,8 @@ type Comparitor func(msg *models.Message) bool
 type Gadget struct {
 	Location       string
 	Name           string
-	Output         output.OutputDevice
-	Input          input.InputDevice
+	Output         OutputDevice
+	Input          InputDevice
 	Direction      string
 	OnCommand      string
 	OffCommand     string
@@ -56,8 +53,8 @@ type Gadget struct {
 	filterMessages bool
 	units          string
 	Operator       string
-	out            chan<- models.Message
-	devIn          chan models.Message
+	out            chan<- Message
+	devIn          chan Message
 	timerIn        chan bool
 	timerOut       chan bool
 }
@@ -66,7 +63,7 @@ type Gadget struct {
 //GoGadgets (header, cooler, gpio, thermometer and switch)
 //NewGadget reads a GadgetConfig and creates the correct
 //type of Gadget.
-func NewGadget(config *models.GadgetConfig) (*Gadget, error) {
+func NewGadget(config *GadgetConfig) (*Gadget, error) {
 	t := config.Pin.Type
 	if t == "heater" || t == "cooler" || t == "gpio" || t == "recorder" || t == "pwm" || t == "motor" {
 		return NewOutputGadget(config)
@@ -83,8 +80,8 @@ func NewGadget(config *models.GadgetConfig) (*Gadget, error) {
 
 //Input Gadgets read from input devices and report their values (thermometer
 //is an example).
-func NewInputGadget(config *models.GadgetConfig) (gadget *Gadget, err error) {
-	dev, err := input.NewInputDevice(&config.Pin)
+func NewInputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
+	dev, err := NewInputDevice(&config.Pin)
 	if err == nil {
 		gadget = &Gadget{
 			Location:   config.Location,
@@ -100,8 +97,8 @@ func NewInputGadget(config *models.GadgetConfig) (gadget *Gadget, err error) {
 }
 
 //Output Gadgets turn devices on and off.
-func NewOutputGadget(config *models.GadgetConfig) (gadget *Gadget, err error) {
-	dev, err := output.NewOutputDevice(&config.Pin)
+func NewOutputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
+	dev, err := NewOutputDevice(&config.Pin)
 	if config.OnCommand == "" {
 		config.OnCommand = fmt.Sprintf("turn on %s %s", config.Location, config.Name)
 	}
@@ -130,8 +127,8 @@ func NewOutputGadget(config *models.GadgetConfig) (gadget *Gadget, err error) {
 //All gadgets respond to Robot Command Language (RCL) messages.  isMyCommand
 //reads an RCL message and decides if it was meant for this instance
 //of Gadget.
-func (g *Gadget) isMyCommand(msg *models.Message) bool {
-	return msg.Type == models.COMMAND &&
+func (g *Gadget) isMyCommand(msg *Message) bool {
+	return msg.Type == COMMAND &&
 		(strings.Index(msg.Body, g.OnCommand) == 0 ||
 			strings.Index(msg.Body, g.OffCommand) == 0 ||
 			msg.Body == "update" ||
@@ -140,7 +137,7 @@ func (g *Gadget) isMyCommand(msg *models.Message) bool {
 
 //Start is one of the two interface methods of GoGadget.  Start takes
 //in in and out chan and is meant to be called as a goroutine.
-func (g *Gadget) Start(in <-chan models.Message, out chan<- models.Message) {
+func (g *Gadget) Start(in <-chan Message, out chan<- Message) {
 	g.out = out
 	g.timerIn = make(chan bool)
 	g.timerOut = make(chan bool)
@@ -160,16 +157,16 @@ func (g *Gadget) Start(in <-chan models.Message, out chan<- models.Message) {
 //all the messages that are sent to this particular Gadget and
 //responds accordingly.  This is the loop that is executed if
 //this Gadget is an input Gadget
-func (g *Gadget) doInputLoop(in <-chan models.Message) {
-	devOut := make(chan models.Value, 10)
-	g.devIn = make(chan models.Message, 10)
+func (g *Gadget) doInputLoop(in <-chan Message) {
+	devOut := make(chan Value, 10)
+	g.devIn = make(chan Message, 10)
 	go g.Input.Start(g.devIn, devOut)
 	for !g.shutdown {
 		select {
 		case msg := <-in:
 			g.readMessage(&msg)
 		case val := <-devOut:
-			g.out <- models.Message{
+			g.out <- Message{
 				Sender:    g.UID,
 				Type:      "update",
 				Location:  g.Location,
@@ -182,13 +179,13 @@ func (g *Gadget) doInputLoop(in <-chan models.Message) {
 }
 
 func (g *Gadget) readInitialValue() {
-	msg := &models.Message{
+	msg := &Message{
 		Body: g.InitialValue,
 	}
 	g.readCommand(msg)
 }
 
-func (g *Gadget) doOutputLoop(in <-chan models.Message) {
+func (g *Gadget) doOutputLoop(in <-chan Message) {
 	for !g.shutdown {
 		select {
 		case msg := <-in:
@@ -199,7 +196,7 @@ func (g *Gadget) doOutputLoop(in <-chan models.Message) {
 	}
 }
 
-func (g *Gadget) on(val *models.Value) {
+func (g *Gadget) on(val *Value) {
 	err := g.Output.On(val)
 	if err != nil {
 		log.Println("on err", err)
@@ -216,18 +213,18 @@ func (g *Gadget) off() {
 	g.sendUpdate(nil)
 }
 
-func (g *Gadget) readMessage(msg *models.Message) {
+func (g *Gadget) readMessage(msg *Message) {
 	if g.devIn != nil {
 		g.devIn <- *msg
 	}
-	if msg.Type == models.COMMAND && g.isMyCommand(msg) {
+	if msg.Type == COMMAND && g.isMyCommand(msg) {
 		g.readCommand(msg)
-	} else if g.status && msg.Type == models.UPDATE {
+	} else if g.status && msg.Type == UPDATE {
 		g.readUpdate(msg)
 	}
 }
 
-func (g *Gadget) readUpdate(msg *models.Message) {
+func (g *Gadget) readUpdate(msg *Message) {
 	if g.status && g.compare != nil && g.compare(msg) {
 		g.off()
 	} else if g.status && (msg.Location == g.Location || !g.filterMessages) {
@@ -235,7 +232,7 @@ func (g *Gadget) readUpdate(msg *models.Message) {
 	}
 }
 
-func (g *Gadget) readCommand(msg *models.Message) {
+func (g *Gadget) readCommand(msg *Message) {
 	if msg.Body == "shutdown" {
 		g.shutdown = true
 		g.off()
@@ -248,8 +245,8 @@ func (g *Gadget) readCommand(msg *models.Message) {
 	}
 }
 
-func (g *Gadget) readOnCommand(msg *models.Message) {
-	var val *models.Value
+func (g *Gadget) readOnCommand(msg *Message) {
+	var val *Value
 	if len(strings.Trim(msg.Body, " ")) > len(g.OnCommand) {
 		val, err := g.readOnArguments(msg.Body)
 		if err == nil {
@@ -261,8 +258,8 @@ func (g *Gadget) readOnCommand(msg *models.Message) {
 	}
 }
 
-func (g *Gadget) readOnArguments(cmd string) (*models.Value, error) {
-	var val *models.Value
+func (g *Gadget) readOnArguments(cmd string) (*Value, error) {
+	var val *Value
 	value, unit, err := ParseCommand(cmd)
 	if err != nil {
 		return val, errors.New(fmt.Sprintf("could not parse %s", cmd))
@@ -275,12 +272,12 @@ func (g *Gadget) readOnArguments(cmd string) (*models.Value, error) {
 			if gadget == "volume" {
 				g.setCompare(value, unit, gadget)
 			}
-			val = &models.Value{
+			val = &Value{
 				Value: value,
 				Units: unit,
 			}
 		} else if gadget == "power" {
-			val = &models.Value{
+			val = &Value{
 				Value: value,
 				Units: unit,
 			}
@@ -291,7 +288,7 @@ func (g *Gadget) readOnArguments(cmd string) (*models.Value, error) {
 
 func (g *Gadget) setCompare(value float64, unit string, gadget string) {
 	if g.Operator == "<=" {
-		g.compare = func(msg *models.Message) bool {
+		g.compare = func(msg *Message) bool {
 			val, ok := msg.Value.Value.(float64)
 			return msg.Location == g.Location &&
 				ok &&
@@ -299,7 +296,7 @@ func (g *Gadget) setCompare(value float64, unit string, gadget string) {
 				val <= value
 		}
 	} else if g.Operator == ">=" {
-		g.compare = func(msg *models.Message) bool {
+		g.compare = func(msg *Message) bool {
 			val, ok := msg.Value.Value.(float64)
 			return msg.Location == g.Location &&
 				ok &&
@@ -332,7 +329,7 @@ func (g *Gadget) startTimer(value float64, unit string, in <-chan bool, out chan
 	}
 }
 
-func (g *Gadget) readOffCommand(msg *models.Message) {
+func (g *Gadget) readOffCommand(msg *Message) {
 	if g.status {
 		g.off()
 	}
@@ -345,25 +342,25 @@ func (g *Gadget) GetUID() string {
 	return g.UID
 }
 
-func (g *Gadget) sendUpdate(val *models.Value) {
-	var value *models.Value
+func (g *Gadget) sendUpdate(val *Value) {
+	var value *Value
 	if g.Input != nil {
 		value = g.Input.GetValue()
 	} else {
-		value = &models.Value{
+		value = &Value{
 			Units: g.units,
 			Value: g.status,
 		}
 	}
-	msg := models.Message{
+	msg := Message{
 		Sender:      g.UID,
-		Type:        models.UPDATE,
+		Type:        UPDATE,
 		Location:    g.Location,
 		Name:        g.Name,
 		Value:       *value,
 		TargetValue: val,
 		Timestamp:   time.Now().UTC(),
-		Info: models.Info{
+		Info: Info{
 			Direction: g.Direction,
 			On:        g.OnCommand,
 			Off:       g.OffCommand,

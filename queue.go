@@ -1,12 +1,11 @@
 package gogadgets
 
 import (
-	"bitbucket.org/cswank/gogadgets/models"
 	"sync"
 )
 
 type queuenode struct {
-	data *models.Message
+	data *Message
 	next *queuenode
 }
 
@@ -31,7 +30,7 @@ func (q *Queue) Len() int {
 	return q.count
 }
 
-func (q *Queue) Push(item *models.Message) {
+func (q *Queue) Push(item *Message) {
 	q.lock.Lock()
 	defer q.lock.Unlock()
 	n := &queuenode{data: item}
@@ -46,7 +45,7 @@ func (q *Queue) Push(item *models.Message) {
 	q.cond.Signal()
 }
 
-func (q *Queue) Get() *models.Message {
+func (q *Queue) Get() *Message {
 	q.lock.Lock()
 	defer q.lock.Unlock()
 	if q.head == nil {

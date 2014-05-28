@@ -9,7 +9,6 @@
 package gogadgets
 
 import (
-	"bitbucket.org/cswank/gogadgets/models"
 	"encoding/json"
 	"fmt"
 	"github.com/vaughan0/go-zmq"
@@ -54,14 +53,14 @@ func NewClientSockets(host string) (*Sockets, error) {
 
 
 func (s *Sockets) Send(cmd string) {
-	msg := models.Message{
-		Type: models.COMMAND,
+	msg := Message{
+		Type: COMMAND,
 		Body: cmd,
 	}
 	s.SendMessage(msg)
 }
 
-func (s *Sockets) SendMessage(msg models.Message) {
+func (s *Sockets) SendMessage(msg Message) {
 	b, err := json.Marshal(msg)
 	if err != nil {
 		fmt.Println("zmq sockets had a problem", err)
@@ -74,12 +73,12 @@ func (s *Sockets) SendMessage(msg models.Message) {
 }
 
 
-func (s *Sockets) Recv() *models.Message {
+func (s *Sockets) Recv() *Message {
 	data, err := s.sub.Recv()
 	if err != nil {
 		panic(err)
 	}
-	msg := &models.Message{}
+	msg := &Message{}
 	json.Unmarshal(data[1], msg)
 	return msg
 }
@@ -87,7 +86,7 @@ func (s *Sockets) Recv() *models.Message {
 //Sockets listens for chann Messages from inside the system and
 //sends it to external listeners (like a UI), and listens for
 //external messages and sends them along to the internal system.
-func (s *Sockets) Start(in <-chan models.Message, out chan<- models.Message) {
+func (s *Sockets) Start(in <-chan Message, out chan<- Message) {
 	err := s.getSockets()
 	defer s.Close()
 	if err != nil {
@@ -107,9 +106,9 @@ func (s *Sockets) Start(in <-chan models.Message, out chan<- models.Message) {
 
 //A message that came from inside this gogadgets system
 //is sent to outside clients (ui, connected gogadget systems)
-func (s *Sockets) sendMessageOut(msg models.Message) bool {
+func (s *Sockets) sendMessageOut(msg Message) bool {
 	keepGoing := true
-	if msg.Type == models.COMMAND && msg.Body == "shutdown" {
+	if msg.Type == COMMAND && msg.Body == "shutdown" {
 		keepGoing = false
 	}
 	b, err := json.Marshal(msg)
@@ -127,9 +126,9 @@ func (s *Sockets) sendMessageOut(msg models.Message) bool {
 //A message that came from outside clients (ui, connected
 //gogadget systems) is passed along to this gogadget
 //system
-func (s *Sockets) sendMessageIn(data [][]byte, out chan<- models.Message) {
+func (s *Sockets) sendMessageIn(data [][]byte, out chan<- Message) {
 	if len(data) == 2 {
-		msg := &models.Message{}
+		msg := &Message{}
 		json.Unmarshal(data[1], msg)
 		msg.Sender = "zmq sockets"
 		out <- *msg

@@ -1,7 +1,6 @@
 package gogadgets
 
 import (
-	"bitbucket.org/cswank/gogadgets/models"
 	"encoding/json"
 	"fmt"
 	"github.com/vaughan0/go-zmq"
@@ -18,8 +17,8 @@ func TestSockets(t *testing.T) {
 		pubPort: pubPort,
 		subPort: subPort,
 	}
-	input := make(chan models.Message)
-	output := make(chan models.Message)
+	input := make(chan Message)
+	output := make(chan Message)
 	go s.Start(input, output)
 
 	ctx, err := zmq.NewContext()
@@ -50,7 +49,7 @@ func TestSockets(t *testing.T) {
 	}
 	sub.Subscribe([]byte(""))
 
-	msg := models.Message{
+	msg := Message{
 		Type: "command",
 		Body: "testing testing",
 	}
@@ -81,7 +80,7 @@ func TestSockets(t *testing.T) {
 		t.Error(string(parts[0]))
 	}
 
-	msg = models.Message{
+	msg = Message{
 		Type: "command",
 		Body: "shutdown",
 	}

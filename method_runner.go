@@ -1,7 +1,6 @@
 package gogadgets
 
 import (
-	"bitbucket.org/cswank/gogadgets/models"
 	"errors"
 	"fmt"
 	"log"
@@ -16,7 +15,7 @@ var (
 	stepExp = regexp.MustCompile(`for (.+) (>=|>|==|<=|<) (.+)`)
 )
 
-type stepChecker func(msg *models.Message) bool
+type stepChecker func(msg *Message) bool
 type comparitor func(value interface{}) bool
 
 //  Gadgets respond to the Robot Command Language (RCL) and a
@@ -36,11 +35,11 @@ type comparitor func(value interface{}) bool
 //  its temperature is 200 F (or more).  It then sends the next
 //  message of the method
 type MethodRunner struct {
-	method      models.Method
+	method      Method
 	stepChecker stepChecker
 	step        int
 	uid         string
-	out         chan<- models.Message
+	out         chan<- Message
 	timeOut     chan bool
 }
 
@@ -48,7 +47,7 @@ func (m *MethodRunner) GetUID() string {
 	return "method runner"
 }
 
-func (m *MethodRunner) Start(in <-chan models.Message, out chan<- models.Message) {
+func (m *MethodRunner) Start(in <-chan Message, out chan<- Message) {
 	m.uid = m.GetUID()
 	m.out = out
 	shutdown := false
@@ -61,24 +60,24 @@ func (m *MethodRunner) Start(in <-chan models.Message, out chan<- models.Message
 			m.runNextStep()
 		}
 	}
-	m.out <- models.Message{}
+	m.out <- Message{}
 }
 
-func (m *MethodRunner) readMessage(msg *models.Message) (shutdown bool) {
-	if msg.Type == models.METHOD {
+func (m *MethodRunner) readMessage(msg *Message) (shutdown bool) {
+	if msg.Type == METHOD {
 		m.method = msg.Method
 		m.step = -1
 		m.runNextStep()
 		shutdown = false
-	} else if msg.Type == models.COMMAND && msg.Body == "update" {
+	} else if msg.Type == COMMAND && msg.Body == "update" {
 		m.sendUpdate()
-	} else if msg.Type == models.COMMAND && msg.Body == "clear method" {
+	} else if msg.Type == COMMAND && msg.Body == "clear method" {
 		m.clear()
 		m.sendUpdate()
-	} else if len(m.method.Steps) != 0 && msg.Type == models.UPDATE {
+	} else if len(m.method.Steps) != 0 && msg.Type == UPDATE {
 		m.checkUpdate(msg)
 		shutdown = false
-	} else if msg.Type == models.COMMAND && msg.Body == "shutdown" {
+	} else if msg.Type == COMMAND && msg.Body == "shutdown" {
 		shutdown = true
 	} else {
 		shutdown = false
@@ -88,15 +87,15 @@ func (m *MethodRunner) readMessage(msg *models.Message) (shutdown bool) {
 
 func (m *MethodRunner) sendUpdate() {
 	m.method.Step = m.step
-	msg := models.Message{
+	msg := Message{
 		Sender: m.GetUID(),
-		Type:   models.UPDATE,
+		Type:   UPDATE,
 		Method: m.method,
 	}
 	m.out <- msg
 }
 
-func (m *MethodRunner) checkUpdate(msg *models.Message) {
+func (m *MethodRunner) checkUpdate(msg *Message) {
 	if m.stepChecker != nil && m.stepChecker(msg) {
 		m.stepChecker = nil
 		m.runNextStep()
@@ -104,16 +103,16 @@ func (m *MethodRunner) checkUpdate(msg *models.Message) {
 }
 
 func (m *MethodRunner) clear() {
-	m.method = models.Method{}
+	m.method = Method{}
 	m.step = -1
 }
 
 func (m *MethodRunner) runNextStep() {
 	m.step += 1
-	m.out <- models.Message{
+	m.out <- Message{
 		Sender: m.uid,
-		Type:   models.METHODUPDATE,
-		Method: models.Method{
+		Type:   METHODUPDATE,
+		Method: Method{
 			Step: m.step,
 		},
 	}
@@ -131,9 +130,9 @@ func (m *MethodRunner) runNextStep() {
 }
 
 func (m *MethodRunner) sendCommand(cmd string) {
-	msg := models.Message{
+	msg := Message{
 		Sender: m.uid,
-		Type:   models.COMMAND,
+		Type:   COMMAND,
 		Body:   cmd,
 	}
 	m.out <- msg
@@ -151,7 +150,7 @@ func (m *MethodRunner) readWaitCommand(cmd string) {
 }
 
 func (m *MethodRunner) setUserStepChecker(cmd string) {
-	m.stepChecker = func(msg *models.Message) bool {
+	m.stepChecker = func(msg *Message) bool {
 		return msg.Body == cmd
 	}
 }
@@ -161,13 +160,13 @@ func (m *MethodRunner) setStepChecker(cmd string) {
 	if err == nil {
 		compare, err := m.getCompare(operator, value)
 		if err == nil {
-			m.stepChecker = func(msg *models.Message) bool {
+			m.stepChecker = func(msg *Message) bool {
 				return msg.Sender == uid &&
 					compare(value)
 			}
 		} else {
 			log.Println(err)
-			m.stepChecker = func(msg *models.Message) bool {
+			m.stepChecker = func(msg *Message) bool {
 				return false
 			}
 		}
@@ -245,10 +244,10 @@ func (m *MethodRunner) doCountdown(waitTime time.Duration) {
 	t1 := time.Now()
 	sleepTime := time.Duration(1 * time.Second)
 	i := 0.0
-	m.out <- models.Message{
+	m.out <- Message{
 		Sender: m.uid,
-		Type:   models.METHODUPDATE,
-		Method: models.Method{
+		Type:   METHODUPDATE,
+		Method: Method{
 			Time: int(waitTime.Seconds()),
 			Step: m.step,
 		},
@@ -259,10 +258,10 @@ func (m *MethodRunner) doCountdown(waitTime time.Duration) {
 		t2 := time.Now()
 		d := t2.Sub(t1)
 		sleepTime = time.Duration((1 - (d.Seconds() - i)) * float64(time.Second))
-		m.out <- models.Message{
+		m.out <- Message{
 			Sender: m.uid,
-			Type:   models.METHODUPDATE,
-			Method: models.Method{
+			Type:   METHODUPDATE,
+			Method: Method{
 				Time: int(1 + waitTime.Seconds() - d.Seconds()),
 				Step: m.step,
 			},

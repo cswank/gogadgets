@@ -1,18 +1,14 @@
 package gogadgets
 
-import (
-	"bitbucket.org/cswank/gogadgets/models"
-)
-
 //All the gadgets of the system push their messages here.
 type Broker struct {
 	queue    *Queue
-	channels map[string]chan models.Message
-	collect  chan models.Message
-	input    <-chan models.Message
+	channels map[string]chan Message
+	collect  chan Message
+	input    <-chan Message
 }
 
-func NewBroker(channels map[string]chan models.Message, input <-chan models.Message, collect chan models.Message) *Broker {
+func NewBroker(channels map[string]chan Message, input <-chan Message, collect chan Message) *Broker {
 	return &Broker{
 		input:    input,
 		queue:    NewQueue(),
@@ -22,7 +18,7 @@ func NewBroker(channels map[string]chan models.Message, input <-chan models.Mess
 }
 
 func (b *Broker) Start() {
-	in := make(chan models.Message)
+	in := make(chan Message)
 	go b.collectMessages(b.collect)
 	go b.dispenseMessages(in)
 	keepRunning := true
@@ -41,7 +37,7 @@ func (b *Broker) Start() {
 
 //Collects each message that is sent by the parts of the
 //system and pushes it in the queue.
-func (b *Broker) collectMessages(in <-chan models.Message) {
+func (b *Broker) collectMessages(in <-chan Message) {
 	for {
 		msg := <-in
 		b.queue.Push(&msg)
@@ -50,7 +46,7 @@ func (b *Broker) collectMessages(in <-chan models.Message) {
 
 //After a message is collected by collectMessage, it is
 //then sent back to the rest of the system.
-func (b *Broker) dispenseMessages(out chan<- models.Message) {
+func (b *Broker) dispenseMessages(out chan<- Message) {
 	for {
 		b.queue.Lock()
 		if b.queue.Len() == 0 {
@@ -62,7 +58,7 @@ func (b *Broker) dispenseMessages(out chan<- models.Message) {
 	}
 }
 
-func (b *Broker) sendMessage(msg models.Message) {
+func (b *Broker) sendMessage(msg Message) {
 	if msg.Target == "" {
 		for uid, channel := range b.channels {
 			if uid != msg.Sender {
