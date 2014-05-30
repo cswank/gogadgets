@@ -7,7 +7,7 @@ import (
 )
 
 //App holds all the gadgets and handles passing Messages
-//to them, and receiving messages from them.  It is the
+//to them, and receiving Messages from them.  It is the
 //central part of Gadgets system.
 type App struct {
 	Gadgets []GoGadget

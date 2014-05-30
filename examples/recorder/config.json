@@ -8,8 +8,7 @@
 		"type": "recorder",
 		"args": {
                     "host": "localhost",
-                    "db": "test",
-                    "summarize": "1"
+                    "db": "test"
                 }
 	    }
         },
@@ -21,15 +20,6 @@
 		"onewireId": "28-0000047ade8f",
 		"units": "C"
             }
-        },
-        {
-	    "location": "shack",
-	    "name": "heater",
-	    "pin": {
-		"type": "heater",
-		"port": "8",
-		"pin": "9"
-	    }
         }
     ]
 }

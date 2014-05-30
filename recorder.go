@@ -172,7 +172,9 @@ func (r *Recorder) doSave(msg *Message) {
 }
 
 func (r *Recorder) close() {
-	r.session.Close()
+	if r.session != nil {
+		r.session.Close()
+	}
 	r.session = nil
 	r.collection = nil
 }

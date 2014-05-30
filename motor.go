@@ -1,5 +1,9 @@
 package gogadgets
 
+/*
+Motor controls a http://www.pololu.com/product/1451 motor
+driver carrier.
+*/
 type Motor struct {
 	gpioA  OutputDevice
 	gpioB  OutputDevice
