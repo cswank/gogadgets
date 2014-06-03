@@ -8,6 +8,12 @@ import (
 	"os"
 	"strings"
 	"syscall"
+	"path"
+)
+
+var (
+	GPIO_DEV_PATH = "/sys/class/gpio"
+	GPIO_DEV_MODE = os.ModeDevice
 )
 
 //GPIO interacts with the linux sysfs interface for GPIO
@@ -55,10 +61,10 @@ func NewGPIO(pin *Pin) (OutputDevice, error) {
 	}
 	g := &GPIO{
 		export:        export,
-		exportPath:    "/sys/class/gpio/export",
-		directionPath: fmt.Sprintf("/sys/class/gpio/gpio%s/direction", export),
-		edgePath:      fmt.Sprintf("/sys/class/gpio/gpio%s/edge", export),
-		valuePath:     fmt.Sprintf("/sys/class/gpio/gpio%s/value", export),
+		exportPath:    path.Join(GPIO_DEV_PATH, "export"),
+		directionPath: path.Join(GPIO_DEV_PATH, fmt.Sprintf("gpio%s", export), "direction"),
+		edgePath:      path.Join(GPIO_DEV_PATH, fmt.Sprintf("gpio%s", export), "edge"),
+		valuePath:     path.Join(GPIO_DEV_PATH, fmt.Sprintf("gpio%s", export), "value"),
 		direction:     pin.Direction,
 		edge:          pin.Edge,
 	}
@@ -107,7 +113,7 @@ func (g *GPIO) Off() error {
 }
 
 func (g *GPIO) writeValue(path, value string) error {
-	return ioutil.WriteFile(path, []byte(value), os.ModeDevice)
+	return ioutil.WriteFile(path, []byte(value), GPIO_DEV_MODE)
 }
 
 func (g *GPIO) Wait() (bool, error) {

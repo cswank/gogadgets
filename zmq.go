@@ -19,7 +19,7 @@ import (
 //added to each Gadget system by App.  It provides
 //a way to connect multiple gadgets systems together
 //as a single system, and also provides a way for
-//an external UI to control the system.
+//an external UI to interact the system.
 type Sockets struct {
 	host    string
 	pubPort int

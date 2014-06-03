@@ -9,6 +9,12 @@ type queuenode struct {
 	next *queuenode
 }
 
+/*
+All of the gadgets in a gadgets app push their messages
+through a single channel.  This queue guarantees that
+all gadgets with be able to send their message without 
+being blocked.
+*/
 type Queue struct {
 	head  *queuenode
 	tail  *queuenode
@@ -60,6 +66,14 @@ func (q *Queue) Get() *Message {
 	return n.data
 }
 
+/*
+One goroutine pushes the incoming messages to this
+queue, and another goroutine grabs messages from the
+queue and pushes them back out to the system.  This
+method adds synchronization so that when the queue is
+empty the second goroutine is blocked until a message
+is pushed to the queue.
+*/
 func (q *Queue) Wait() {
 	q.cond.Wait()
 }

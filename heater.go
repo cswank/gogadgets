@@ -4,33 +4,45 @@ import (
 	"time"
 )
 
-//Heater represnts an electic heating element.  It
+//Heater represents an electic heating element.  It
 //provides a way to heat up something to a target
 //temperature. In order to use this there must be
 //a thermometer in the same Location.
 type Heater struct {
+	onTime      time.Duration
+	offTime     time.Duration
+	toggleTime  time.Duration
+	waitTime    time.Duration
+	t1          time.Time
 	target      float64
 	currentTemp float64
 	duration    time.Duration
 	status      bool
+	gpioStatus  bool
 	doPWM       bool
-	pwm         OutputDevice
+	gpio        OutputDevice
+	io          chan *Value
+	update      chan *Message
+	started     bool
 }
 
 func NewHeater(pin *Pin) (OutputDevice, error) {
 	var h *Heater
 	var err error
-	var d OutputDevice
+	var dev OutputDevice
 	doPWM := pin.Args["pwm"] == true
 	if pin.Frequency == 0 {
 		pin.Frequency = 1
 	}
-	d, err = NewPWM(pin)
+	dev, err = NewGPIO(pin)
 	if err == nil {
 		h = &Heater{
-			pwm:    d,
+			toggleTime: 100 * time.Hour,
+			gpio:    dev,
 			target: 100.0,
 			doPWM:  doPWM,
+			io: make(chan *Value),
+			update: make(chan *Message),
 		}
 	}
 	return h, err
@@ -46,21 +58,20 @@ func (h *Heater) Config() ConfigHelper {
 
 func (h *Heater) Update(msg *Message) {
 	if h.status && msg.Name == "temperature" {
-		h.readTemperature(msg)
+		h.update <- msg
 	}
 }
 
 func (h *Heater) On(val *Value) error {
-	if val != nil {
-		target, ok := val.ToFloat()
-		if ok {
-			h.target = target
-		} else {
-			h.target = 100.0
-		}
-	}
-	h.setPWM()
 	h.status = true
+	if !h.started {
+		h.started = true
+		go h.toggle(h.io, h.update)
+	}
+	if val == nil {
+		val = &Value{Value:true}
+	}
+	h.io <- val
 	return nil
 }
 
@@ -71,8 +82,60 @@ func (h *Heater) Status() interface{} {
 func (h *Heater) Off() error {
 	h.target = 0.0
 	h.status = false
-	h.pwm.Off()
+	h.io <- &Value{Value:false}
 	return nil
+}
+
+/*
+The pwm drivers on beaglebone black seem to be
+broken.  This function brings the same functionality
+using gpio.
+*/
+func (h *Heater) toggle(val chan *Value, update chan *Message) {
+	for {
+		select {
+		case v := <-val:
+			if v.Value == true {
+				h.waitTime = 100 * time.Millisecond
+				h.getTarget(v)
+				h.setDuty()
+				h.status = true
+				h.gpio.On(nil)
+				h.t1 = time.Now()
+			} else {
+				h.waitTime = 100 * time.Hour
+				h.gpio.Off()
+				h.target = 1000.0
+				h.status = false
+			}
+		case m := <-update:
+			h.readTemperature(m)
+		case _ = <-time.After(h.waitTime):
+			n := time.Now()
+			diff := n.Sub(h.t1)
+			if h.doPWM && diff > h.toggleTime {
+				h.t1 = n
+				if h.gpioStatus {
+					h.toggleTime = h.offTime
+					h.gpio.Off()
+					h.gpioStatus = false
+				} else {
+					h.toggleTime = h.onTime
+					h.gpio.On(nil)
+					h.gpioStatus = true
+				}
+			}
+		}
+	}
+}
+
+func (h *Heater) getTarget(val *Value) {
+	if val != nil {
+		t, ok := val.ToFloat()
+		if ok {
+			h.target = t
+		}
+	}
 }
 
 func (h *Heater) readTemperature(msg *Message) {
@@ -80,37 +143,34 @@ func (h *Heater) readTemperature(msg *Message) {
 	if ok {
 		h.currentTemp = temp
 		if h.status {
-			h.setPWM()
-		}
-	}
-}
-
-func (h *Heater) setPWM() {
-	if h.doPWM {
-		duty := h.getDuty()
-		val := &Value{Value: duty, Units: "%"}
-		h.pwm.On(val)
-	} else {
-		diff := h.target - h.currentTemp
-		if diff > 0 {
-			h.pwm.On(nil)
-		} else {
-			h.pwm.Off()
+			h.setDuty()
 		}
 	}
 }
 
 //Once the heater approaches the target temperature the electricity
 //is applied PWM style so the target temperature isn't overshot.
-func (h *Heater) getDuty() float64 {
+//This functionality is geared towards heating up a tank of water
+//and can be disabled if you are using this component to heat something
+//else, like a house.
+func (h *Heater) setDuty() {
 	diff := h.target - h.currentTemp
-	duty := 100.0
 	if diff <= 0.0 {
-		duty = 0.0
+		h.onTime = 100 * time.Hour
+		h.offTime = 100 * time.Hour
 	} else if diff <= 1.0 {
-		duty = 25.0
+		h.onTime = 1 * time.Second
+		h.offTime = 3 * time.Second
 	} else if diff <= 2.0 {
-		duty = 50.0
+		h.onTime = 2 * time.Second
+		h.offTime = 2 * time.Second
+	} else {
+		h.onTime = 4 * time.Second
+		h.offTime = 0 * time.Second
 	}
-	return duty
+	if h.gpioStatus {
+		h.toggleTime = h.onTime
+	} else {
+		h.toggleTime = h.offTime
+	}
 }
