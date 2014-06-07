@@ -1,5 +1,9 @@
 package gogadgets
 
+import (
+	"errors"
+)
+
 type AppFactory struct {
 	inputFactories  map[string]InputDeviceFactory
 	outputFactories map[string]OutputDeviceFactory
@@ -23,7 +27,7 @@ func NewAppFactory() *AppFactory {
 
 //Each input and output device has a config method that returns a Pin with
 //the required fields poplulated with helpful values.
-func GetTypes() map[string]ConfigHelper{
+func GetTypes() map[string]ConfigHelper {
 	t := Thermometer{}
 	s := Switch{}
 	g := GPIO{}
@@ -33,10 +37,10 @@ func GetTypes() map[string]ConfigHelper{
 	return map[string]ConfigHelper{
 		"thermometer": t.Config(),
 		"switch":      s.Config(),
-		"gpio":     g.Config(),
-		"heater":   h.Config(),
-		"cooler":   c.Config(),
-		"recorder": r.Config(),
+		"gpio":        g.Config(),
+		"heater":      h.Config(),
+		"cooler":      c.Config(),
+		"recorder":    r.Config(),
 	}
 }
 
@@ -51,7 +55,6 @@ func (f *AppFactory) RegisterOutputFactory(name string, factory OutputDeviceFact
 func (f *AppFactory) GetApp() (a *App, err error) {
 	return a, err
 }
-
 
 type InputDeviceFactory func(pin *Pin) (InputDevice, error)
 
@@ -108,5 +111,3 @@ func NewOutputDevice(pin *Pin) (dev OutputDevice, err error) {
 	}
 	return dev, err
 }
-
-

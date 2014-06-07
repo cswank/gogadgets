@@ -7,10 +7,10 @@ import (
 
 func TestCreate(t *testing.T) {
 	pin := &Pin{
-		Args: map[string]interface{} {
+		Args: map[string]interface{}{
 			"host": "localhost",
 			"db":   "brewery",
-			"summarize": map[string]interface{} {
+			"summarize": map[string]interface{}{
 				"greenhouse temperature": 10,
 			},
 		},
@@ -24,7 +24,7 @@ func TestCreate(t *testing.T) {
 func TestSummarize(t *testing.T) {
 	r := Recorder{
 		summaries: map[string]time.Duration{"greenhouse temperature": time.Minute},
-		history:  map[string]summary{},
+		history:   map[string]summary{},
 	}
 	for i := 1; i < 11; i++ {
 		msg := &Message{

@@ -12,7 +12,7 @@ type queuenode struct {
 /*
 All of the gadgets in a gadgets app push their messages
 through a single channel.  This queue guarantees that
-all gadgets with be able to send their message without 
+all gadgets with be able to send their message without
 being blocked.
 */
 type Queue struct {

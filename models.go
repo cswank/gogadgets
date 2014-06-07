@@ -55,18 +55,18 @@ type Method struct {
 //Message is what all Gadgets pass around to each
 //other.
 type Message struct {
-	Name        string       `json:"name,omitempty"`
-	Location    string       `json:"location,omitempty"`
-	Type        string       `json:"type,omitempty"`
-	Sender      string       `json:"sender,omitempty"`
-	Target      string       `json:"target,omitempty"`
-	Body        string       `json:"body,omitempty"`
-	Method      Method       `json:"method,omitempty"`
-	Timestamp   time.Time    `json:"timestamp,omitempty"`
-	Value       Value        `json:"value,omitempty"`
-	TargetValue *Value       `json:"targetValue,omitempty"`
-	Info        Info         `json:"info,omitempty"`
-	Config      Config       `json:"config,omitempty"`
+	Name        string    `json:"name,omitempty"`
+	Location    string    `json:"location,omitempty"`
+	Type        string    `json:"type,omitempty"`
+	Sender      string    `json:"sender,omitempty"`
+	Target      string    `json:"target,omitempty"`
+	Body        string    `json:"body,omitempty"`
+	Method      Method    `json:"method,omitempty"`
+	Timestamp   time.Time `json:"timestamp,omitempty"`
+	Value       Value     `json:"value,omitempty"`
+	TargetValue *Value    `json:"targetValue,omitempty"`
+	Info        Info      `json:"info,omitempty"`
+	Config      Config    `json:"config,omitempty"`
 }
 
 type Pin struct {
@@ -101,9 +101,9 @@ type Config struct {
 }
 
 type ConfigHelper struct {
-	Fields map[string][]string `json:"fields"`
-	Units []string `json:"units,omitempty"`
-	Args map[string]interface{} `json:"args,omitempty"`
-	Pins map[string]map[string]string `json:"pins,omitempty"`
-	PinType string `json:"pinType"`
+	Fields  map[string][]string          `json:"fields"`
+	Units   []string                     `json:"units,omitempty"`
+	Args    map[string]interface{}       `json:"args,omitempty"`
+	Pins    map[string]map[string]string `json:"pins,omitempty"`
+	PinType string                       `json:"pinType"`
 }

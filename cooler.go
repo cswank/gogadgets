@@ -22,8 +22,8 @@ func NewCooler(pin *Pin) (OutputDevice, error) {
 func (c *Cooler) Config() ConfigHelper {
 	return ConfigHelper{
 		PinType: "gpio",
-		Units: []string{"C", "F"},
-		Pins: Pins["gpio"],
+		Units:   []string{"C", "F"},
+		Pins:    Pins["gpio"],
 	}
 }
 

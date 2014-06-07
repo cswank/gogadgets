@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 	"strings"
 	"syscall"
-	"path"
 )
 
 var (
@@ -75,7 +75,7 @@ func NewGPIO(pin *Pin) (OutputDevice, error) {
 func (g *GPIO) Config() ConfigHelper {
 	return ConfigHelper{
 		PinType: "gpio",
-		Pins: Pins["gpio"],
+		Pins:    Pins["gpio"],
 	}
 }
 

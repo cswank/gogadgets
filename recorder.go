@@ -1,10 +1,10 @@
 package gogadgets
 
 import (
-	"labix.org/v2/mgo"
 	"encoding/json"
-	"time"
+	"labix.org/v2/mgo"
 	"log"
+	"time"
 )
 
 type summary struct {
@@ -58,7 +58,7 @@ func (r *Recorder) Config() ConfigHelper {
 	return ConfigHelper{
 		Args: map[string]interface{}{
 			"host": []string{},
-			"db": []string{},
+			"db":   []string{},
 		},
 	}
 }
@@ -209,4 +209,3 @@ func getFilter(f interface{}) []string {
 	}
 	return filters
 }
-

@@ -84,7 +84,6 @@ func _TestPWMHeater(t *testing.T) {
 	// waitFor("run", "1")
 }
 
-
 // func TestHeater(t *testing.T) {
 // 	pwmMode = 0777
 // 	GPIO_DEVPATH = "/tmp/sys/class/gpio"
@@ -124,4 +123,3 @@ func _TestPWMHeater(t *testing.T) {
 // 	waitFor("duty", "1000000000")
 // 	waitFor("run", "1")
 // }
-

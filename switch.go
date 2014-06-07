@@ -46,7 +46,7 @@ func NewSwitch(pin *Pin) (InputDevice, error) {
 func (s *Switch) Config() ConfigHelper {
 	return ConfigHelper{
 		PinType: "pwm",
-		Pins: Pins["gpio"],
+		Pins:    Pins["gpio"],
 		Fields: map[string][]string{
 			"edge": []string{"rising", "falling", "both"},
 		},
@@ -109,4 +109,3 @@ func (s *Switch) Start(in <-chan Message, out chan<- Value) {
 		}
 	}
 }
-

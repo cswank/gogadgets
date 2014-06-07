@@ -18,4 +18,3 @@ func TestGPIO(t *testing.T) {
 	// time.Sleep(1 * time.Second)
 	// g.Off()
 }
-

@@ -38,11 +38,11 @@ func NewHeater(pin *Pin) (OutputDevice, error) {
 	if err == nil {
 		h = &Heater{
 			toggleTime: 100 * time.Hour,
-			gpio:    dev,
-			target: 100.0,
-			doPWM:  doPWM,
-			io: make(chan *Value),
-			update: make(chan *Message),
+			gpio:       dev,
+			target:     100.0,
+			doPWM:      doPWM,
+			io:         make(chan *Value),
+			update:     make(chan *Message),
 		}
 	}
 	return h, err
@@ -51,8 +51,8 @@ func NewHeater(pin *Pin) (OutputDevice, error) {
 func (h *Heater) Config() ConfigHelper {
 	return ConfigHelper{
 		PinType: "pwm",
-		Units: []string{"C", "F"},
-		Pins: Pins["pwm"],
+		Units:   []string{"C", "F"},
+		Pins:    Pins["pwm"],
 	}
 }
 
@@ -69,7 +69,7 @@ func (h *Heater) On(val *Value) error {
 		go h.toggle(h.io, h.update)
 	}
 	if val == nil {
-		val = &Value{Value:true}
+		val = &Value{Value: true}
 	}
 	h.io <- val
 	return nil
@@ -82,7 +82,7 @@ func (h *Heater) Status() interface{} {
 func (h *Heater) Off() error {
 	h.target = 0.0
 	h.status = false
-	h.io <- &Value{Value:false}
+	h.io <- &Value{Value: false}
 	return nil
 }
 

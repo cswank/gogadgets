@@ -51,7 +51,6 @@ func NewClientSockets(host string) (*Sockets, error) {
 	return s, err
 }
 
-
 func (s *Sockets) Send(cmd string) {
 	msg := Message{
 		Type: COMMAND,
@@ -71,7 +70,6 @@ func (s *Sockets) SendMessage(msg Message) {
 		})
 	}
 }
-
 
 func (s *Sockets) Recv() *Message {
 	data, err := s.sub.Recv()
