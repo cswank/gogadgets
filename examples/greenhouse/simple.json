@@ -7,7 +7,7 @@
 	    "pin": {
 		"type": "recorder",
 		"args": {
-                    "host": "192.168.1.9",
+                    "host": "192.168.1.109",
                     "db": "greenhouse",
                     "summarize": {
                         "fish tank temperature": 10,
