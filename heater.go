@@ -59,6 +59,8 @@ func (h *Heater) Config() ConfigHelper {
 func (h *Heater) Update(msg *Message) {
 	if h.status && msg.Name == "temperature" {
 		h.update <- msg
+	} else {
+		h.readTemperature(msg)
 	}
 }
 
@@ -93,22 +95,30 @@ The pwm drivers on beaglebone black seem to be
 broken.  This function brings the same functionality
 using gpio.
 */
-func (h *Heater) toggle(val chan *Value, update chan *Message) {
+func (h *Heater) toggle(value chan *Value, update chan *Message) {
 	for {
 		select {
-		case v := <-val:
-			if v.Value == true {
+		case val := <-value:
+			switch v := val.Value.(type) {
+			case float64:
 				h.waitTime = 100 * time.Millisecond
-				h.getTarget(v)
+				h.getTarget(val)
 				h.setDuty()
 				h.status = true
+				h.gpioStatus = true
 				h.gpio.On(nil)
 				h.t1 = time.Now()
-			} else {
+			case bool:
 				h.waitTime = 100 * time.Hour
-				h.gpio.Off()
-				h.target = 1000.0
-				h.status = false
+				if v == true {
+					h.status = true
+					h.gpio.On(nil)
+				} else {
+					
+					h.gpio.Off()
+					h.target = 1000.0
+					h.status = false
+				}
 			}
 		case m := <-update:
 			h.readTemperature(m)
@@ -117,14 +127,18 @@ func (h *Heater) toggle(val chan *Value, update chan *Message) {
 			diff := n.Sub(h.t1)
 			if h.doPWM && diff > h.toggleTime {
 				h.t1 = n
-				if h.gpioStatus {
+				if h.gpioStatus && h.offTime > 0.0 {
 					h.toggleTime = h.offTime
 					h.gpio.Off()
 					h.gpioStatus = false
-				} else {
+				} else if !h.gpioStatus && h.onTime > 0.0 {
 					h.toggleTime = h.onTime
 					h.gpio.On(nil)
 					h.gpioStatus = true
+				} else {
+					h.toggleTime = h.offTime
+					h.gpio.Off()
+					h.gpioStatus = false
 				}
 			}
 		}
@@ -158,8 +172,8 @@ func (h *Heater) readTemperature(msg *Message) {
 func (h *Heater) setDuty() {
 	diff := h.target - h.currentTemp
 	if diff <= 0.0 {
-		h.onTime = 100 * time.Hour
-		h.offTime = 100 * time.Hour
+		h.onTime = 0
+		h.offTime = 1 * time.Second
 	} else if diff <= 1.0 {
 		h.onTime = 1 * time.Second
 		h.offTime = 3 * time.Second
