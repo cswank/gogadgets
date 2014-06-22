@@ -80,9 +80,11 @@ func (h *Heater) Status() interface{} {
 }
 
 func (h *Heater) Off() error {
-	h.target = 0.0
-	h.status = false
-	h.io <- &Value{Value: false}
+	if h.started {
+		h.target = 0.0
+		h.status = false
+		h.io <- &Value{Value: false}
+	}
 	return nil
 }
 
