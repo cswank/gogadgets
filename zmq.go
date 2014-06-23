@@ -9,6 +9,7 @@
 package gogadgets
 
 import (
+	"errors"
 	"encoding/json"
 	"fmt"
 	"github.com/vaughan0/go-zmq"
@@ -83,6 +84,28 @@ func (s *Sockets) Recv() *Message {
 	msg := &Message{}
 	json.Unmarshal(data[1], msg)
 	return msg
+}
+
+func (s *Sockets) SendStatusRequest(msg Message) (map[string]Message, error) {
+	msgs := map[string]Message{}
+	tries := 0
+	s.SendMessage(msg)
+	for {
+		data, err := s.sub.Recv()
+		if err != nil {
+			panic(err)
+		}
+		if string(data[0]) == "status" {
+			err = json.Unmarshal(data[1], &msgs)
+			return msgs, err
+		} else {
+			tries += 1
+		}
+		if tries > 5 {
+			return msgs, errors.New("didn't get a status response")
+		}
+	}
+	return msgs, nil
 }
 
 //Sockets listens for chann Messages from inside the system and
@@ -161,7 +184,6 @@ func (s *Sockets) sendStatus() {
 		b,
 	}
 }
-
 
 func (s *Sockets) Close() {
 	s.sub.Close()

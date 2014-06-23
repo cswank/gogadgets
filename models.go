@@ -10,6 +10,7 @@ var (
 	DONE         = "done"
 	UPDATE       = "update"
 	GADGET       = "gadget"
+	STATUS       = "status"
 	METHODUPDATE = "method update"
 )
 
