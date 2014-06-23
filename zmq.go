@@ -21,6 +21,7 @@ import (
 //as a single system, and also provides a way for
 //an external UI to interact the system.
 type Sockets struct {
+	master  bool
 	host    string
 	pubPort int
 	subPort int
@@ -29,13 +30,16 @@ type Sockets struct {
 	subChan *zmq.Channels
 	pub     *zmq.Socket
 	pubChan *zmq.Channels
+	updates map[string]Message
 }
 
 func NewSockets() (*Sockets, error) {
 	s := &Sockets{
+		master: true,
 		host:    "localhost",
 		subPort: 6111,
 		pubPort: 6112,
+		updates: map[string]Message{},
 	}
 	err := s.getMasterSockets()
 	return s, err
@@ -102,9 +106,13 @@ func (s *Sockets) Start(in <-chan Message, out chan<- Message) {
 	}
 }
 
+
 //A message that came from inside this gogadgets system
 //is sent to outside clients (ui, connected gogadget systems)
 func (s *Sockets) sendMessageOut(msg Message) bool {
+	if s.master && msg.Type == UPDATE {
+		s.updates[msg.Sender] = msg
+	}
 	keepGoing := true
 	if msg.Type == COMMAND && msg.Body == "shutdown" {
 		keepGoing = false
@@ -128,12 +136,32 @@ func (s *Sockets) sendMessageIn(data [][]byte, out chan<- Message) {
 	if len(data) == 2 {
 		msg := &Message{}
 		json.Unmarshal(data[1], msg)
-		msg.Sender = "zmq sockets"
-		out <- *msg
+		if msg.Sender == "" {
+			msg.Sender = "zmq sockets"
+		}
+		if s.master && msg.Type == UPDATE {
+			s.updates[msg.Sender] = *msg
+		}
+		if msg.Body == "status" {
+			s.sendStatus()
+		} else {
+			out <- *msg
+		}
 	} else {
 		log.Println("zmq received an improper message", data)
 	}
 }
+
+//An outside client (like a UI) wants the latest status of
+//all gadgets in the system.
+func (s *Sockets) sendStatus() {
+	b, _ := json.Marshal(s.updates)
+	s.pubChan.Out() <- [][]byte{
+		[]byte("status"),
+		b,
+	}
+}
+
 
 func (s *Sockets) Close() {
 	s.sub.Close()
