@@ -67,9 +67,11 @@ func (a *App) GoStart(input <-chan Message) {
 	a.Gadgets = append(a.Gadgets, &MethodRunner{})
 	var sockets *Sockets
 	sockets = &Sockets{
+		master: true,
 		host:    a.Host,
 		pubPort: a.PubPort,
 		subPort: a.SubPort,
+		updates: map[string]Message{},
 	}
 	a.Gadgets = append(a.Gadgets, sockets)
 	collect := make(chan Message)
