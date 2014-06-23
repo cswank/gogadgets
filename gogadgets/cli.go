@@ -21,12 +21,15 @@ var (
 	host = flag.String("h", "localhost", "Name of Host")
 	config = flag.String("g", "", "Path to a Gadgets config file")
 	cmd = flag.String("c", "", "a Robot Command Language string")
+	status = flag.String("s", "", "get the status of a gadgets system")
 )
 
 func main() {
 	flag.Parse()
 	if len(*cmd) > 0 {
 		sendCommand()
+	} else if len(*status) > 0 {
+		getStatus()
 	} else {
 		runGadgets()
 	}
@@ -51,6 +54,23 @@ func getConfig() string {
 		return defaultConfig
 	}
 	return ""
+}
+
+func getStatus() {	
+	s, err := gogadgets.NewClientSockets(*host)
+	defer s.Close()
+	if err != nil {
+		panic(err)
+	}
+	time.Sleep(100 * time.Millisecond)
+	status, err := s.SendStatusRequest()
+	time.Sleep(100 * time.Millisecond)
+	if err != nil {
+		fmt.Println(status)
+	} else {
+		fmt.Println(err)
+	}
+	os.Exit(0)
 }
 
 func sendCommand() {	

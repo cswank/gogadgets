@@ -86,10 +86,10 @@ func (s *Sockets) Recv() *Message {
 	return msg
 }
 
-func (s *Sockets) SendStatusRequest(msg Message) (map[string]Message, error) {
+func (s *Sockets) SendStatusRequest() (map[string]Message, error) {
 	msgs := map[string]Message{}
 	tries := 0
-	s.SendMessage(msg)
+	s.SendMessage(Message{Body: "status"})
 	for {
 		data, err := s.sub.Recv()
 		if err != nil {
