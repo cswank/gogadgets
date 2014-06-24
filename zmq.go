@@ -96,7 +96,6 @@ func (s *Sockets) SendStatusRequest() (map[string]Message, error) {
 			panic(err)
 		}
 		if string(data[0]) == "status" {
-			fmt.Println("got status")
 			err = json.Unmarshal(data[1], &msgs)
 			return msgs, err
 		} else {
