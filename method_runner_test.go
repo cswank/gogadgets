@@ -38,10 +38,13 @@ func TestReadWaitCommand(t *testing.T) {
 }
 
 func TestStepExp(t *testing.T) {
-	cmd := "wait for tank volume <= 5.4"
+	cmd := "wait for tank volume <= 5.4 liters"
 	result := stepExp.FindStringSubmatch(cmd)
-	if len(result) != 4 {
+	if len(result) != 5 {
 		t.Fatal(result)
+	}
+	if result[4] != "liters" {
+		t.Error(result)
 	}
 	if result[3] != "5.4" {
 		t.Error(result)
@@ -53,9 +56,9 @@ func TestStepExp(t *testing.T) {
 		t.Error(result)
 	}
 
-	cmd = "wait for fish tank temperature > 31"
+	cmd = "wait for fish tank temperature > 31 C"
 	result = stepExp.FindStringSubmatch(cmd)
-	if len(result) != 4 {
+	if len(result) != 5 {
 		t.Fatal(result)
 	}
 	if result[2] != ">" {
@@ -71,7 +74,7 @@ func TestStepExp(t *testing.T) {
 
 func TestSetStepChecker(t *testing.T) {
 	m := MethodRunner{}
-	cmd := "wait for tank volume >= 5.4"
+	cmd := "wait for tank volume >= 5.4 gallons"
 	m.setStepChecker(cmd)
 	msg := &Message{
 		Sender: "tank volume",
@@ -121,7 +124,7 @@ func TestSetBoolStepChecker(t *testing.T) {
 
 func TestParseWaitCommand(t *testing.T) {
 	m := MethodRunner{}
-	cmd := "wait for tank volume >= 5.4"
+	cmd := "wait for tank volume >= 5.4 gallons"
 	uid, operator, value, err := m.parseWaitCommand(cmd)
 	if err != nil {
 		t.Error(err)
@@ -135,7 +138,7 @@ func TestParseWaitCommand(t *testing.T) {
 	if operator != ">=" {
 		t.Error(operator)
 	}
-	cmd = "wait for fish tank temperature > 31"
+	cmd = "wait for fish tank temperature > 31 C"
 	uid, operator, value, err = m.parseWaitCommand(cmd)
 	if err != nil {
 		t.Fatal(err)
@@ -162,7 +165,7 @@ func TestRunMethod(t *testing.T) {
 			Steps: []string{
 				"fill boiler to 3.3 gallons",
 				"heat boiler to 95 C",
-				"wait for boiler temperature >= 95",
+				"wait for boiler temperature >= 95 C",
 				"stop heating boiler",
 			},
 		},

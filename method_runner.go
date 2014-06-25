@@ -12,7 +12,7 @@ import (
 
 var (
 	timeExp = regexp.MustCompile(`for (\d*\.?\d*) (seconds?|minutes?|hours?)`)
-	stepExp = regexp.MustCompile(`for (.+) (>=|>|==|<=|<) (.+)`)
+	stepExp = regexp.MustCompile(`for (.+) (>=|>|==|<=|<) ([\w\.]+) ?(.+)?`)
 )
 
 type stepChecker func(msg *Message) bool
@@ -201,9 +201,9 @@ func (m *MethodRunner) getFloatCompare(operator string, value float64) (cmp comp
 	return cmp, err
 }
 
-func (m *MethodRunner) parseWaitCommand(cmd string) (uid string, operator string, value interface{}, err error) {
+func (m *MethodRunner) parseWaitCommand(cmd string) (uid, operator string, value interface{}, err error) {
 	result := stepExp.FindStringSubmatch(cmd)
-	if len(result) == 4 {
+	if len(result) == 5 {
 		uid = result[1]
 		operator = result[2]
 		v := result[3]

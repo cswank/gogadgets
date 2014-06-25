@@ -105,7 +105,7 @@ func (t *Thermometer) getTemperature(out chan Value, err chan error) {
 	var previousTemperature *Value
 	for {
 		val, e := t.readFile()
-		if e == nil && t.isValid(val, previousTemperature) {
+		if e == nil && t.isValid(val, previousTemperature) {			
 			previousTemperature = val
 			out <- *val
 		} else {
