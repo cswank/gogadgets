@@ -9,8 +9,8 @@
 package gogadgets
 
 import (
-	"errors"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/vaughan0/go-zmq"
 	"log"
@@ -36,7 +36,7 @@ type Sockets struct {
 
 func NewSockets() (*Sockets, error) {
 	s := &Sockets{
-		master: true,
+		master:  true,
 		host:    "localhost",
 		subPort: 6111,
 		pubPort: 6112,
@@ -128,7 +128,6 @@ func (s *Sockets) Start(in <-chan Message, out chan<- Message) {
 		}
 	}
 }
-
 
 //A message that came from inside this gogadgets system
 //is sent to outside clients (ui, connected gogadget systems)

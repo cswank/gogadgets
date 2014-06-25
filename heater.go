@@ -114,7 +114,7 @@ func (h *Heater) toggle(value chan *Value, update chan *Message) {
 					h.status = true
 					h.gpio.On(nil)
 				} else {
-					
+
 					h.gpio.Off()
 					h.target = 1000.0
 					h.status = false
