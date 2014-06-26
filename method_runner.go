@@ -162,7 +162,7 @@ func (m *MethodRunner) setStepChecker(cmd string) {
 		if err == nil {
 			m.stepChecker = func(msg *Message) bool {
 				return msg.Sender == uid &&
-					compare(value)
+					compare(msg.Value.Value)
 			}
 		} else {
 			log.Println(err)
