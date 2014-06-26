@@ -177,7 +177,7 @@ func (s *Sockets) sendMessageIn(data [][]byte, out chan<- Message) {
 //An outside client (like a UI) wants the latest status of
 //all gadgets in the system.
 func (s *Sockets) sendStatus() {
-	b, _ := json.Marshal(s.updates)
+	b, _ := json.Marshal(&s.updates)
 	s.pubChan.Out() <- [][]byte{
 		[]byte("status"),
 		b,
