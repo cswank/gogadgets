@@ -1,12 +1,13 @@
 package gogadgets
 
 import (
-	"bitbucket.org/cswank/gogadgets/utils"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/cswank/gogadgets/utils"
 )
 
 var (

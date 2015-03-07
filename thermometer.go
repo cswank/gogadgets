@@ -1,7 +1,6 @@
 package gogadgets
 
 import (
-	"bitbucket.org/cswank/gogadgets/utils"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -9,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/cswank/gogadgets/utils"
 )
 
 /*Reads temperature from a Dallas 1-Wire thermometer and

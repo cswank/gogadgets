@@ -24,3 +24,5 @@ build/*
 *.xcworkspace
 xcuserdata
 .vagrant
+*.test
+

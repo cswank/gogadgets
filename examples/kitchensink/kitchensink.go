@@ -1,7 +1,7 @@
 package main
 
 import (
-	"bitbucket.org/cswank/gogadgets"
+	"github.com/cswank/gogadgets"
 )
 
 func main() {
@@ -10,44 +10,44 @@ func main() {
 		Gadgets: []gogadgets.GadgetConfig{
 			gogadgets.GadgetConfig{
 				Location: "tank",
-				Name: "volume",
+				Name:     "volume",
 				Pin: gogadgets.Pin{
-					Type: "switch",
+					Type:      "switch",
 					Direction: "in",
-					Edge: "both",
-					Port: "8",
-					Pin: "9",
-					Value: 5.0,
-					Units: "liters",
+					Edge:      "both",
+					Port:      "8",
+					Pin:       "9",
+					Value:     5.0,
+					Units:     "liters",
 				},
 			},
 			gogadgets.GadgetConfig{
 				Location: "tank",
-				Name: "water",
+				Name:     "water",
 				Pin: gogadgets.Pin{
-					Type: "gpio",
+					Type:      "gpio",
 					Direction: "out",
-					Port: "8",
-					Pin: "10",
+					Port:      "8",
+					Pin:       "10",
 				},
 			},
 			gogadgets.GadgetConfig{
 				Location: "lab",
-				Name: "led",
+				Name:     "led",
 				Pin: gogadgets.Pin{
-					Type: "gpio",
+					Type:      "gpio",
 					Direction: "out",
-					Port: "8",
-					Pin: "11",
+					Port:      "8",
+					Pin:       "11",
 				},
 			},
 			gogadgets.GadgetConfig{
 				Location: "tank",
-				Name: "temperature",
+				Name:     "temperature",
 				Pin: gogadgets.Pin{
-					Type: "thermometer",
+					Type:      "thermometer",
 					OneWireId: "28-0000047ade8f",
-					Units: "C",
+					Units:     "C",
 				},
 			},
 		},

@@ -1,7 +1,7 @@
 package gogadgets
 
 import (
-	//"bitbucket.org/cswank/gogadgets/utils"
+	//"github.com/cswank/gogadgets/utils"
 	"testing"
 	//"time"
 )

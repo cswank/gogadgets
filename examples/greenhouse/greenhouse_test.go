@@ -1,9 +1,10 @@
 package main
 
 import (
-	"time"
 	"testing"
-	"bitbucket.org/cswank/gogadgets"
+	"time"
+
+	"github.com/cswank/gogadgets"
 )
 
 func TestGreenhouse(t *testing.T) {
@@ -17,15 +18,15 @@ func TestGreenhouse(t *testing.T) {
 	out := make(chan gogadgets.Message)
 	go g.Start(out, in)
 	msg := gogadgets.Message{
-		Type: "update",
+		Type:     "update",
 		Location: "greenhouse",
-		Name: "temperature",
+		Name:     "temperature",
 		Value: gogadgets.Value{
 			Value: 14.0,
 			Units: "C",
 		},
 	}
-	out<- msg
+	out <- msg
 
 	msg = <-in
 	if msg.Body != "turn on bed 1 pump" {
@@ -41,16 +42,16 @@ func TestGreenhouse(t *testing.T) {
 	}
 
 	msg = gogadgets.Message{
-		Type: "update",
+		Type:     "update",
 		Location: "bed 1",
-		Name: "switch",
+		Name:     "switch",
 		Value: gogadgets.Value{
 			Value: 0.0,
 		},
 	}
 	go func() {
 		time.Sleep(10 * time.Millisecond)
-		out<- msg
+		out <- msg
 	}()
 	msg = <-in
 	if msg.Body != "turn off bed 1 pump" {

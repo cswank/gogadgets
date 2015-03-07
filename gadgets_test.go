@@ -1,10 +1,11 @@
 package gogadgets
 
 import (
-	"bitbucket.org/cswank/gogadgets/utils"
 	"fmt"
 	"testing"
 	"time"
+
+	"github.com/cswank/gogadgets/utils"
 )
 
 func TestStripCommand(t *testing.T) {

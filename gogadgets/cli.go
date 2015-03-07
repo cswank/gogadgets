@@ -1,26 +1,27 @@
 package main
 
 import (
-	"flag"
-	"time"
-	"fmt"
-	"log"
-	"bitbucket.org/cswank/gogadgets"
-	"bitbucket.org/cswank/gogadgets/utils"
-	"os"
-	"io/ioutil"
 	"encoding/json"
+	"flag"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
+	"time"
+
+	"github.com/cswank/gogadgets"
+	"github.com/cswank/gogadgets/utils"
 )
 
 const (
-	defaultDir = "~/.gadgets"
+	defaultDir    = "~/.gadgets"
 	defaultConfig = "/Users/Cswank/.gadgets/config.json"
 )
 
 var (
-	host = flag.String("h", "localhost", "Name of Host")
+	host   = flag.String("h", "localhost", "Name of Host")
 	config = flag.String("g", "", "Path to a Gadgets config file")
-	cmd = flag.String("c", "", "a Robot Command Language string")
+	cmd    = flag.String("c", "", "a Robot Command Language string")
 	status = flag.Bool("s", false, "get the status of a gadgets system")
 )
 
@@ -73,7 +74,7 @@ func getStatus() {
 	os.Exit(0)
 }
 
-func sendCommand() {	
+func sendCommand() {
 	s, err := gogadgets.NewClientSockets(*host)
 	defer s.Close()
 	if err != nil {
@@ -84,7 +85,7 @@ func sendCommand() {
 	s.Send(*cmd)
 	time.Sleep(100 * time.Millisecond)
 	os.Exit(0)
-	
+
 }
 
 //Waits for a zmq message that contains a gogadgets
