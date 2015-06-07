@@ -22,16 +22,16 @@
             "pin": {
                 "type": "thermometer",
                 "onewireid": "28-0000025ed133",
-                "units": "c"
+                "units": "F"
             }
         },
         {
             "location": "greenhouse",
             "name": "cooler",
-            "initialvalue": "turn on greenhouse cooler to 20 C",
+            "initialvalue": "turn on greenhouse cooler to 70 F",
             "pin": {
                 "type": "cooler",
-                "units": "C",
+                "units": "F",
                 "port": "8",
                 "pin": "14"
             }
@@ -42,7 +42,7 @@
             "pin": {
                 "type": "thermometer",
                 "onewireid": "28-00000479f8c6",
-                "units": "c"
+                "units": "F"
             }
         },
         {
