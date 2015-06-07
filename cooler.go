@@ -1,9 +1,12 @@
 package gogadgets
 
+import "time"
+
 type Cooler struct {
-	target float64
-	status bool
-	gpio   OutputDevice
+	target     float64
+	status     bool
+	gpio       OutputDevice
+	lastChange *time.Time
 }
 
 func NewCooler(pin *Pin) (OutputDevice, error) {
@@ -28,12 +31,18 @@ func (c *Cooler) Config() ConfigHelper {
 }
 
 func (c *Cooler) Update(msg *Message) {
+	now := time.Now()
+	if c.lastChange != nil && now.Sub(*c.lastChange) < 120*time.Second {
+		return
+	}
 	temperature, ok := msg.Value.Value.(float64)
 	if ok && c.status {
 		if temperature <= c.target {
 			c.gpio.Off()
+			c.lastChange = &now
 		} else if temperature > c.target {
 			c.gpio.On(nil)
+			c.lastChange = &now
 		}
 	}
 }
