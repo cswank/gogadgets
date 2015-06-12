@@ -28,7 +28,7 @@
         {
             "location": "greenhouse",
             "name": "cooler",
-            "initialvalue": "turn on greenhouse cooler to 70 F",
+            "initialvalue": "turn on greenhouse cooler to 75 F",
             "pin": {
                 "type": "cooler",
                 "units": "F",
