@@ -6,7 +6,7 @@
             "pin": {
                 "type": "gpio",
                 "port": "8",
-                "pin": "9",
+                "pin": "9"
             }
         }
     ]
