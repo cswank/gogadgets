@@ -67,7 +67,7 @@ func (a *App) GoStart(input <-chan Message) {
 	a.Gadgets = append(a.Gadgets, &MethodRunner{})
 	var sockets *Sockets
 	sockets = &Sockets{
-		master: true,
+		master:  true,
 		host:    a.Host,
 		pubPort: a.PubPort,
 		subPort: a.SubPort,

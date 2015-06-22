@@ -12,8 +12,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/vaughan0/go-zmq"
 	"log"
+
+	"github.com/vaughan0/go-zmq"
 )
 
 //Sockets fufills the GoGadget interface and is
@@ -35,6 +36,7 @@ type Sockets struct {
 }
 
 func NewSockets() (*Sockets, error) {
+
 	s := &Sockets{
 		master:  true,
 		host:    "localhost",
@@ -120,7 +122,10 @@ func (s *Sockets) Start(in <-chan Message, out chan<- Message) {
 	for {
 		select {
 		case data := <-s.subChan.In():
-			s.sendMessageIn(data, out)
+			msg := s.sendMessageIn(data, out)
+			if s.master {
+				s.sendMessageOut(*msg)
+			}
 		case msg := <-in:
 			s.sendMessageOut(msg)
 		case err = <-s.subChan.Errors():
@@ -154,9 +159,10 @@ func (s *Sockets) sendMessageOut(msg Message) bool {
 //A message that came from outside clients (ui, connected
 //gogadget systems) is passed along to this gogadget
 //system
-func (s *Sockets) sendMessageIn(data [][]byte, out chan<- Message) {
+func (s *Sockets) sendMessageIn(data [][]byte, out chan<- Message) *Message {
+	var msg *Message
 	if len(data) == 2 {
-		msg := &Message{}
+		msg = &Message{}
 		json.Unmarshal(data[1], msg)
 		if msg.Sender == "" {
 			msg.Sender = "zmq sockets"
@@ -170,8 +176,10 @@ func (s *Sockets) sendMessageIn(data [][]byte, out chan<- Message) {
 			out <- *msg
 		}
 	} else {
+		msg = &Message{}
 		log.Println("zmq received an improper message", data)
 	}
+	return msg
 }
 
 //An outside client (like a UI) wants the latest status of
@@ -248,6 +256,7 @@ func (s *Sockets) getMasterSockets() (err error) {
 //This creates the zmq sockets for a GoGadget system that is not the master
 //system or a UI.
 func (s *Sockets) getClientSockets() (err error) {
+	s.master = false
 	s.ctx, err = zmq.NewContext()
 	if err != nil {
 		return err
