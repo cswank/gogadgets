@@ -69,12 +69,15 @@ func TestGadgets(t *testing.T) {
 		},
 		UID: fmt.Sprintf("%s %s", location, name),
 	}
-	a := App{
-		Gadgets: []GoGadget{p, s},
+	cfg := &Config{
+		Master:  true,
 		Host:    "localhost",
 		SubPort: port,
 		PubPort: port + 1,
 	}
+	a := NewApp(cfg)
+	a.AddGadget(p)
+	a.AddGadget(s)
 	go a.Start()
 	time.Sleep(1 * time.Second)
 }

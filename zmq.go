@@ -23,6 +23,7 @@ import (
 //as a single system, and also provides a way for
 //an external UI to interact the system.
 type Sockets struct {
+	id      string
 	master  bool
 	host    string
 	pubPort int
@@ -35,24 +36,39 @@ type Sockets struct {
 	updates map[string]Message
 }
 
-func NewSockets() (*Sockets, error) {
+type SocketsConfig struct {
+	Host    string
+	SubPort int
+	PubPort int
+	Master  bool
+}
 
+func NewSockets(cfg SocketsConfig) (*Sockets, error) {
+	if cfg.Master {
+		return newMasterSockets(cfg)
+	}
+	return NewClientSockets(cfg)
+}
+
+func newMasterSockets(cfg SocketsConfig) (*Sockets, error) {
 	s := &Sockets{
+		id:      newUUID(),
 		master:  true,
-		host:    "localhost",
-		subPort: 6111,
-		pubPort: 6112,
+		host:    cfg.Host,
+		subPort: cfg.SubPort,
+		pubPort: cfg.PubPort,
 		updates: map[string]Message{},
 	}
 	err := s.getMasterSockets()
 	return s, err
 }
 
-func NewClientSockets(host string) (*Sockets, error) {
+func NewClientSockets(cfg SocketsConfig) (*Sockets, error) {
 	s := &Sockets{
-		host:    host,
-		subPort: 6111,
-		pubPort: 6112,
+		id:      newUUID(),
+		host:    cfg.Host,
+		subPort: cfg.PubPort,
+		pubPort: cfg.SubPort,
 	}
 	err := s.getClientSockets()
 	return s, err
@@ -60,6 +76,7 @@ func NewClientSockets(host string) (*Sockets, error) {
 
 func (s *Sockets) Send(cmd string) {
 	msg := Message{
+		From: s.id,
 		Type: COMMAND,
 		Body: cmd,
 	}
@@ -67,6 +84,7 @@ func (s *Sockets) Send(cmd string) {
 }
 
 func (s *Sockets) SendMessage(msg Message) {
+	msg.From = s.id
 	b, err := json.Marshal(msg)
 	if err != nil {
 		fmt.Println("zmq sockets had a problem", err)
@@ -85,13 +103,19 @@ func (s *Sockets) Recv() *Message {
 	}
 	msg := &Message{}
 	json.Unmarshal(data[1], msg)
+	if msg.From == s.id {
+		return nil
+	}
 	return msg
 }
 
 func (s *Sockets) SendStatusRequest() (map[string]Message, error) {
 	msgs := map[string]Message{}
 	tries := 0
-	s.SendMessage(Message{Body: "status"})
+	s.SendMessage(Message{
+		Body: "status",
+		From: s.id,
+	})
 	for {
 		data, err := s.sub.Recv()
 		if err != nil {
@@ -220,6 +244,7 @@ func (s *Sockets) getSockets() (err error) {
 //the master.  Other systems that wish to join need to be configured
 //with the IP address of the master system as App.Host.
 func (s *Sockets) getMasterChannels() (err error) {
+	s.master = true
 	err = s.getMasterSockets()
 	if err != nil {
 		return err
