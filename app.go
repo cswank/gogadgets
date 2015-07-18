@@ -19,7 +19,7 @@ type App struct {
 //NewApp creates a new Gadgets system.  The cfg argument can be a
 //path to a json file or a Config object itself.
 func NewApp(cfg interface{}) *App {
-	config := getConfig(cfg)
+	config := GetConfig(cfg)
 	if config.PubPort == 0 {
 		config.SubPort = 6111
 		config.PubPort = 6112
@@ -94,7 +94,7 @@ func (a *App) AddGadget(gadget GoGadget) {
 	a.Gadgets = append(a.Gadgets, gadget)
 }
 
-func getConfig(config interface{}) *Config {
+func GetConfig(config interface{}) *Config {
 	var c *Config
 	switch v := config.(type) {
 	case string:

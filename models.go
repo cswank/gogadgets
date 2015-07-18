@@ -95,6 +95,7 @@ type GadgetConfig struct {
 }
 
 type Config struct {
+	Master  bool           `json:"master,omitempty"`
 	Host    string         `json:"host,omitempty"`
 	PubPort int            `json:"pubPort,omitempty"`
 	SubPort int            `json:"subPort,omitempty"`
