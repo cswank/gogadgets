@@ -56,6 +56,7 @@ type Method struct {
 //Message is what all Gadgets pass around to each
 //other.
 type Message struct {
+	From        string    `json:"from,omitempty"`
 	Name        string    `json:"name,omitempty"`
 	Location    string    `json:"location,omitempty"`
 	Type        string    `json:"type,omitempty"`

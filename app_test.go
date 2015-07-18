@@ -15,7 +15,6 @@ import (
 var _ = Describe("Companies", func() {
 	var ()
 	BeforeEach(func() {
-
 	})
 	AfterEach(func() {
 	})

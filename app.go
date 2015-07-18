@@ -11,6 +11,7 @@ import (
 //central part of Gadgets system.
 type App struct {
 	Gadgets []GoGadget
+	Master  bool
 	Host    string
 	PubPort int
 	SubPort int
@@ -29,6 +30,7 @@ func NewApp(cfg interface{}) *App {
 	}
 	gadgets := GetGadgets(config.Gadgets)
 	return &App{
+		Master:  config.Master,
 		Host:    config.Host,
 		PubPort: config.PubPort,
 		SubPort: config.SubPort,
@@ -66,12 +68,15 @@ func (a *App) Start() {
 func (a *App) GoStart(input <-chan Message) {
 	a.Gadgets = append(a.Gadgets, &MethodRunner{})
 	var sockets *Sockets
-	sockets = &Sockets{
-		master:  true,
-		host:    a.Host,
-		pubPort: a.PubPort,
-		subPort: a.SubPort,
-		updates: map[string]Message{},
+	cfg := SocketsConfig{
+		Host:    a.Host,
+		PubPort: a.PubPort,
+		SubPort: a.SubPort,
+		Master:  a.Master,
+	}
+	sockets, err := NewSockets(cfg)
+	if err != nil {
+		log.Fatal("couldn't get sockets", err)
 	}
 	a.Gadgets = append(a.Gadgets, sockets)
 	collect := make(chan Message)
