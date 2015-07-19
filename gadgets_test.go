@@ -1,382 +1,229 @@
 package gogadgets_test
 
-// import (
-// 	"fmt"
-// 	"testing"
-// 	"time"
+import (
+	"fmt"
+	"math/rand"
+	"time"
 
-// 	"github.com/cswank/gogadgets/utils"
-// )
+	"github.com/cswank/gogadgets"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+)
 
-// func TestStripCommand(t *testing.T) {
-// 	cmd := stripCommand("fill tank to 5 liters")
-// 	if cmd != "5 liters" {
-// 		t.Error(cmd)
-// 	}
-// 	cmd = stripCommand("turn on lab led for 2.3 minutes")
-// 	if cmd != "2.3 minutes" {
-// 		t.Error(cmd)
-// 	}
-// }
+func init() {
+	rand.Seed(time.Now().Unix())
+}
 
-// func TestParseCommand(t *testing.T) {
-// 	val, unit, err := ParseCommand("fill tank to 5 liters")
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
-// 	if val != 5.0 {
-// 		t.Error("incorrect value", val)
-// 	}
-// 	if unit != "liters" {
-// 		t.Error("incorrect unit", unit)
-// 	}
-// }
+var _ = Describe("gadgets", func() {
+	var (
+		port int
+	)
+	BeforeEach(func() {
+		port = 1024 + rand.Intn(65535-1024)
+	})
+	AfterEach(func() {
+	})
+	Describe("commands", func() {
+		It("parses a command", func() {
+			val, unit, err := gogadgets.ParseCommand("fill tank to 5 liters")
+			Expect(err).To(BeNil())
+			Expect(val).To(Equal(5.0))
+			Expect(unit).To(Equal("liters"))
+		})
+		It("parses an off command", func() {
+			val, unit, err := gogadgets.ParseCommand("turn on lab led to -50 %")
+			Expect(err).To(BeNil())
+			Expect(val).To(Equal(-50.0))
+			Expect(unit).To(Equal("%"))
+		})
+		It("parses a time command", func() {
+			val, unit, err := gogadgets.ParseCommand("turn on lab led for 1.1 minutes")
+			Expect(err).To(BeNil())
+			Expect(val).To(Equal(1.1))
+			Expect(unit).To(Equal("minutes"))
+		})
+	})
+	Describe("start", func() {
+		It("starts a gadget and turns it on and off", func() {
+			location := "lab"
+			name := "led"
+			g := gogadgets.Gadget{
+				Location:   location,
+				Name:       name,
+				Direction:  "output",
+				OnCommand:  fmt.Sprintf("turn on %s %s", location, name),
+				OffCommand: fmt.Sprintf("turn off %s %s", location, name),
+				Output:     &FakeOutput{},
+				UID:        fmt.Sprintf("%s %s", location, name),
+			}
+			input := make(chan gogadgets.Message)
+			output := make(chan gogadgets.Message)
+			go g.Start(input, output)
+			update := <-output
+			Expect(update.Value.Value).To(BeFalse())
+			msg := gogadgets.Message{
+				Type: "command",
+				Body: "turn on lab led",
+			}
+			input <- msg
+			update = <-output
+			Expect(update.Value.Value).To(BeTrue())
 
-// func TestParseNegativeCommand(t *testing.T) {
-// 	val, unit, err := ParseCommand("turn on lab led to -50 %")
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
-// 	if val != -50.0 {
-// 		t.Error("incorrect value", val)
-// 	}
-// 	if unit != "%" {
-// 		t.Error("incorrect unit", unit)
-// 	}
-// }
+			msg = gogadgets.Message{
+				Type: "command",
+				Body: "turn off lab led",
+			}
+			input <- msg
+			update = <-output
+			Expect(update.Value.Value).To(BeFalse())
 
-// func TestGetTimeValue(t *testing.T) {
-// 	val, unit, err := ParseCommand("turn on lab led for 1.1 minutes")
-// 	if err != nil {
-// 		t.Error(err)
-// 	}
-// 	if val != 1.1 {
-// 		t.Error("incorrect value", val)
-// 	}
-// 	if unit != "minutes" {
-// 		t.Error("incorrect unit", unit)
-// 	}
-// }
+			msg = gogadgets.Message{
+				Type: "command",
+				Body: "shutdown",
+			}
+			input <- msg
+			update = <-output
+		})
+		It("starts a gadgets that has a trigger", func() {
+			location := "tank"
+			name := "valve"
+			g := gogadgets.Gadget{
+				Location:   location,
+				Name:       name,
+				Operator:   ">=",
+				OnCommand:  fmt.Sprintf("fill %s", location),
+				OffCommand: fmt.Sprintf("stop filling %s", location),
+				Output:     &FakeOutput{},
+				UID:        fmt.Sprintf("%s %s", location, name),
+			}
+			input := make(chan gogadgets.Message)
+			output := make(chan gogadgets.Message)
+			go g.Start(input, output)
+			update := <-output
+			Expect(update.Value.Value).To(BeFalse())
 
-// func TestGetDuration(t *testing.T) {
-// 	g := Gadget{}
-// 	d := g.getDuration(2, "minutes")
-// 	e := time.Duration(2.0 * time.Minute)
-// 	if d != e {
-// 		t.Error(d, e)
-// 	}
-// }
+			msg := gogadgets.Message{
+				Type: "command",
+				Body: "fill tank to 4.4 liters",
+			}
+			input <- msg
+			update = <-output
+			Expect(update.Value.Value).To(BeTrue())
 
-// func TestGetHourDuration(t *testing.T) {
-// 	g := Gadget{}
-// 	d := g.getDuration(1, "hour")
-// 	e := time.Duration(1.0 * time.Hour)
-// 	if d != e {
-// 		t.Error(d, e)
-// 	}
-// }
+			//make a message that should trigger the trigger and stop the device
+			msg = gogadgets.Message{
+				Sender:   "tank volume",
+				Type:     gogadgets.UPDATE,
+				Location: "tank",
+				Name:     "volume",
+				Value: gogadgets.Value{
+					Units: "liters",
+					Value: 4.4,
+				},
+			}
+			input <- msg
+			update = <-output
+			Expect(update.Value.Value).To(BeFalse())
 
-// func TestStart(t *testing.T) {
-// 	location := "lab"
-// 	name := "led"
-// 	g := Gadget{
-// 		Location:   location,
-// 		Name:       name,
-// 		Direction:  "output",
-// 		OnCommand:  fmt.Sprintf("turn on %s %s", location, name),
-// 		OffCommand: fmt.Sprintf("turn off %s %s", location, name),
-// 		Output:     &FakeOutput{},
-// 		UID:        fmt.Sprintf("%s %s", location, name),
-// 	}
-// 	input := make(chan Message)
-// 	output := make(chan Message)
-// 	go g.Start(input, output)
-// 	update := <-output
-// 	if update.Value.Value != false {
-// 		t.Error("shoulda been off", update.Value.Value)
-// 	}
-// 	msg := Message{
-// 		Type: "command",
-// 		Body: "turn on lab led",
-// 	}
-// 	input <- msg
-// 	update = <-output
-// 	if update.Value.Value != true {
-// 		t.Fatal("shoulda been on", update)
-// 	}
+		})
+		It("starts a gadget that has a time trigger", func() {
+			location := "lab"
+			name := "led"
+			g := gogadgets.Gadget{
+				Location:   location,
+				Name:       name,
+				OnCommand:  "turn on lab led",
+				Operator:   ">=",
+				OffCommand: "turn off lab led",
+				Output:     &FakeOutput{},
+				UID:        fmt.Sprintf("%s %s", location, name),
+			}
+			input := make(chan gogadgets.Message)
+			output := make(chan gogadgets.Message)
+			go g.Start(input, output)
+			update := <-output
+			Expect(update.Value.Value).To(BeFalse())
 
-// 	msg = Message{
-// 		Type: "command",
-// 		Body: "turn off lab led",
-// 	}
-// 	input <- msg
-// 	update = <-output
-// 	if update.Value.Value != false {
-// 		t.Error("shoulda been off", update.Value.Value)
-// 	}
-// 	msg = Message{
-// 		Type: "command",
-// 		Body: "shutdown",
-// 	}
-// 	input <- msg
-// 	update = <-output
-// }
+			msg := gogadgets.Message{
+				Type: "command",
+				Body: "turn on lab led for 0.01 seconds",
+			}
+			input <- msg
+			update = <-output
+			Expect(update.Value.Value).To(BeTrue())
 
-// func TestStartWithTrigger(t *testing.T) {
-// 	location := "tank"
-// 	name := "valve"
-// 	g := Gadget{
-// 		Location:   location,
-// 		Name:       name,
-// 		Operator:   ">=",
-// 		OnCommand:  fmt.Sprintf("fill %s", location),
-// 		OffCommand: fmt.Sprintf("stop filling %s", location),
-// 		Output:     &FakeOutput{},
-// 		UID:        fmt.Sprintf("%s %s", location, name),
-// 	}
-// 	input := make(chan Message)
-// 	output := make(chan Message)
-// 	go g.Start(input, output)
-// 	update := <-output
-// 	if update.Value.Value != false {
-// 		t.Error("shoulda been off", update.Value.Value)
-// 	}
-// 	msg := Message{
-// 		Type: "command",
-// 		Body: "fill tank to 4.4 liters",
-// 	}
-// 	input <- msg
-// 	update = <-output
-// 	if update.Value.Value != true {
-// 		t.Error("shoulda been on", update)
-// 	}
-// 	//make a message that should trigger the trigger and stop the device
-// 	msg = Message{
-// 		Sender:   "tank volume",
-// 		Type:     UPDATE,
-// 		Location: "tank",
-// 		Name:     "volume",
-// 		Value: Value{
-// 			Units: "liters",
-// 			Value: 4.4,
-// 		},
-// 	}
-// 	input <- msg
-// 	update = <-output
-// 	if update.Value.Value != false {
-// 		t.Error("shoulda been off", update)
-// 	}
-// }
+			//wait for a second
+			update = <-output
+			Expect(update.Value.Value).To(BeFalse())
+		})
 
-// func TestStartWithTimeTrigger(t *testing.T) {
-// 	location := "lab"
-// 	name := "led"
-// 	g := Gadget{
-// 		Location:   location,
-// 		Name:       name,
-// 		OnCommand:  "turn on lab led",
-// 		Operator:   ">=",
-// 		OffCommand: "turn off lab led",
-// 		Output:     &FakeOutput{},
-// 		UID:        fmt.Sprintf("%s %s", location, name),
-// 	}
-// 	input := make(chan Message)
-// 	output := make(chan Message)
-// 	go g.Start(input, output)
-// 	update := <-output
-// 	if update.Value.Value != false {
-// 		t.Error("shoulda been off", update.Value.Value)
-// 	}
-// 	msg := Message{
-// 		Type: "command",
-// 		Body: "turn on lab led for 0.01 seconds",
-// 	}
-// 	input <- msg
-// 	update = <-output
-// 	if update.Value.Value != true {
-// 		t.Error("shoulda been on", update)
-// 	}
-// 	//wait for a second
-// 	update = <-output
-// 	if update.Value.Value != false {
-// 		t.Error("shoulda been off", update)
-// 	}
-// }
+		It("starts a gadget with a time trigger that gets interrupted", func() {
+			location := "lab"
+			name := "led"
+			g := gogadgets.Gadget{
+				Location:   location,
+				Name:       name,
+				OnCommand:  "turn on lab led",
+				OffCommand: "turn off lab led",
+				Output:     &FakeOutput{},
+				UID:        fmt.Sprintf("%s %s", location, name),
+			}
+			input := make(chan gogadgets.Message)
+			output := make(chan gogadgets.Message)
+			go g.Start(input, output)
+			update := <-output
+			Expect(update.Value.Value).To(BeFalse())
+			msg := gogadgets.Message{
+				Type: "command",
+				Body: "turn on lab led for 30 seconds",
+			}
+			input <- msg
+			update = <-output
+			Expect(update.Value.Value).To(BeTrue())
 
-// func TestStartWithTimeTriggerWithInterrupt(t *testing.T) {
-// 	location := "lab"
-// 	name := "led"
-// 	g := Gadget{
-// 		Location:   location,
-// 		Name:       name,
-// 		OnCommand:  "turn on lab led",
-// 		OffCommand: "turn off lab led",
-// 		Output:     &FakeOutput{},
-// 		UID:        fmt.Sprintf("%s %s", location, name),
-// 	}
-// 	input := make(chan Message)
-// 	output := make(chan Message)
-// 	go g.Start(input, output)
-// 	update := <-output
-// 	if update.Value.Value != false {
-// 		t.Error("shoulda been off", update.Value.Value)
-// 	}
-// 	msg := Message{
-// 		Type: "command",
-// 		Body: "turn on lab led for 30 seconds",
-// 	}
-// 	input <- msg
-// 	update = <-output
-// 	if update.Value.Value != true {
-// 		t.Error("shoulda been on", update)
-// 	}
+			msg = gogadgets.Message{
+				Type: "command",
+				Body: "turn on lab led",
+			}
+			input <- msg
 
-// 	msg = Message{
-// 		Type: "command",
-// 		Body: "turn on lab led",
-// 	}
-// 	input <- msg
+			msg = gogadgets.Message{
+				Type: "update",
+				Body: "",
+			}
+			input <- msg
 
-// 	msg = Message{
-// 		Type: "update",
-// 		Body: "",
-// 	}
-// 	input <- msg
-
-// 	msg = Message{
-// 		Type: "command",
-// 		Body: "turn off lab led",
-// 	}
-// 	input <- msg
-// 	update = <-output
-// 	if update.Value.Value != false {
-// 		t.Error("shoulda been off", update)
-// 	}
-// }
-
-// func _TestStartWithTimeTriggerForReals(t *testing.T) {
-// 	if !utils.FileExists("/sys/class/gpio/export") {
-// 		return //not a beaglebone
-// 	}
-// 	pin := &Pin{Type: "gpio", Port: "9", Pin: "15"}
-// 	gpio, err := NewGPIO(pin)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	location := "lab"
-// 	name := "led"
-// 	g := Gadget{
-// 		Location:   location,
-// 		Name:       name,
-// 		OnCommand:  "turn on lab led",
-// 		OffCommand: "turn off lab led",
-// 		Output:     gpio,
-// 		UID:        fmt.Sprintf("%s %s", location, name),
-// 	}
-// 	input := make(chan Message)
-// 	output := make(chan Message)
-// 	go g.Start(input, output)
-// 	update := <-output
-// 	if update.Value.Value != false {
-// 		t.Error("shoulda been off", update.Value.Value)
-// 	}
-// 	msg := Message{
-// 		Type: "command",
-// 		Body: "turn on lab led for 0.1 seconds",
-// 	}
-// 	input <- msg
-// 	update = <-output
-// 	if update.Value.Value != true {
-// 		t.Error("shoulda been on", update)
-// 	}
-// 	//wait for a second
-// 	update = <-output
-// 	if update.Value.Value != false {
-// 		t.Error("shoulda been off", update)
-// 	}
-// }
-
-// func _TestRealInput(t *testing.T) {
-// 	if !utils.FileExists("/sys/class/gpio/export") {
-// 		return //not a beaglebone
-// 	}
-
-// 	gpioConfig := &Pin{
-// 		Type: "gpio",
-// 		Port: "9",
-// 		Pin:  "15",
-// 	}
-// 	gpio, err := NewGPIO(gpioConfig)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-
-// 	config := &GadgetConfig{
-// 		Location: "lab",
-// 		Name:     "switch",
-// 		Pin: Pin{
-// 			Type:      "switch",
-// 			Port:      "9",
-// 			Pin:       "16",
-// 			Edge:      "both",
-// 			Direction: "in",
-// 			Value:     5.0,
-// 			Units:     "liters",
-// 		},
-// 	}
-// 	s, err := NewGadget(config)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	input := make(chan Message)
-// 	output := make(chan Message)
-
-// 	go s.Start(input, output)
-// 	update := <-output
-// 	if update.Value.Value != false {
-// 		t.Error("shoulda been off", update.Value.Value)
-// 	}
-// 	go func() {
-// 		time.Sleep(100 * time.Millisecond)
-// 		gpio.On(nil)
-// 		time.Sleep(100 * time.Millisecond)
-// 		gpio.Off()
-// 	}()
-// 	val := <-output
-// 	if val.Value.Value.(float64) != 5.0 {
-// 		t.Error("should have been 5.0", val.Value)
-// 	}
-// 	val = <-output
-// 	if val.Value.Value.(float64) != 0.0 {
-// 		t.Error("should have been 0.0", val.Value)
-// 	}
-// }
-
-// func TestInputStart(t *testing.T) {
-// 	location := "lab"
-// 	name := "switch"
-// 	poller := &FakePoller{}
-// 	s := &Switch{
-// 		GPIO:      poller,
-// 		Value:     5.0,
-// 		TrueValue: 5.0,
-// 		Units:     "liters",
-// 	}
-// 	g := Gadget{
-// 		Location: location,
-// 		Name:     name,
-// 		Input:    s,
-// 		UID:      fmt.Sprintf("%s %s", location, name),
-// 	}
-// 	input := make(chan Message)
-// 	output := make(chan Message)
-// 	go g.Start(input, output)
-// 	val := <-output
-// 	if val.Value.Value.(float64) != 5.0 {
-// 		t.Error("should have been 5.0", val.Value)
-// 	}
-// 	val = <-output
-// 	if val.Value.Value.(float64) != 0.0 {
-// 		t.Error("should have been 0.0", val.Value)
-// 	}
-// }
+			msg = gogadgets.Message{
+				Type: "command",
+				Body: "turn off lab led",
+			}
+			input <- msg
+			update = <-output
+			Expect(update.Value.Value).To(BeFalse())
+		})
+		It("starts a switch", func() {
+			location := "lab"
+			name := "switch"
+			poller := &FakePoller{}
+			s := &gogadgets.Switch{
+				GPIO:      poller,
+				Value:     5.0,
+				TrueValue: 5.0,
+				Units:     "liters",
+			}
+			g := gogadgets.Gadget{
+				Location: location,
+				Name:     name,
+				Input:    s,
+				UID:      fmt.Sprintf("%s %s", location, name),
+			}
+			input := make(chan gogadgets.Message)
+			output := make(chan gogadgets.Message)
+			go g.Start(input, output)
+			val := <-output
+			Expect(val.Value.Value.(float64)).To(Equal(5.0))
+			val = <-output
+			Expect(val.Value.Value.(float64)).To(Equal(0.0))
+		})
+	})
+})

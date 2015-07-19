@@ -59,19 +59,18 @@ func newMasterSockets(cfg SocketsConfig) (*Sockets, error) {
 		pubPort: cfg.PubPort,
 		updates: map[string]Message{},
 	}
-	err := s.getMasterSockets()
-	return s, err
+	return s, nil
 }
 
 func NewClientSockets(cfg SocketsConfig) (*Sockets, error) {
 	s := &Sockets{
+		master:  false,
 		id:      newUUID(),
 		host:    cfg.Host,
 		subPort: cfg.PubPort,
 		pubPort: cfg.SubPort,
 	}
-	err := s.getClientSockets()
-	return s, err
+	return s, nil
 }
 
 func (s *Sockets) Send(cmd string) {
@@ -146,12 +145,18 @@ func (s *Sockets) Start(in <-chan Message, out chan<- Message) {
 	for {
 		select {
 		case data := <-s.subChan.In():
-			msg := s.sendMessageIn(data, out)
-			if s.master {
+			msg, err := s.unmarshalMessage(data)
+			if err == nil && msg.From != s.id {
+				s.sendMessageIn(msg, out)
+			}
+			if s.master && msg.From == s.id {
 				s.sendMessageOut(*msg)
 			}
 		case msg := <-in:
-			s.sendMessageOut(msg)
+			if msg.From == "" {
+				msg.From = s.id
+				s.sendMessageOut(msg)
+			}
 		case err = <-s.subChan.Errors():
 			log.Println(err)
 		}
@@ -180,30 +185,30 @@ func (s *Sockets) sendMessageOut(msg Message) bool {
 	return keepGoing
 }
 
+func (s *Sockets) unmarshalMessage(data [][]byte) (*Message, error) {
+	var msg *Message
+	if len(data) != 2 {
+		return msg, errors.New("improper message")
+	}
+	msg = &Message{}
+	return msg, json.Unmarshal(data[1], msg)
+}
+
 //A message that came from outside clients (ui, connected
 //gogadget systems) is passed along to this gogadget
 //system
-func (s *Sockets) sendMessageIn(data [][]byte, out chan<- Message) *Message {
-	var msg *Message
-	if len(data) == 2 {
-		msg = &Message{}
-		json.Unmarshal(data[1], msg)
-		if msg.Sender == "" {
-			msg.Sender = "zmq sockets"
-		}
-		if s.master && msg.Type == UPDATE {
-			s.updates[msg.Sender] = *msg
-		}
-		if msg.Body == "status" {
-			s.sendStatus()
-		} else {
-			out <- *msg
-		}
-	} else {
-		msg = &Message{}
-		log.Println("zmq received an improper message", data)
+func (s *Sockets) sendMessageIn(msg *Message, out chan<- Message) {
+	if msg.Sender == "" {
+		msg.Sender = "zmq sockets"
 	}
-	return msg
+	if s.master && msg.Type == UPDATE {
+		s.updates[msg.Sender] = *msg
+	}
+	if msg.Body == "status" {
+		s.sendStatus()
+	} else {
+		out <- *msg
+	}
 }
 
 //An outside client (like a UI) wants the latest status of
@@ -229,7 +234,7 @@ func (s *Sockets) Close() {
 }
 
 func (s *Sockets) getSockets() (err error) {
-	if s.host == "localhost" || s.host == "" {
+	if s.master {
 		err = s.getMasterChannels()
 	} else {
 		err = s.getClientSockets()
