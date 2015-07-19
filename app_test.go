@@ -21,6 +21,7 @@ var _ = Describe("Companies", func() {
 		port int
 	)
 	BeforeEach(func() {
+		port = 1024 + rand.Intn(65535-1024)
 	})
 	AfterEach(func() {
 	})
