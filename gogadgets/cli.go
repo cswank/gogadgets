@@ -58,7 +58,13 @@ func getConfig() string {
 }
 
 func getStatus() {
-	s, err := gogadgets.NewClientSockets(*host)
+	cfg := gogadgets.SocketsConfig{
+		Host:    *host,
+		SubPort: 6111,
+		PubPort: 6112,
+		Master:  false,
+	}
+	s, err := gogadgets.NewClientSockets(cfg)
 	defer s.Close()
 	if err != nil {
 		panic(err)
@@ -75,7 +81,13 @@ func getStatus() {
 }
 
 func sendCommand() {
-	s, err := gogadgets.NewClientSockets(*host)
+	cfg := gogadgets.SocketsConfig{
+		Host:    *host,
+		SubPort: 6111,
+		PubPort: 6112,
+		Master:  false,
+	}
+	s, err := gogadgets.NewClientSockets(cfg)
 	defer s.Close()
 	if err != nil {
 		panic(err)
@@ -92,7 +104,13 @@ func sendCommand() {
 //config.  When one is recieved it is written to the
 //default config path and a a gogadgts system is started.
 func listen() {
-	s, err := gogadgets.NewSockets()
+	cfg := gogadgets.SocketsConfig{
+		Host:    *host,
+		SubPort: 6111,
+		PubPort: 6112,
+		Master:  false,
+	}
+	s, err := gogadgets.NewSockets(cfg)
 	if err != nil {
 		panic(err)
 	}
