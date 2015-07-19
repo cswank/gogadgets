@@ -10,7 +10,7 @@ RUN cd /tmp &&\
 
 ADD . /opt/gogadgets/src/github.com/cswank/gogadgets
 
-RUN cd gogadgets/gogadgets &&\
+RUN cd /opt/gogadgets/src/github.com/cswank/gogadgets/gogadgets &&\
     export GOROOT=/go &&\
     export GOPATH=/opt/gogadgets &&\
     /go/bin/go get -tags zmq_3_x github.com/alecthomas/gozmq &&\
