@@ -1,86 +1,147 @@
-package gogadgets
+package gogadgets_test
 
 import (
 	"fmt"
 	"io/ioutil"
 	"math/rand"
 	"os"
-	"testing"
 	"time"
+
+	"github.com/cswank/gogadgets"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
-type FakeOutput struct {
-	on bool
+func init() {
+	rand.Seed(time.Now().Unix())
 }
 
-func (f *FakeOutput) Config() ConfigHelper {
-	return ConfigHelper{}
-}
+var _ = Describe("Companies", func() {
+	var (
+		port int
+	)
+	BeforeEach(func() {
+	})
+	AfterEach(func() {
+	})
+	Describe("app", func() {
+		It("starts up a gogadgets app", func() {
+			fo := &FakeOutput{}
+			p := &gogadgets.Gadget{
+				Location:   "tank",
+				Name:       "pump",
+				OnCommand:  fmt.Sprintf("turn on %s %s", "tank", "pump"),
+				OffCommand: fmt.Sprintf("turn off %s %s", "tank", "pump"),
+				Output:     fo,
+				UID:        fmt.Sprintf("%s %s", "tank", "pump"),
+			}
+			location := "tank"
+			name := "switch"
+			poller := &FakePoller{}
+			s := &gogadgets.Gadget{
+				Location: location,
+				Name:     name,
+				Input: &gogadgets.Switch{
+					GPIO:      poller,
+					Value:     5.0,
+					TrueValue: 5.0,
+					Units:     "liters",
+				},
+				UID: fmt.Sprintf("%s %s", location, name),
+			}
+			cfg := &gogadgets.Config{
+				Master:  true,
+				Host:    "localhost",
+				SubPort: port,
+				PubPort: port + 1,
+			}
+			a := gogadgets.NewApp(cfg)
+			a.AddGadget(p)
+			a.AddGadget(s)
 
-func (f *FakeOutput) Update(msg *Message) {
+			input := make(chan gogadgets.Message)
+			go a.GoStart(input)
 
-}
+			msg := gogadgets.Message{
+				Type: "command",
+				Body: "turn on tank pump",
+			}
 
-func (f *FakeOutput) On(val *Value) error {
-	f.on = true
-	return nil
-}
+			Expect(fo.on).To(BeFalse())
 
-func (f *FakeOutput) Off() error {
-	f.on = false
-	return nil
-}
+			input <- msg
 
-func (f *FakeOutput) Status() interface{} {
-	return f.on
-}
+			Eventually(func() bool {
+				return fo.on
+			}).Should(BeTrue())
+		})
+		It("starts up swarm of gogadgets apps", func() {
+			fo := &FakeOutput{}
+			pump := &gogadgets.Gadget{
+				Location:   "tank",
+				Name:       "pump",
+				OnCommand:  fmt.Sprintf("turn on %s %s", "tank", "pump"),
+				OffCommand: fmt.Sprintf("turn off %s %s", "tank", "pump"),
+				Output:     fo,
+				UID:        fmt.Sprintf("%s %s", "tank", "pump"),
+			}
+			location := "tank"
+			name := "switch"
+			poller := &FakePoller{}
+			trigger := &gogadgets.Gadget{
+				Location: location,
+				Name:     name,
+				Input: &gogadgets.Switch{
+					GPIO:      poller,
+					Value:     5.0,
+					TrueValue: 5.0,
+					Units:     "liters",
+				},
+				UID: fmt.Sprintf("%s %s", location, name),
+			}
 
-type FakePoller struct {
-	val bool
-}
+			cfg := &gogadgets.Config{
+				Master:  true,
+				Host:    "localhost",
+				SubPort: port,
+				PubPort: port + 1,
+			}
 
-func (f *FakePoller) Wait() (bool, error) {
-	time.Sleep(100 * time.Millisecond)
-	f.val = !f.val
-	return f.val, nil
-}
+			cfg2 := &gogadgets.Config{
+				Master:  false,
+				Host:    "localhost",
+				SubPort: port + 1,
+				PubPort: port,
+			}
 
-func TestGadgets(t *testing.T) {
-	port := 1024 + rand.Intn(65535-1024)
-	p := &Gadget{
-		Location:   "tank",
-		Name:       "pump",
-		OnCommand:  fmt.Sprintf("turn on %s %s", "tank", "pump"),
-		OffCommand: fmt.Sprintf("turn off %s %s", "tank", "pump"),
-		Output:     &FakeOutput{},
-		UID:        fmt.Sprintf("%s %s", "tank", "pump"),
-	}
-	location := "tank"
-	name := "switch"
-	poller := &FakePoller{}
-	s := &Gadget{
-		Location: location,
-		Name:     name,
-		Input: &Switch{
-			GPIO:      poller,
-			Value:     5.0,
-			TrueValue: 5.0,
-			Units:     "liters",
-		},
-		UID: fmt.Sprintf("%s %s", location, name),
-	}
-	a := App{
-		Gadgets: []GoGadget{p, s},
-		Host:    "localhost",
-		SubPort: port,
-		PubPort: port + 1,
-	}
-	go a.Start()
-	time.Sleep(1 * time.Second)
-}
+			a := gogadgets.NewApp(cfg)
+			a.AddGadget(trigger)
+			a2 := gogadgets.NewApp(cfg2)
+			a2.AddGadget(pump)
 
-func TestGetConfigFromFile(t *testing.T) {
-	cfg := `{
+			input := make(chan gogadgets.Message)
+			go a.GoStart(input)
+			go a2.Start()
+
+			msg := gogadgets.Message{
+				Sender: "the test",
+				Type:   "command",
+				Body:   "turn on tank pump",
+			}
+
+			Expect(fo.on).To(BeFalse())
+
+			time.Sleep(500 * time.Millisecond)
+
+			input <- msg
+
+			Eventually(func() bool {
+				return fo.on
+			}).Should(BeTrue())
+
+		})
+		It("loads a json config file", func() {
+			s := `{
     "gadgets": [
         {
             "location": "front yard",
@@ -135,12 +196,12 @@ func TestGetConfigFromFile(t *testing.T) {
     ]
 }
 `
-	f, _ := ioutil.TempFile("", "")
-	f.Write([]byte(cfg))
-	f.Close()
-	config := getConfig(f.Name())
-	os.Remove(f.Name())
-	if len(config.Gadgets) != 5 {
-		t.Error(config)
-	}
-}
+			f, _ := ioutil.TempFile("", "")
+			f.Write([]byte(s))
+			f.Close()
+			cfg := gogadgets.GetConfig(f.Name())
+			os.Remove(f.Name())
+			Expect(len(cfg.Gadgets)).To(Equal(5))
+		})
+	})
+})

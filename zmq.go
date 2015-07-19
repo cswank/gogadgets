@@ -23,6 +23,7 @@ import (
 //as a single system, and also provides a way for
 //an external UI to interact the system.
 type Sockets struct {
+	id      string
 	master  bool
 	host    string
 	pubPort int
@@ -35,31 +36,46 @@ type Sockets struct {
 	updates map[string]Message
 }
 
-func NewSockets() (*Sockets, error) {
-
-	s := &Sockets{
-		master:  true,
-		host:    "localhost",
-		subPort: 6111,
-		pubPort: 6112,
-		updates: map[string]Message{},
-	}
-	err := s.getMasterSockets()
-	return s, err
+type SocketsConfig struct {
+	Host    string
+	SubPort int
+	PubPort int
+	Master  bool
 }
 
-func NewClientSockets(host string) (*Sockets, error) {
-	s := &Sockets{
-		host:    host,
-		subPort: 6111,
-		pubPort: 6112,
+func NewSockets(cfg SocketsConfig) (*Sockets, error) {
+	if cfg.Master {
+		return newMasterSockets(cfg)
 	}
-	err := s.getClientSockets()
-	return s, err
+	return NewClientSockets(cfg)
+}
+
+func newMasterSockets(cfg SocketsConfig) (*Sockets, error) {
+	s := &Sockets{
+		id:      newUUID(),
+		master:  true,
+		host:    cfg.Host,
+		subPort: cfg.SubPort,
+		pubPort: cfg.PubPort,
+		updates: map[string]Message{},
+	}
+	return s, nil
+}
+
+func NewClientSockets(cfg SocketsConfig) (*Sockets, error) {
+	s := &Sockets{
+		master:  false,
+		id:      newUUID(),
+		host:    cfg.Host,
+		subPort: cfg.PubPort,
+		pubPort: cfg.SubPort,
+	}
+	return s, nil
 }
 
 func (s *Sockets) Send(cmd string) {
 	msg := Message{
+		From: s.id,
 		Type: COMMAND,
 		Body: cmd,
 	}
@@ -67,6 +83,7 @@ func (s *Sockets) Send(cmd string) {
 }
 
 func (s *Sockets) SendMessage(msg Message) {
+	msg.From = s.id
 	b, err := json.Marshal(msg)
 	if err != nil {
 		fmt.Println("zmq sockets had a problem", err)
@@ -85,13 +102,19 @@ func (s *Sockets) Recv() *Message {
 	}
 	msg := &Message{}
 	json.Unmarshal(data[1], msg)
+	if msg.From == s.id {
+		return nil
+	}
 	return msg
 }
 
 func (s *Sockets) SendStatusRequest() (map[string]Message, error) {
 	msgs := map[string]Message{}
 	tries := 0
-	s.SendMessage(Message{Body: "status"})
+	s.SendMessage(Message{
+		Body: "status",
+		From: s.id,
+	})
 	for {
 		data, err := s.sub.Recv()
 		if err != nil {
@@ -122,12 +145,18 @@ func (s *Sockets) Start(in <-chan Message, out chan<- Message) {
 	for {
 		select {
 		case data := <-s.subChan.In():
-			msg := s.sendMessageIn(data, out)
-			if s.master {
+			msg, err := s.unmarshalMessage(data)
+			if err == nil && msg.From != s.id {
+				s.sendMessageIn(msg, out)
+			}
+			if s.master && msg.From == s.id {
 				s.sendMessageOut(*msg)
 			}
 		case msg := <-in:
-			s.sendMessageOut(msg)
+			if msg.From == "" {
+				msg.From = s.id
+				s.sendMessageOut(msg)
+			}
 		case err = <-s.subChan.Errors():
 			log.Println(err)
 		}
@@ -156,30 +185,30 @@ func (s *Sockets) sendMessageOut(msg Message) bool {
 	return keepGoing
 }
 
+func (s *Sockets) unmarshalMessage(data [][]byte) (*Message, error) {
+	var msg *Message
+	if len(data) != 2 {
+		return msg, errors.New("improper message")
+	}
+	msg = &Message{}
+	return msg, json.Unmarshal(data[1], msg)
+}
+
 //A message that came from outside clients (ui, connected
 //gogadget systems) is passed along to this gogadget
 //system
-func (s *Sockets) sendMessageIn(data [][]byte, out chan<- Message) *Message {
-	var msg *Message
-	if len(data) == 2 {
-		msg = &Message{}
-		json.Unmarshal(data[1], msg)
-		if msg.Sender == "" {
-			msg.Sender = "zmq sockets"
-		}
-		if s.master && msg.Type == UPDATE {
-			s.updates[msg.Sender] = *msg
-		}
-		if msg.Body == "status" {
-			s.sendStatus()
-		} else {
-			out <- *msg
-		}
-	} else {
-		msg = &Message{}
-		log.Println("zmq received an improper message", data)
+func (s *Sockets) sendMessageIn(msg *Message, out chan<- Message) {
+	if msg.Sender == "" {
+		msg.Sender = "zmq sockets"
 	}
-	return msg
+	if s.master && msg.Type == UPDATE {
+		s.updates[msg.Sender] = *msg
+	}
+	if msg.Body == "status" {
+		s.sendStatus()
+	} else {
+		out <- *msg
+	}
 }
 
 //An outside client (like a UI) wants the latest status of
@@ -205,7 +234,7 @@ func (s *Sockets) Close() {
 }
 
 func (s *Sockets) getSockets() (err error) {
-	if s.host == "localhost" || s.host == "" {
+	if s.master {
 		err = s.getMasterChannels()
 	} else {
 		err = s.getClientSockets()
@@ -220,6 +249,7 @@ func (s *Sockets) getSockets() (err error) {
 //the master.  Other systems that wish to join need to be configured
 //with the IP address of the master system as App.Host.
 func (s *Sockets) getMasterChannels() (err error) {
+	s.master = true
 	err = s.getMasterSockets()
 	if err != nil {
 		return err
