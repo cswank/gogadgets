@@ -67,8 +67,8 @@ func NewClientSockets(cfg SocketsConfig) (*Sockets, error) {
 		master:  false,
 		id:      newUUID(),
 		host:    cfg.Host,
-		subPort: cfg.PubPort,
-		pubPort: cfg.SubPort,
+		subPort: cfg.SubPort,
+		pubPort: cfg.PubPort,
 	}
 	return s, nil
 }

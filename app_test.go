@@ -111,8 +111,8 @@ var _ = Describe("Companies", func() {
 			cfg2 := &gogadgets.Config{
 				Master:  false,
 				Host:    "localhost",
-				SubPort: port + 1,
-				PubPort: port,
+				SubPort: port,
+				PubPort: port + 1,
 			}
 
 			a := gogadgets.NewApp(cfg)
