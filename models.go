@@ -20,9 +20,10 @@ type GoGadget interface {
 }
 
 type Value struct {
-	Value interface{} `json:"value,omitempty"`
-	Units string      `json:"units,omitempty"`
-	ID    string      `json:"id,omitempty"`
+	Value  interface{} `json:"value,omitempty"`
+	Units  string      `json:"units,omitempty"`
+	Output interface{} `json:"io,omitempty"`
+	ID     string      `json:"id,omitempty"`
 }
 
 func (v *Value) ToFloat() (f float64, ok bool) {

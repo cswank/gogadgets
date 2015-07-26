@@ -68,6 +68,7 @@ var _ = Describe("gadgets", func() {
 			input <- msg
 			update = <-output
 			Expect(update.Value.Value).To(BeTrue())
+			Expect(update.Value.Output).To(BeTrue())
 
 			msg = gogadgets.Message{
 				Type: "command",
@@ -76,6 +77,7 @@ var _ = Describe("gadgets", func() {
 			input <- msg
 			update = <-output
 			Expect(update.Value.Value).To(BeFalse())
+			Expect(update.Value.Output).To(BeFalse())
 
 			msg = gogadgets.Message{
 				Type: "command",

@@ -13,6 +13,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/vaughan0/go-zmq"
 )
@@ -43,15 +44,15 @@ type SocketsConfig struct {
 	Master  bool
 }
 
-func NewSockets(cfg SocketsConfig) (*Sockets, error) {
+func NewSockets(cfg SocketsConfig) *Sockets {
 	if cfg.Master {
 		return newMasterSockets(cfg)
 	}
 	return NewClientSockets(cfg)
 }
 
-func newMasterSockets(cfg SocketsConfig) (*Sockets, error) {
-	s := &Sockets{
+func newMasterSockets(cfg SocketsConfig) *Sockets {
+	return &Sockets{
 		id:      newUUID(),
 		master:  true,
 		host:    cfg.Host,
@@ -59,18 +60,16 @@ func newMasterSockets(cfg SocketsConfig) (*Sockets, error) {
 		pubPort: cfg.PubPort,
 		updates: map[string]Message{},
 	}
-	return s, nil
 }
 
-func NewClientSockets(cfg SocketsConfig) (*Sockets, error) {
-	s := &Sockets{
+func NewClientSockets(cfg SocketsConfig) *Sockets {
+	return &Sockets{
 		master:  false,
 		id:      newUUID(),
 		host:    cfg.Host,
 		subPort: cfg.SubPort,
 		pubPort: cfg.PubPort,
 	}
-	return s, nil
 }
 
 func (s *Sockets) Send(cmd string) {
@@ -83,6 +82,9 @@ func (s *Sockets) Send(cmd string) {
 }
 
 func (s *Sockets) SendMessage(msg Message) {
+	if s.pubChan == nil {
+		s.connect()
+	}
 	msg.From = s.id
 	b, err := json.Marshal(msg)
 	if err != nil {
@@ -96,6 +98,9 @@ func (s *Sockets) SendMessage(msg Message) {
 }
 
 func (s *Sockets) Recv() *Message {
+	if s.subChan == nil {
+		s.connect()
+	}
 	data, err := s.sub.Recv()
 	if err != nil {
 		panic(err)
@@ -137,10 +142,8 @@ func (s *Sockets) SendStatusRequest() (map[string]Message, error) {
 //sends it to external listeners (like a UI), and listens for
 //external messages and sends them along to the internal system.
 func (s *Sockets) Start(in <-chan Message, out chan<- Message) {
-	err := s.getSockets()
-	defer s.Close()
-	if err != nil {
-		log.Println("zmq sockets had a problem", err)
+	if err := s.connect(); err != nil {
+		lg.Fatal(err)
 	}
 	for {
 		select {
@@ -157,7 +160,7 @@ func (s *Sockets) Start(in <-chan Message, out chan<- Message) {
 				msg.From = s.id
 				s.sendMessageOut(msg)
 			}
-		case err = <-s.subChan.Errors():
+		case err := <-s.subChan.Errors():
 			log.Println(err)
 		}
 	}
@@ -233,7 +236,7 @@ func (s *Sockets) Close() {
 	s.ctx.Close()
 }
 
-func (s *Sockets) getSockets() (err error) {
+func (s *Sockets) connect() (err error) {
 	if s.master {
 		err = s.getMasterChannels()
 	} else {
@@ -241,6 +244,7 @@ func (s *Sockets) getSockets() (err error) {
 		s.subChan = s.sub.Channels()
 		s.pubChan = s.pub.Channels()
 	}
+	time.Sleep(100 * time.Millisecond)
 	return err
 }
 

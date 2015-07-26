@@ -77,28 +77,23 @@ var _ = Describe("Companies", func() {
 			}).Should(BeTrue())
 		})
 		It("starts up swarm of gogadgets apps", func() {
-			fo := &FakeOutput{}
-			pump := &gogadgets.Gadget{
-				Location:   "tank",
-				Name:       "pump",
-				OnCommand:  fmt.Sprintf("turn on %s %s", "tank", "pump"),
-				OffCommand: fmt.Sprintf("turn off %s %s", "tank", "pump"),
-				Output:     fo,
-				UID:        fmt.Sprintf("%s %s", "tank", "pump"),
+			fo1 := &FakeOutput{}
+			fo2 := &FakeOutput{}
+			light1 := &gogadgets.Gadget{
+				Location:   "living room",
+				Name:       "light",
+				OnCommand:  fmt.Sprintf("turn on %s %s", "living room", "light"),
+				OffCommand: fmt.Sprintf("turn off %s %s", "living room", "light"),
+				Output:     fo1,
+				UID:        fmt.Sprintf("%s %s", "living room", "light"),
 			}
-			location := "tank"
-			name := "switch"
-			poller := &FakePoller{}
-			trigger := &gogadgets.Gadget{
-				Location: location,
-				Name:     name,
-				Input: &gogadgets.Switch{
-					GPIO:      poller,
-					Value:     5.0,
-					TrueValue: 5.0,
-					Units:     "liters",
-				},
-				UID: fmt.Sprintf("%s %s", location, name),
+			light2 := &gogadgets.Gadget{
+				Location:   "kitchen",
+				Name:       "light",
+				OnCommand:  fmt.Sprintf("turn on %s %s", "kitchen", "light"),
+				OffCommand: fmt.Sprintf("turn off %s %s", "kitchen", "light"),
+				Output:     fo2,
+				UID:        fmt.Sprintf("%s %s", "kitchen room", "light"),
 			}
 
 			cfg := &gogadgets.Config{
@@ -116,30 +111,47 @@ var _ = Describe("Companies", func() {
 			}
 
 			a := gogadgets.NewApp(cfg)
-			a.AddGadget(trigger)
+			a.AddGadget(light1)
 			a2 := gogadgets.NewApp(cfg2)
-			a2.AddGadget(pump)
+			a2.AddGadget(light2)
 
 			input := make(chan gogadgets.Message)
 			go a.GoStart(input)
+			time.Sleep(100 * time.Millisecond)
 			go a2.Start()
+
+			Expect(fo1.on).To(BeFalse())
+			Expect(fo2.on).To(BeFalse())
 
 			msg := gogadgets.Message{
 				Sender: "the test",
 				Type:   "command",
-				Body:   "turn on tank pump",
+				Body:   "turn on living room light",
 			}
-
-			Expect(fo.on).To(BeFalse())
 
 			time.Sleep(500 * time.Millisecond)
 
 			input <- msg
 
 			Eventually(func() bool {
-				return fo.on
+				return fo1.on
 			}).Should(BeTrue())
+			Expect(fo2.on).To(BeFalse())
 
+			msg = gogadgets.Message{
+				Sender: "the test",
+				Type:   "command",
+				Body:   "turn on kitchen light",
+			}
+
+			Expect(fo1.on).To(BeTrue())
+			Expect(fo2.on).To(BeFalse())
+
+			input <- msg
+
+			Eventually(func() bool {
+				return fo2.on
+			}).Should(BeTrue())
 		})
 		It("loads a json config file", func() {
 			s := `{

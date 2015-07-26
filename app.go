@@ -69,14 +69,13 @@ func (a *App) Start() {
 	a.GoStart(x)
 }
 
-//GoStart enables a gadgets system to be started
-//by either a test suite that needs it to run
-//as a goroutine or a client app that starts
-//gogadget systems upon a command from a central
-//web app.
+// GoStart enables a gadgets system to be started
+// by either a test suite that needs it to run
+// as a goroutine or a client app that starts
+// gogadget systems upon a command from a central
+// web app.
 func (a *App) GoStart(input <-chan Message) {
 	a.Gadgets = append(a.Gadgets, &MethodRunner{})
-	var sockets *Sockets
 
 	cfg := SocketsConfig{
 		Host:    a.Host,
@@ -84,10 +83,7 @@ func (a *App) GoStart(input <-chan Message) {
 		SubPort: a.SubPort,
 		Master:  a.Master,
 	}
-	sockets, err := NewSockets(cfg)
-	if err != nil {
-		lg.Fatal("couldn't get sockets", err)
-	}
+	sockets := NewSockets(cfg)
 	a.Gadgets = append(a.Gadgets, sockets)
 	collect := make(chan Message)
 	channels := make(map[string]chan Message)

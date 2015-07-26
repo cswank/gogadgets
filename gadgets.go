@@ -348,8 +348,9 @@ func (g *Gadget) sendUpdate(val *Value) {
 		value = g.Input.GetValue()
 	} else {
 		value = &Value{
-			Units: g.units,
-			Value: g.status,
+			Units:  g.units,
+			Value:  g.status,
+			Output: g.Output.Status(),
 		}
 	}
 	msg := Message{
