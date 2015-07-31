@@ -12,6 +12,13 @@ import (
 	. "github.com/onsi/gomega"
 )
 
+type fakeLogger struct {
+	f bool
+}
+
+func (f *fakeLogger) Println(v ...interface{}) {}
+func (f *fakeLogger) Fatal(v ...interface{})   { f.f = true }
+
 func init() {
 	rand.Seed(time.Now().Unix())
 }
@@ -19,9 +26,11 @@ func init() {
 var _ = Describe("Companies", func() {
 	var (
 		port int
+		lg   *fakeLogger
 	)
 	BeforeEach(func() {
 		port = 1024 + rand.Intn(65535-1024)
+		lg = &fakeLogger{}
 	})
 	AfterEach(func() {
 	})
@@ -55,6 +64,7 @@ var _ = Describe("Companies", func() {
 				Host:    "localhost",
 				SubPort: port,
 				PubPort: port + 1,
+				Logger:  lg,
 			}
 			a := gogadgets.NewApp(cfg)
 			a.AddGadget(p)
@@ -101,6 +111,7 @@ var _ = Describe("Companies", func() {
 				Host:    "localhost",
 				SubPort: port,
 				PubPort: port + 1,
+				Logger:  lg,
 			}
 
 			cfg2 := &gogadgets.Config{
@@ -108,6 +119,7 @@ var _ = Describe("Companies", func() {
 				Host:    "localhost",
 				SubPort: port,
 				PubPort: port + 1,
+				Logger:  lg,
 			}
 
 			a := gogadgets.NewApp(cfg)

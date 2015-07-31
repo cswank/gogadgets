@@ -8,12 +8,8 @@ import (
 )
 
 var (
-	lg *log.Logger
+	lg Logger
 )
-
-func init() {
-	lg = log.New(os.Stdout, "", log.Ldate|log.Ltime)
-}
 
 //App holds all the gadgets and handles passing Messages
 //to them, and receiving Messages from them.  It is the
@@ -30,6 +26,11 @@ type App struct {
 //path to a json file or a Config object itself.
 func NewApp(cfg interface{}) *App {
 	config := GetConfig(cfg)
+	if config.Logger != nil {
+		lg = config.Logger
+	} else {
+		lg = log.New(os.Stdout, "", log.Ldate|log.Ltime)
+	}
 	if config.PubPort == 0 {
 		config.SubPort = 6111
 		config.PubPort = 6112

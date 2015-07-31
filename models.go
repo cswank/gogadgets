@@ -1,6 +1,7 @@
 package gogadgets
 
 import (
+	"sync"
 	"time"
 )
 
@@ -13,6 +14,11 @@ var (
 	STATUS       = "status"
 	METHODUPDATE = "method update"
 )
+
+type Logger interface {
+	Println(...interface{})
+	Fatal(...interface{})
+}
 
 type GoGadget interface {
 	GetUID() string
@@ -73,18 +79,21 @@ type Message struct {
 }
 
 type Pin struct {
-	Type      string                 `json:"type,omitempty"`
-	Port      string                 `json:"port,omitempty"`
-	Pin       string                 `json:"pin,omitempty"`
-	Direction string                 `json:"direction,omitempty"`
-	Edge      string                 `json:"edge,omitempty"`
-	OneWireId string                 `json:"onewireId,omitempty"`
-	Value     interface{}            `json:"value,omitempty"`
-	Units     string                 `json:"units,omitempty"`
-	Platform  string                 `json:"platform,omitempty"`
-	Frequency int                    `json:"frequency,omitempty"`
-	Args      map[string]interface{} `json:"args,omitempty"`
-	Pins      map[string]Pin         `json:"pins,omitempty"`
+	Type        string                 `json:"type,omitempty"`
+	Port        string                 `json:"port,omitempty"`
+	Pin         string                 `json:"pin,omitempty"`
+	Direction   string                 `json:"direction,omitempty"`
+	Edge        string                 `json:"edge,omitempty"`
+	OneWirePath string                 `json:"onewirePath,omitempty"`
+	OneWireId   string                 `json:"onewireId,omitempty"`
+	Sleep       time.Duration          `json:"sleep,omitempty"`
+	Value       interface{}            `json:"value,omitempty"`
+	Units       string                 `json:"units,omitempty"`
+	Platform    string                 `json:"platform,omitempty"`
+	Frequency   int                    `json:"frequency,omitempty"`
+	Args        map[string]interface{} `json:"args,omitempty"`
+	Pins        map[string]Pin         `json:"pins,omitempty"`
+	Lock        sync.Mutex             `json:"-"`
 }
 
 type GadgetConfig struct {
@@ -102,6 +111,7 @@ type Config struct {
 	PubPort int            `json:"pubPort,omitempty"`
 	SubPort int            `json:"subPort,omitempty"`
 	Gadgets []GadgetConfig `json:"gadgets,omitempty"`
+	Logger  Logger         `json:"-"`
 }
 
 type ConfigHelper struct {
