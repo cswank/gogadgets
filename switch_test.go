@@ -1,5 +1,53 @@
 package gogadgets_test
 
+import (
+	"math/rand"
+	"time"
+
+	"github.com/cswank/gogadgets"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+)
+
+func init() {
+	rand.Seed(time.Now().Unix())
+}
+
+var _ = Describe("Switch", func() {
+	var (
+		out chan gogadgets.Message
+		in  chan gogadgets.Value
+		s   *gogadgets.Switch
+	)
+
+	BeforeEach(func() {
+		poller := &FakePoller{}
+		s = &gogadgets.Switch{
+			GPIO:      poller,
+			Value:     5.0,
+			TrueValue: 5.0,
+			Units:     "liters",
+		}
+		out = make(chan gogadgets.Message)
+		in = make(chan gogadgets.Value)
+		go s.Start(out, in)
+	})
+	Describe("All's good", func() {
+		It("creates a thermometer", func() {
+			val := <-in
+			Expect(val.Value.(float64)).To(Equal(5.0))
+			val = <-in
+			Expect(val.Value.(float64)).To(Equal(0.0))
+			out <- gogadgets.Message{
+				Type: "command",
+				Body: "shutdown",
+			}
+			v := s.GetValue()
+			Expect(v.Value.(float64)).To(Equal(0.0))
+		})
+	})
+})
+
 // import (
 // 	"testing"
 // )
