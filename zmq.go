@@ -83,7 +83,7 @@ func (s *Sockets) Send(cmd string) {
 
 func (s *Sockets) SendMessage(msg Message) {
 	if s.pubChan == nil {
-		s.connect()
+		s.Connect()
 	}
 	msg.From = s.id
 	b, err := json.Marshal(msg)
@@ -99,7 +99,7 @@ func (s *Sockets) SendMessage(msg Message) {
 
 func (s *Sockets) Recv() *Message {
 	if s.subChan == nil {
-		s.connect()
+		s.Connect()
 	}
 	data, err := s.sub.Recv()
 	if err != nil {
@@ -142,7 +142,7 @@ func (s *Sockets) SendStatusRequest() (map[string]Message, error) {
 //sends it to external listeners (like a UI), and listens for
 //external messages and sends them along to the internal system.
 func (s *Sockets) Start(in <-chan Message, out chan<- Message) {
-	if err := s.connect(); err != nil {
+	if err := s.Connect(); err != nil {
 		lg.Fatal(err)
 	}
 	for {
@@ -236,7 +236,7 @@ func (s *Sockets) Close() {
 	s.ctx.Close()
 }
 
-func (s *Sockets) connect() (err error) {
+func (s *Sockets) Connect() (err error) {
 	if s.master {
 		err = s.getMasterChannels()
 	} else {
