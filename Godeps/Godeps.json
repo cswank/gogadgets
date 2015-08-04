@@ -1,0 +1,28 @@
+{
+	"ImportPath": "github.com/cswank/gogadgets",
+	"GoVersion": "go1.4.2",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/onsi/ginkgo",
+			"Comment": "v1.2.0-beta-21-gceefce2",
+			"Rev": "ceefce26022ceef572770cfed3a3d58f400cadb1"
+		},
+		{
+			"ImportPath": "github.com/onsi/gomega",
+			"Comment": "v1.0-50-gd6c945f",
+			"Rev": "d6c945f9fdbf6cad99e85b0feff591caa268e0db"
+		},
+		{
+			"ImportPath": "github.com/vaughan0/go-zmq",
+			"Rev": "425c333a2ab9e2615ff4ff7deced6e37730b544e"
+		},
+		{
+			"ImportPath": "labix.org/v2/mgo",
+			"Comment": "287",
+			"Rev": "gustavo@niemeyer.net-20140501184651-975yyw9ipld92pji"
+		}
+	]
+}
