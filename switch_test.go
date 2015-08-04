@@ -32,8 +32,8 @@ var _ = Describe("Switch", func() {
 		in = make(chan gogadgets.Value)
 		go s.Start(out, in)
 	})
-	Describe("All's good", func() {
-		It("creates a thermometer", func() {
+	Describe("when all's good", func() {
+		It("does it's thing", func() {
 			val := <-in
 			Expect(val.Value.(float64)).To(Equal(5.0))
 			val = <-in
@@ -47,39 +47,6 @@ var _ = Describe("Switch", func() {
 		})
 	})
 })
-
-// import (
-// 	"testing"
-// )
-
-// func TestSwitch(t *testing.T) {
-// 	poller := &FakePoller{}
-// 	s := &Switch{
-// 		GPIO:      poller,
-// 		Value:     5.0,
-// 		TrueValue: 5.0,
-// 		Units:     "liters",
-// 	}
-// 	out := make(chan Message)
-// 	in := make(chan Value)
-// 	go s.Start(out, in)
-// 	val := <-in
-// 	if val.Value.(float64) != 5.0 {
-// 		t.Error("should have been 5.0", val)
-// 	}
-// 	val = <-in
-// 	if val.Value.(float64) != 0.0 {
-// 		t.Error("should have been 0.0", val)
-// 	}
-// 	out <- Message{
-// 		Type: "command",
-// 		Body: "shutdown",
-// 	}
-// 	v := s.GetValue()
-// 	if v.Value.(float64) != 0.0 {
-// 		t.Error("should have been 0.0", v)
-// 	}
-// }
 
 // func TestBoolSwitch(t *testing.T) {
 // 	poller := &FakePoller{}
