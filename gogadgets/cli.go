@@ -64,7 +64,8 @@ func getStatus() {
 		PubPort: 6112,
 		Master:  false,
 	}
-	s, err := gogadgets.NewClientSockets(cfg)
+	s := gogadgets.NewClientSockets(cfg)
+	err := s.Connect()
 	defer s.Close()
 	if err != nil {
 		panic(err)
@@ -87,7 +88,8 @@ func sendCommand() {
 		PubPort: 6112,
 		Master:  false,
 	}
-	s, err := gogadgets.NewClientSockets(cfg)
+	s := gogadgets.NewClientSockets(cfg)
+	err := s.Connect()
 	defer s.Close()
 	if err != nil {
 		panic(err)
@@ -110,10 +112,12 @@ func listen() {
 		PubPort: 6112,
 		Master:  false,
 	}
-	s, err := gogadgets.NewSockets(cfg)
+	s := gogadgets.NewSockets(cfg)
+	err := s.Connect()
 	if err != nil {
 		panic(err)
 	}
+	defer s.Close()
 	time.Sleep(100 * time.Millisecond)
 	log.Println("listening for new gadgets")
 	msg := s.Recv()
@@ -126,7 +130,6 @@ func listen() {
 	if err != nil {
 		panic(err)
 	}
-	s.Close()
 	time.Sleep(100 * time.Millisecond)
 	runGadgets()
 }
