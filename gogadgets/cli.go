@@ -66,10 +66,11 @@ func getStatus() {
 	}
 	s := gogadgets.NewClientSockets(cfg)
 	err := s.Connect()
-	defer s.Close()
 	if err != nil {
 		panic(err)
 	}
+	defer s.Close()
+
 	time.Sleep(100 * time.Millisecond)
 	status, err := s.SendStatusRequest()
 	time.Sleep(100 * time.Millisecond)

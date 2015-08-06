@@ -37,6 +37,7 @@ func NewApp(cfg interface{}) *App {
 	}
 	if config.Host == "" {
 		config.Host = "localhost"
+		config.Master = true
 	}
 	gadgets := GetGadgets(config.Gadgets)
 	return &App{

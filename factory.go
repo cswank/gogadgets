@@ -20,6 +20,7 @@ func NewAppFactory() *AppFactory {
 			"heater":   NewHeater,
 			"cooler":   NewCooler,
 			"recorder": NewRecorder,
+			"file":     NewFile,
 		},
 	}
 	return a
@@ -106,6 +107,8 @@ func NewOutputDevice(pin *Pin) (dev OutputDevice, err error) {
 		dev, err = NewPWM(pin)
 	} else if pin.Type == "motor" {
 		dev, err = NewMotor(pin)
+	} else if pin.Type == "file" {
+		dev, err = NewFile(pin)
 	} else {
 		dev, err = nil, errors.New("invalid pin type")
 	}
