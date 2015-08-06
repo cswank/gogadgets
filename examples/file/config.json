@@ -1,0 +1,14 @@
+{
+    "gadgets": [
+        {
+            "location": "lab",
+            "name": "file",
+            "pin": {
+                "type": "file",
+                "args": {
+                    "path": "/tmp/g.txt"
+                }
+            }
+        }
+    ]
+}
