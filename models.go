@@ -84,6 +84,7 @@ type Pin struct {
 	Pin         string                 `json:"pin,omitempty"`
 	Direction   string                 `json:"direction,omitempty"`
 	Edge        string                 `json:"edge,omitempty"`
+	ActiveLow   string                 `json:"active_low,omitempty"`
 	OneWirePath string                 `json:"onewirePath,omitempty"`
 	OneWireId   string                 `json:"onewireId,omitempty"`
 	Sleep       time.Duration          `json:"sleep,omitempty"`

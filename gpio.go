@@ -31,8 +31,10 @@ type GPIO struct {
 	directionPath string
 	valuePath     string
 	edgePath      string
+	activeLowPath string
 	direction     string
 	edge          string
+	activeLow     string
 	fd            int
 	fdSet         *syscall.FdSet
 	buf           []byte
@@ -66,7 +68,9 @@ func NewGPIO(pin *Pin) (OutputDevice, error) {
 		directionPath: path.Join(GPIO_DEV_PATH, fmt.Sprintf("gpio%s", export), "direction"),
 		edgePath:      path.Join(GPIO_DEV_PATH, fmt.Sprintf("gpio%s", export), "edge"),
 		valuePath:     path.Join(GPIO_DEV_PATH, fmt.Sprintf("gpio%s", export), "value"),
+		activeLowPath: path.Join(GPIO_DEV_PATH, fmt.Sprintf("gpio%s", export), "active_low"),
 		direction:     pin.Direction,
+		activeLow:     pin.ActiveLow,
 		edge:          pin.Edge,
 	}
 	err := g.Init()
@@ -81,19 +85,29 @@ func (g *GPIO) Config() ConfigHelper {
 }
 
 func (g *GPIO) Init() error {
-	var err error
 	if !utils.FileExists(g.directionPath) {
-		err = g.writeValue(g.exportPath, g.export)
-	}
-	if err == nil {
-		err = g.writeValue(g.directionPath, g.direction)
-		if err == nil && g.direction == "out" {
-			err = g.writeValue(g.valuePath, "0")
-		} else if err == nil && g.edge != "" {
-			err = g.writeValue(g.edgePath, g.edge)
+		if err := g.writeValue(g.exportPath, g.export); err != nil {
+			return err
 		}
 	}
-	return err
+	if g.activeLow == "1" {
+		if err := g.writeValue(g.activeLowPath, g.activeLow); err != nil {
+			return err
+		}
+	}
+	if err := g.writeValue(g.directionPath, g.direction); err != nil {
+		return err
+	}
+	if g.direction == "out" {
+		if err := g.writeValue(g.valuePath, "0"); err != nil {
+			return err
+		}
+	} else if g.edge != "" {
+		if err := g.writeValue(g.edgePath, g.edge); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (g *GPIO) Update(msg *Message) {
