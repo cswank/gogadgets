@@ -58,7 +58,7 @@ func (s *Server) GetUID() string {
 func (s *Server) startServer() {
 	r := mux.NewRouter()
 	r.HandleFunc("/gadgets", s.status).Methods("GET")
-	r.HandleFunc("/gadgets", s.update).Methods("PUT")
+	r.HandleFunc("/gadgets", s.update).Methods("PUT", "POST")
 
 	http.Handle("/", r)
 

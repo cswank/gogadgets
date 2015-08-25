@@ -1,6 +1,7 @@
 package gogadgets_test
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"math/rand"
@@ -59,7 +60,7 @@ var _ = Describe("server", func() {
 		}
 	})
 	Describe("when all's good", func() {
-		FIt("sends the status", func() {
+		It("sends the status", func() {
 			r, err := http.Get(addr)
 
 			Expect(err).To(BeNil())
@@ -77,6 +78,25 @@ var _ = Describe("server", func() {
 			msg, ok = msgs["hall led"]
 			Expect(ok).To(BeTrue())
 			Expect(msg.Value.Value).To(BeFalse())
+		})
+		FIt("accepts a message from the outside world", func() {
+			msg := gogadgets.Message{
+				Type:   gogadgets.COMMAND,
+				Sender: "me",
+				Body:   "turn on lab led",
+			}
+
+			buf := &bytes.Buffer{}
+			enc := json.NewEncoder(buf)
+			err := enc.Encode(&msg)
+			Expect(err).To(BeNil())
+
+			r, err := http.Post(addr, "application/json", buf)
+			Expect(err).To(BeNil())
+			Expect(r.StatusCode).To(Equal(http.StatusOK))
+
+			m := <-in
+			Expect(m.Body).To(Equal("turn on lab led"))
 		})
 	})
 })
