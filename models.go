@@ -17,6 +17,7 @@ var (
 
 type Logger interface {
 	Println(...interface{})
+	Printf(string, ...interface{})
 	Fatal(...interface{})
 }
 
@@ -109,8 +110,7 @@ type GadgetConfig struct {
 type Config struct {
 	Master  bool           `json:"master,omitempty"`
 	Host    string         `json:"host,omitempty"`
-	PubPort int            `json:"pubPort,omitempty"`
-	SubPort int            `json:"subPort,omitempty"`
+	Port    int            `json:"port,omitempty"`
 	Gadgets []GadgetConfig `json:"gadgets,omitempty"`
 	Logger  Logger         `json:"-"`
 }

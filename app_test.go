@@ -16,14 +16,15 @@ type fakeLogger struct {
 	f bool
 }
 
-func (f *fakeLogger) Println(v ...interface{}) {}
-func (f *fakeLogger) Fatal(v ...interface{})   { f.f = true }
+func (f *fakeLogger) Println(v ...interface{})          {}
+func (f *fakeLogger) Printf(s string, v ...interface{}) {}
+func (f *fakeLogger) Fatal(v ...interface{})            { f.f = true }
 
 func init() {
 	rand.Seed(time.Now().Unix())
 }
 
-var _ = Describe("Companies", func() {
+var _ = Describe("gogadgets", func() {
 	var (
 		port int
 		lg   *fakeLogger
@@ -60,11 +61,10 @@ var _ = Describe("Companies", func() {
 				UID: fmt.Sprintf("%s %s", location, name),
 			}
 			cfg := &gogadgets.Config{
-				Master:  true,
-				Host:    "localhost",
-				SubPort: port,
-				PubPort: port + 1,
-				Logger:  lg,
+				Master: true,
+				Host:   "localhost",
+				Port:   port,
+				Logger: lg,
 			}
 			a := gogadgets.NewApp(cfg)
 			a.AddGadget(p)
@@ -107,19 +107,17 @@ var _ = Describe("Companies", func() {
 			}
 
 			cfg := &gogadgets.Config{
-				Master:  true,
-				Host:    "localhost",
-				SubPort: port,
-				PubPort: port + 1,
-				Logger:  lg,
+				Master: true,
+				Host:   "localhost",
+				Port:   port,
+				Logger: lg,
 			}
 
 			cfg2 := &gogadgets.Config{
-				Master:  false,
-				Host:    "localhost",
-				SubPort: port,
-				PubPort: port + 1,
-				Logger:  lg,
+				Master: false,
+				Host:   "localhost",
+				Port:   port,
+				Logger: lg,
 			}
 
 			a := gogadgets.NewApp(cfg)

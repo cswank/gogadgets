@@ -18,8 +18,7 @@ type App struct {
 	Gadgets []GoGadget
 	Master  bool
 	Host    string
-	PubPort int
-	SubPort int
+	Port    int
 }
 
 //NewApp creates a new Gadgets system.  The cfg argument can be a
@@ -31,9 +30,8 @@ func NewApp(cfg interface{}) *App {
 	} else {
 		lg = log.New(os.Stdout, "", log.Ldate|log.Ltime)
 	}
-	if config.PubPort == 0 {
-		config.SubPort = 6111
-		config.PubPort = 6112
+	if config.Port == 0 {
+		config.Port = 6111
 	}
 	if config.Host == "" {
 		config.Host = "localhost"
@@ -43,8 +41,7 @@ func NewApp(cfg interface{}) *App {
 	return &App{
 		Master:  config.Master,
 		Host:    config.Host,
-		PubPort: config.PubPort,
-		SubPort: config.SubPort,
+		Port:    config.Port,
 		Gadgets: gadgets,
 	}
 }
@@ -79,14 +76,9 @@ func (a *App) Start() {
 func (a *App) GoStart(input <-chan Message) {
 	a.Gadgets = append(a.Gadgets, &MethodRunner{})
 
-	cfg := SocketsConfig{
-		Host:    a.Host,
-		PubPort: a.PubPort,
-		SubPort: a.SubPort,
-		Master:  a.Master,
-	}
-	sockets := NewSockets(cfg)
-	a.Gadgets = append(a.Gadgets, sockets)
+	srv := NewServer(a.Host, a.Port, a.Master, lg)
+
+	a.Gadgets = append(a.Gadgets, srv)
 	collect := make(chan Message)
 	channels := make(map[string]chan Message)
 	for _, gadget := range a.Gadgets {
