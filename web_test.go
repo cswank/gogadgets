@@ -17,6 +17,16 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
+var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
+func randString() string {
+	b := make([]rune, 10)
+	for i := range b {
+		b[i] = letterRunes[rand.Intn(len(letterRunes))]
+	}
+	return string(b)
+}
+
 var _ = Describe("server", func() {
 	var (
 		port int
@@ -66,6 +76,7 @@ var _ = Describe("server", func() {
 			Expect(err).To(BeNil())
 			defer r.Body.Close()
 
+			Expect(r.StatusCode).To(Equal(http.StatusOK))
 			msgs := map[string]gogadgets.Message{}
 			dec := json.NewDecoder(r.Body)
 			err = dec.Decode(&msgs)
@@ -79,7 +90,7 @@ var _ = Describe("server", func() {
 			Expect(ok).To(BeTrue())
 			Expect(msg.Value.Value).To(BeFalse())
 		})
-		FIt("accepts a message from the outside world", func() {
+		It("accepts a message from the outside world", func() {
 			msg := gogadgets.Message{
 				Type:   gogadgets.COMMAND,
 				Sender: "me",
@@ -92,7 +103,9 @@ var _ = Describe("server", func() {
 			Expect(err).To(BeNil())
 
 			r, err := http.Post(addr, "application/json", buf)
+
 			Expect(err).To(BeNil())
+			Expect(r.StatusCode).To(Equal(http.StatusOK))
 			Expect(r.StatusCode).To(Equal(http.StatusOK))
 
 			m := <-in

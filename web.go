@@ -12,6 +12,7 @@ import (
 type Server struct {
 	host     string
 	port     int
+	prefix   string
 	master   bool
 	lg       Logger
 	external chan Message
@@ -60,9 +61,7 @@ func (s *Server) startServer() {
 	r.HandleFunc("/gadgets", s.status).Methods("GET")
 	r.HandleFunc("/gadgets", s.update).Methods("PUT", "POST")
 
-	http.Handle("/", r)
-
-	s.lg.Printf("listening on 0.0.0.0:%d/n", s.port)
+	s.lg.Printf("listening on 0.0.0.0:%d\n", s.port)
 	err := http.ListenAndServe(fmt.Sprintf(":%d", s.port), r)
 	if err != nil {
 		s.lg.Fatal(err)
