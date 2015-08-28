@@ -18,11 +18,12 @@ const (
 )
 
 var (
-	host   = flag.String("h", "localhost", "Name of Host")
-	config = flag.String("g", "", "Path to a Gadgets config file")
-	cmd    = flag.String("c", "", "a Robot Command Language string")
-	status = flag.Bool("s", false, "get the status of a gadgets system")
-	addr   string
+	host    = flag.String("h", "localhost", "Name of Host")
+	config  = flag.String("g", "", "Path to a Gadgets config file")
+	cmd     = flag.String("c", "", "a Robot Command Language string")
+	status  = flag.Bool("s", false, "get the status of a gadgets system")
+	verbose = flag.Bool("v", false, "get the status of a gadgets system")
+	addr    string
 )
 
 func main() {
@@ -32,6 +33,8 @@ func main() {
 		sendCommand()
 	} else if *status {
 		getStatus()
+	} else if *verbose {
+		getVerbose()
 	} else {
 		runGadgets()
 	}
@@ -59,6 +62,33 @@ func getConfig() string {
 }
 
 func getStatus() {
+
+	r, err := http.Get(addr)
+	if err != nil {
+		log.Fatal("err", err)
+	}
+	var s map[string]gogadgets.Message
+	dec := json.NewDecoder(r.Body)
+	if err := dec.Decode(&s); err != nil {
+		log.Fatal("err", err)
+	}
+
+	v := map[string]map[string]gogadgets.Value{}
+
+	for _, msg := range s {
+		l, ok := v[msg.Location]
+		if !ok {
+			l = map[string]gogadgets.Value{}
+		}
+		l[msg.Name] = msg.Value
+		v[msg.Location] = l
+	}
+
+	d, _ := json.MarshalIndent(v, "", "  ")
+	fmt.Println(string(d))
+}
+
+func getVerbose() {
 
 	r, err := http.Get(addr)
 	if err != nil {
