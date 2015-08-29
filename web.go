@@ -69,16 +69,22 @@ func (s *Server) send(msg Message) {
 	}
 	s.clientsLock.Lock()
 	for host := range s.clients {
-		var buf bytes.Buffer
-		enc := json.NewEncoder(&buf)
-		enc.Encode(msg)
-		addr := fmt.Sprintf("%s:6111/gadgets", host)
-		r, err := http.Post(addr, "application/json", &buf)
-		if err != nil || r.StatusCode != http.StatusOK {
-			delete(s.clients, host)
-		}
+		go s.doSend(host, msg)
 	}
 	s.clientsLock.Unlock()
+}
+
+func (s *Server) doSend(host string, msg Message) {
+	var buf bytes.Buffer
+	enc := json.NewEncoder(&buf)
+	enc.Encode(msg)
+	addr := fmt.Sprintf("%s/gadgets", host)
+	r, err := http.Post(addr, "application/json", &buf)
+	if err != nil || r.StatusCode != http.StatusOK {
+		s.clientsLock.Lock()
+		delete(s.clients, host)
+		s.clientsLock.Unlock()
+	}
 }
 
 func (s *Server) setSeen(msg Message) {

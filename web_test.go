@@ -124,7 +124,7 @@ var _ = Describe("server", func() {
 			}))
 			defer ts.Close()
 
-			a := map[string]string{"address": "127.0.0.1:888"}
+			a := map[string]string{"address": ts.URL}
 			buf := &bytes.Buffer{}
 			enc := json.NewEncoder(buf)
 			enc.Encode(&a)
@@ -152,6 +152,11 @@ var _ = Describe("server", func() {
 				Body:   "turn on lab led",
 			}
 			out <- msg
+
+			Eventually(func() []gogadgets.Message {
+				return msgs
+			}).Should(HaveLen(1))
+			Expect(msgs[0].Body).To(Equal("turn on lab led"))
 		})
 	})
 })
