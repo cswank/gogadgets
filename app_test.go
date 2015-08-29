@@ -61,7 +61,7 @@ var _ = Describe("gogadgets", func() {
 				UID: fmt.Sprintf("%s %s", location, name),
 			}
 			cfg := &gogadgets.Config{
-				Master: true,
+				Master: "",
 				Host:   "localhost",
 				Port:   port,
 				Logger: lg,

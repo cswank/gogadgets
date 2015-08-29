@@ -13,9 +13,10 @@ import (
 
 type Server struct {
 	host        string
+	master      string
+	isMaster    bool
 	port        int
 	prefix      string
-	master      bool
 	lg          Logger
 	external    chan Message
 	internal    chan Message
@@ -28,22 +29,33 @@ type Server struct {
 	clients     map[string]bool
 }
 
-func NewServer(host string, port int, master bool, lg Logger) *Server {
+func NewServer(host, master string, port int, lg Logger) *Server {
+	var isMaster bool
+	clients := map[string]bool{}
+	if master == "" {
+		isMaster = true
+	} else {
+		clients = map[string]bool{
+			master: true,
+		}
+	}
 	return &Server{
-		host:     host,
-		port:     port,
 		master:   master,
+		host:     host,
+		isMaster: isMaster,
+		port:     port,
 		lg:       lg,
 		updates:  map[string]Message{},
 		id:       "server",
 		external: make(chan Message),
 		seen:     map[string]time.Time{},
-		clients:  map[string]bool{},
+		clients:  clients,
 	}
 }
 
 func (s *Server) Start(i <-chan Message, o chan<- Message) {
 
+	go s.register()
 	go s.startServer()
 	go s.cleanup()
 
@@ -125,9 +137,11 @@ func (s *Server) startServer() {
 	r := mux.NewRouter()
 	r.HandleFunc("/gadgets", s.status).Methods("GET")
 	r.HandleFunc("/gadgets", s.update).Methods("PUT", "POST")
-	r.HandleFunc("/clients", s.setClient).Methods("POST")
-	r.HandleFunc("/clients", s.getClients).Methods("GET")
-	r.HandleFunc("/clients", s.removeClient).Methods("DELETE")
+	if s.isMaster {
+		r.HandleFunc("/clients", s.setClient).Methods("POST")
+		r.HandleFunc("/clients", s.getClients).Methods("GET")
+		r.HandleFunc("/clients", s.removeClient).Methods("DELETE")
+	}
 
 	s.lg.Printf("listening on 0.0.0.0:%d\n", s.port)
 	err := http.ListenAndServe(fmt.Sprintf(":%d", s.port), r)
@@ -183,4 +197,22 @@ func (s *Server) update(w http.ResponseWriter, r *http.Request) {
 		msg.UUID = getUUID()
 	}
 	s.external <- msg
+}
+
+func (s *Server) register() {
+	if s.isMaster {
+		return
+	}
+	addr := fmt.Sprintf("%s/clients", s.master)
+	a := map[string]string{"address": fmt.Sprintf("%s:%d", s.host, s.port)}
+	for {
+		buf := &bytes.Buffer{}
+		enc := json.NewEncoder(buf)
+		enc.Encode(&a)
+		r, err := http.Post(addr, "application/json", buf)
+		if err == nil && r.StatusCode == http.StatusOK {
+			return
+		}
+		time.Sleep(10 * time.Second)
+	}
 }

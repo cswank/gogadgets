@@ -37,16 +37,18 @@ var _ = Describe("server", func() {
 		in      chan gogadgets.Message
 		s       *gogadgets.Server
 		lg      *fakeLogger
+		sink    []gogadgets.Message
 	)
 
 	BeforeEach(func() {
+		sink = []gogadgets.Message{}
 		lg = &fakeLogger{}
 
 		port = 1024 + rand.Intn(65535-1024)
 		addr = fmt.Sprintf("http://localhost:%d/gadgets", port)
 		cliAddr = fmt.Sprintf("http://localhost:%d/clients", port)
 
-		s = gogadgets.NewServer("localhost", port, true, lg)
+		s = gogadgets.NewServer("", "", port, lg)
 
 		in = make(chan gogadgets.Message)
 		out = make(chan gogadgets.Message)
@@ -105,16 +107,18 @@ var _ = Describe("server", func() {
 			err := enc.Encode(&msg)
 			Expect(err).To(BeNil())
 
-			time.Sleep(100 * time.Millisecond)
-			r, err := http.Post(addr, "application/json", buf)
-
-			Expect(err).To(BeNil())
-			Expect(r.StatusCode).To(Equal(http.StatusOK))
-			r.Body.Close()
+			Eventually(func() int {
+				r, err := http.Post(addr, "application/json", buf)
+				if err != nil {
+					return 500
+				}
+				r.Body.Close()
+				return r.StatusCode
+			}).Should(Equal(http.StatusOK))
 			m := <-in
 			Expect(m.Body).To(Equal("turn on lab led"))
 		})
-		FIt("registers a new client", func() {
+		It("registers a new client", func() {
 			msgs := []gogadgets.Message{}
 			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				var msg gogadgets.Message
@@ -130,13 +134,17 @@ var _ = Describe("server", func() {
 			enc.Encode(&a)
 
 			time.Sleep(100 * time.Millisecond)
-			r, err := http.Post(cliAddr, "application/json", buf)
 
-			Expect(err).To(BeNil())
-			r.Body.Close()
-			Expect(r.StatusCode).To(Equal(http.StatusOK))
+			Eventually(func() int {
+				r, err := http.Post(cliAddr, "application/json", buf)
+				if err != nil {
+					return 500
+				}
+				r.Body.Close()
+				return r.StatusCode
+			}).Should(Equal(http.StatusOK))
 
-			r, err = http.Get(cliAddr)
+			r, err := http.Get(cliAddr)
 			Expect(err).To(BeNil())
 			Expect(r.StatusCode).To(Equal(http.StatusOK))
 			var c map[string]bool
@@ -144,7 +152,8 @@ var _ = Describe("server", func() {
 			err = dec.Decode(&c)
 			Expect(err).To(BeNil())
 			r.Body.Close()
-			fmt.Println(c)
+
+			Expect(c[ts.URL]).To(BeTrue())
 
 			msg := gogadgets.Message{
 				Type:   gogadgets.COMMAND,
@@ -152,7 +161,6 @@ var _ = Describe("server", func() {
 				Body:   "turn on lab led",
 			}
 			out <- msg
-
 			Eventually(func() []gogadgets.Message {
 				return msgs
 			}).Should(HaveLen(1))

@@ -109,7 +109,7 @@ type GadgetConfig struct {
 }
 
 type Config struct {
-	Master  bool           `json:"master,omitempty"`
+	Master  string         `json:"master,omitempty"`
 	Host    string         `json:"host,omitempty"`
 	Port    int            `json:"port,omitempty"`
 	Gadgets []GadgetConfig `json:"gadgets,omitempty"`

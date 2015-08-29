@@ -16,7 +16,7 @@ var (
 //central part of Gadgets system.
 type App struct {
 	Gadgets []GoGadget
-	Master  bool
+	Master  string
 	Host    string
 	Port    int
 }
@@ -32,10 +32,6 @@ func NewApp(cfg interface{}) *App {
 	}
 	if config.Port == 0 {
 		config.Port = 6111
-	}
-	if config.Host == "" {
-		config.Host = "localhost"
-		config.Master = true
 	}
 	gadgets := GetGadgets(config.Gadgets)
 	return &App{
@@ -76,7 +72,7 @@ func (a *App) Start() {
 func (a *App) GoStart(input <-chan Message) {
 	a.Gadgets = append(a.Gadgets, &MethodRunner{})
 
-	srv := NewServer(a.Host, a.Port, a.Master, lg)
+	srv := NewServer(a.Master, a.Host, a.Port, lg)
 
 	a.Gadgets = append(a.Gadgets, srv)
 	collect := make(chan Message)
