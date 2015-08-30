@@ -106,7 +106,7 @@ func getVerbose() {
 func sendCommand() {
 	msg := gogadgets.Message{
 		Type:   gogadgets.COMMAND,
-		Sender: "cli",
+		Sender: "client",
 		Body:   *cmd,
 	}
 	var buf bytes.Buffer
