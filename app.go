@@ -72,7 +72,7 @@ func (a *App) Start() {
 func (a *App) GoStart(input <-chan Message) {
 	a.Gadgets = append(a.Gadgets, &MethodRunner{})
 
-	srv := NewServer(a.Master, a.Host, a.Port, lg)
+	srv := NewServer(a.Host, a.Master, a.Port, lg)
 
 	a.Gadgets = append(a.Gadgets, srv)
 	collect := make(chan Message)

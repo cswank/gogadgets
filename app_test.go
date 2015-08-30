@@ -1,9 +1,11 @@
 package gogadgets_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"math/rand"
+	"net/http"
 	"os"
 	"time"
 
@@ -86,83 +88,93 @@ var _ = Describe("gogadgets", func() {
 				return fo.on
 			}).Should(BeTrue())
 		})
-		// It("starts up swarm of gogadgets apps", func() {
-		// 	fo1 := &FakeOutput{}
-		// 	fo2 := &FakeOutput{}
-		// 	light1 := &gogadgets.Gadget{
-		// 		Location:   "living room",
-		// 		Name:       "light",
-		// 		OnCommand:  fmt.Sprintf("turn on %s %s", "living room", "light"),
-		// 		OffCommand: fmt.Sprintf("turn off %s %s", "living room", "light"),
-		// 		Output:     fo1,
-		// 		UID:        fmt.Sprintf("%s %s", "living room", "light"),
-		// 	}
-		// 	light2 := &gogadgets.Gadget{
-		// 		Location:   "kitchen",
-		// 		Name:       "light",
-		// 		OnCommand:  fmt.Sprintf("turn on %s %s", "kitchen", "light"),
-		// 		OffCommand: fmt.Sprintf("turn off %s %s", "kitchen", "light"),
-		// 		Output:     fo2,
-		// 		UID:        fmt.Sprintf("%s %s", "kitchen room", "light"),
-		// 	}
+		It("starts up swarm of gogadgets apps", func() {
+			fo1 := &FakeOutput{}
+			fo2 := &FakeOutput{}
+			light1 := &gogadgets.Gadget{
+				Location:   "living room",
+				Name:       "light",
+				OnCommand:  fmt.Sprintf("turn on %s %s", "living room", "light"),
+				OffCommand: fmt.Sprintf("turn off %s %s", "living room", "light"),
+				Output:     fo1,
+				UID:        fmt.Sprintf("%s %s", "living room", "light"),
+			}
+			light2 := &gogadgets.Gadget{
+				Location:   "kitchen",
+				Name:       "light",
+				OnCommand:  fmt.Sprintf("turn on %s %s", "kitchen", "light"),
+				OffCommand: fmt.Sprintf("turn off %s %s", "kitchen", "light"),
+				Output:     fo2,
+				UID:        fmt.Sprintf("%s %s", "kitchen room", "light"),
+			}
 
-		// 	cfg := &gogadgets.Config{
-		// 		Master: true,
-		// 		Host:   "localhost",
-		// 		Port:   port,
-		// 		Logger: lg,
-		// 	}
+			cfg := &gogadgets.Config{
+				Master: "",
+				Host:   "",
+				Port:   port,
+				Logger: lg,
+			}
 
-		// 	cfg2 := &gogadgets.Config{
-		// 		Master: false,
-		// 		Host:   "localhost",
-		// 		Port:   port,
-		// 		Logger: lg,
-		// 	}
+			cfg2 := &gogadgets.Config{
+				Master: fmt.Sprintf("http://localhost:%d", port),
+				Host:   fmt.Sprintf("http://localhost:%d", port+1),
+				Port:   port + 1,
+				Logger: lg,
+			}
 
-		// 	a := gogadgets.NewApp(cfg)
-		// 	a.AddGadget(light1)
-		// 	a2 := gogadgets.NewApp(cfg2)
-		// 	a2.AddGadget(light2)
+			a := gogadgets.NewApp(cfg)
+			a.AddGadget(light1)
+			a2 := gogadgets.NewApp(cfg2)
+			a2.AddGadget(light2)
 
-		// 	input := make(chan gogadgets.Message)
-		// 	go a.GoStart(input)
-		// 	time.Sleep(100 * time.Millisecond)
-		// 	go a2.Start()
+			input := make(chan gogadgets.Message)
+			go a.GoStart(input)
+			time.Sleep(100 * time.Millisecond)
+			go a2.Start()
 
-		// 	Expect(fo1.on).To(BeFalse())
-		// 	Expect(fo2.on).To(BeFalse())
+			Eventually(func() bool {
+				r, err := http.Get(fmt.Sprintf("http://localhost:%d/clients", port))
+				if err != nil || r.StatusCode != http.StatusOK {
+					return false
+				}
+				var c map[string]bool
+				dec := json.NewDecoder(r.Body)
+				dec.Decode(&c)
+				r.Body.Close()
+				return len(c) > 0
+			}).Should(BeTrue())
 
-		// 	msg := gogadgets.Message{
-		// 		Sender: "the test",
-		// 		Type:   "command",
-		// 		Body:   "turn on living room light",
-		// 	}
+			Expect(fo1.on).To(BeFalse())
+			Expect(fo2.on).To(BeFalse())
 
-		// 	time.Sleep(500 * time.Millisecond)
+			msg := gogadgets.Message{
+				Sender: "the test",
+				Type:   "command",
+				Body:   "turn on living room light",
+			}
 
-		// 	input <- msg
+			input <- msg
 
-		// 	Eventually(func() bool {
-		// 		return fo1.on
-		// 	}).Should(BeTrue())
-		// 	Expect(fo2.on).To(BeFalse())
+			Eventually(func() bool {
+				return fo1.on
+			}).Should(BeTrue())
+			Expect(fo2.on).To(BeFalse())
 
-		// 	msg = gogadgets.Message{
-		// 		Sender: "the test",
-		// 		Type:   "command",
-		// 		Body:   "turn on kitchen light",
-		// 	}
+			msg = gogadgets.Message{
+				Sender: "the test",
+				Type:   "command",
+				Body:   "turn on kitchen light",
+			}
 
-		// 	Expect(fo1.on).To(BeTrue())
-		// 	Expect(fo2.on).To(BeFalse())
+			Expect(fo1.on).To(BeTrue())
+			Expect(fo2.on).To(BeFalse())
 
-		// 	input <- msg
+			input <- msg
 
-		// 	Eventually(func() bool {
-		// 		return fo2.on
-		// 	}).Should(BeTrue())
-		// })
+			Eventually(func() bool {
+				return fo2.on
+			}).Should(BeTrue())
+		})
 		It("loads a json config file", func() {
 			s := `{
     "gadgets": [

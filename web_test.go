@@ -18,16 +18,6 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-
-func randString() string {
-	b := make([]rune, 10)
-	for i := range b {
-		b[i] = letterRunes[rand.Intn(len(letterRunes))]
-	}
-	return string(b)
-}
-
 var _ = Describe("server", func() {
 	var (
 		port    int
@@ -132,8 +122,6 @@ var _ = Describe("server", func() {
 			buf := &bytes.Buffer{}
 			enc := json.NewEncoder(buf)
 			enc.Encode(&a)
-
-			time.Sleep(100 * time.Millisecond)
 
 			Eventually(func() int {
 				r, err := http.Post(cliAddr, "application/json", buf)

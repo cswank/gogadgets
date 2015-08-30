@@ -153,7 +153,9 @@ func (s *Server) startServer() {
 func (s *Server) getClients(w http.ResponseWriter, r *http.Request) {
 	enc := json.NewEncoder(w)
 	s.clientsLock.Lock()
-	enc.Encode(s.clients)
+	if err := enc.Encode(s.clients); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 	s.clientsLock.Unlock()
 }
 
@@ -200,11 +202,12 @@ func (s *Server) update(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) register() {
+	var tries int
 	if s.isMaster {
 		return
 	}
 	addr := fmt.Sprintf("%s/clients", s.master)
-	a := map[string]string{"address": fmt.Sprintf("%s:%d", s.host, s.port)}
+	a := map[string]string{"address": s.host}
 	for {
 		buf := &bytes.Buffer{}
 		enc := json.NewEncoder(buf)
@@ -213,6 +216,7 @@ func (s *Server) register() {
 		if err == nil && r.StatusCode == http.StatusOK {
 			return
 		}
-		time.Sleep(10 * time.Second)
+		tries += 1
+		time.Sleep(100 * time.Millisecond)
 	}
 }
