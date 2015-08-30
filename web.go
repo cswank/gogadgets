@@ -68,21 +68,20 @@ func (s *Server) Start(i <-chan Message, o chan<- Message) {
 				s.updates[msg.Sender] = msg
 				s.statusLock.Unlock()
 			}
-			s.send(msg)
+			if !s.isSeen(msg) {
+				s.send(msg)
+			}
 		case msg := <-s.external:
+			s.setSeen(msg)
 			if msg.Sender == "client" {
 				s.send(msg)
 			}
-			s.setSeen(msg)
 			o <- msg
 		}
 	}
 }
 
 func (s *Server) send(msg Message) {
-	if s.isSeen(msg) {
-		return
-	}
 	s.clientsLock.Lock()
 	for host := range s.clients {
 		go s.doSend(host, msg)
