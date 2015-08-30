@@ -154,5 +154,59 @@ var _ = Describe("server", func() {
 			}).Should(HaveLen(1))
 			Expect(msgs[0].Body).To(Equal("turn on lab led"))
 		})
+
+		It("unregisters the client when it goes down", func() {
+			msgs := []gogadgets.Message{}
+			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				var msg gogadgets.Message
+				dec := json.NewDecoder(r.Body)
+				dec.Decode(&msg)
+				msgs = append(msgs, msg)
+			}))
+			a := map[string]string{"address": ts.URL}
+			buf := &bytes.Buffer{}
+			enc := json.NewEncoder(buf)
+			enc.Encode(&a)
+
+			Eventually(func() int {
+				r, err := http.Post(cliAddr, "application/json", buf)
+				if err != nil {
+					return 500
+				}
+				r.Body.Close()
+				return r.StatusCode
+			}).Should(Equal(http.StatusOK))
+
+			r, err := http.Get(cliAddr)
+			Expect(err).To(BeNil())
+			Expect(r.StatusCode).To(Equal(http.StatusOK))
+			var c map[string]bool
+			dec := json.NewDecoder(r.Body)
+			err = dec.Decode(&c)
+			Expect(err).To(BeNil())
+			r.Body.Close()
+
+			Expect(c[ts.URL]).To(BeTrue())
+
+			ts.Close()
+
+			msg := gogadgets.Message{
+				Type:   gogadgets.COMMAND,
+				Sender: "me",
+				Body:   "turn on lab led",
+			}
+			out <- msg
+
+			Eventually(func() int {
+				r, err = http.Get(cliAddr)
+				Expect(err).To(BeNil())
+				Expect(r.StatusCode).To(Equal(http.StatusOK))
+				var c2 map[string]bool
+				dec = json.NewDecoder(r.Body)
+				err = dec.Decode(&c2)
+				r.Body.Close()
+				return len(c2)
+			}).Should(Equal(0))
+		})
 	})
 })

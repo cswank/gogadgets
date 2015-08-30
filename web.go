@@ -55,7 +55,9 @@ func NewServer(host, master string, port int, lg Logger) *Server {
 
 func (s *Server) Start(i <-chan Message, o chan<- Message) {
 
-	go s.register()
+	if !s.isMaster {
+		go s.register()
+	}
 	go s.startServer()
 	go s.cleanup()
 
@@ -203,9 +205,7 @@ func (s *Server) update(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) register() {
 	var tries int
-	if s.isMaster {
-		return
-	}
+
 	addr := fmt.Sprintf("%s/clients", s.master)
 	a := map[string]string{"address": s.host}
 	for {
@@ -216,7 +216,14 @@ func (s *Server) register() {
 		if err == nil && r.StatusCode == http.StatusOK {
 			return
 		}
-		tries += 1
-		time.Sleep(100 * time.Millisecond)
+		tries = increment(tries)
+		time.Sleep(time.Duration(tries) * 100 * time.Millisecond)
 	}
+}
+
+func increment(i int) int {
+	if i == 100 {
+		return i
+	}
+	return i + 1
 }
