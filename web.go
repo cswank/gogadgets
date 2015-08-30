@@ -54,7 +54,6 @@ func NewServer(host, master string, port int, lg Logger) *Server {
 }
 
 func (s *Server) Start(i <-chan Message, o chan<- Message) {
-
 	if !s.isMaster {
 		go s.register()
 	}
@@ -64,7 +63,7 @@ func (s *Server) Start(i <-chan Message, o chan<- Message) {
 	for {
 		select {
 		case msg := <-i:
-			if msg.Type == UPDATE {
+			if msg.Type == UPDATE && s.isMaster {
 				s.statusLock.Lock()
 				s.updates[msg.Sender] = msg
 				s.statusLock.Unlock()
