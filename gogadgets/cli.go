@@ -105,6 +105,7 @@ func getVerbose() {
 
 func sendCommand() {
 	msg := gogadgets.Message{
+		UUID:   gogadgets.GetUUID(),
 		Type:   gogadgets.COMMAND,
 		Sender: "client",
 		Body:   *cmd,

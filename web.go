@@ -199,7 +199,7 @@ func (s *Server) update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if msg.UUID == "" {
-		msg.UUID = getUUID()
+		msg.UUID = GetUUID()
 	}
 	s.external <- msg
 }

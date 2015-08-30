@@ -167,7 +167,7 @@ func (g *Gadget) doInputLoop(in <-chan Message) {
 			g.readMessage(&msg)
 		case val := <-devOut:
 			g.out <- Message{
-				UUID:      getUUID(),
+				UUID:      GetUUID(),
 				Sender:    g.UID,
 				Type:      "update",
 				Location:  g.Location,
@@ -181,7 +181,7 @@ func (g *Gadget) doInputLoop(in <-chan Message) {
 
 func (g *Gadget) readInitialValue() {
 	msg := &Message{
-		UUID: getUUID(),
+		UUID: GetUUID(),
 		Body: g.InitialValue,
 	}
 	g.readCommand(msg)
@@ -356,7 +356,7 @@ func (g *Gadget) sendUpdate(val *Value) {
 		}
 	}
 	msg := Message{
-		UUID:        getUUID(),
+		UUID:        GetUUID(),
 		Sender:      g.UID,
 		Type:        UPDATE,
 		Location:    g.Location,
