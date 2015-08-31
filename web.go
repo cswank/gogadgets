@@ -111,9 +111,6 @@ func (s *Server) setSeen(msg Message) {
 func (s *Server) isSeen(msg Message) bool {
 	s.seenLock.Lock()
 	_, ok := s.seen[msg.UUID]
-	if ok {
-		delete(s.seen, msg.UUID)
-	}
 	s.seenLock.Unlock()
 	return ok
 }
