@@ -39,18 +39,7 @@ from the rest of the system and pushes them to a MongoDB (which should really be
 hosted on a server somewhere on your sub-net).
 
 ## Installation
-
-    # apt-get update
-    # apt-get install build-essential
-    # apt-get install libzmq3-dev
-    # apt-get install git
-    # apt-get install bzr
-    # apt-get install golang
-    # mkdir /opt/gadgets
-    # export GOPATH=/opt/gadgets/
-    # go get bitbucket.org/cswank/gogadgets
-    # cd ./src/bitbucket.org/cswank/gogadgets/gogadgets
-    # go install
+Gogadgets 
 
 ## Try out one of the examples
 

@@ -1,9 +1,11 @@
 package gogadgets_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"math/rand"
+	"net/http"
 	"os"
 	"time"
 
@@ -16,14 +18,15 @@ type fakeLogger struct {
 	f bool
 }
 
-func (f *fakeLogger) Println(v ...interface{}) {}
-func (f *fakeLogger) Fatal(v ...interface{})   { f.f = true }
+func (f *fakeLogger) Println(v ...interface{})          {}
+func (f *fakeLogger) Printf(s string, v ...interface{}) {}
+func (f *fakeLogger) Fatal(v ...interface{})            { f.f = true }
 
 func init() {
 	rand.Seed(time.Now().Unix())
 }
 
-var _ = Describe("Companies", func() {
+var _ = Describe("gogadgets", func() {
 	var (
 		port int
 		lg   *fakeLogger
@@ -60,11 +63,10 @@ var _ = Describe("Companies", func() {
 				UID: fmt.Sprintf("%s %s", location, name),
 			}
 			cfg := &gogadgets.Config{
-				Master:  true,
-				Host:    "localhost",
-				SubPort: port,
-				PubPort: port + 1,
-				Logger:  lg,
+				Master: "",
+				Host:   "localhost",
+				Port:   port,
+				Logger: lg,
 			}
 			a := gogadgets.NewApp(cfg)
 			a.AddGadget(p)
@@ -107,19 +109,17 @@ var _ = Describe("Companies", func() {
 			}
 
 			cfg := &gogadgets.Config{
-				Master:  true,
-				Host:    "localhost",
-				SubPort: port,
-				PubPort: port + 1,
-				Logger:  lg,
+				Master: "",
+				Host:   "",
+				Port:   port,
+				Logger: lg,
 			}
 
 			cfg2 := &gogadgets.Config{
-				Master:  false,
-				Host:    "localhost",
-				SubPort: port,
-				PubPort: port + 1,
-				Logger:  lg,
+				Master: fmt.Sprintf("http://localhost:%d", port),
+				Host:   fmt.Sprintf("http://localhost:%d", port+1),
+				Port:   port + 1,
+				Logger: lg,
 			}
 
 			a := gogadgets.NewApp(cfg)
@@ -132,6 +132,18 @@ var _ = Describe("Companies", func() {
 			time.Sleep(100 * time.Millisecond)
 			go a2.Start()
 
+			Eventually(func() bool {
+				r, err := http.Get(fmt.Sprintf("http://localhost:%d/clients", port))
+				if err != nil || r.StatusCode != http.StatusOK {
+					return false
+				}
+				var c map[string]bool
+				dec := json.NewDecoder(r.Body)
+				dec.Decode(&c)
+				r.Body.Close()
+				return len(c) > 0
+			}).Should(BeTrue())
+
 			Expect(fo1.on).To(BeFalse())
 			Expect(fo2.on).To(BeFalse())
 
@@ -140,8 +152,6 @@ var _ = Describe("Companies", func() {
 				Type:   "command",
 				Body:   "turn on living room light",
 			}
-
-			time.Sleep(500 * time.Millisecond)
 
 			input <- msg
 
