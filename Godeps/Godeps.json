@@ -1,10 +1,23 @@
 {
 	"ImportPath": "github.com/cswank/gogadgets",
-	"GoVersion": "go1.4.2",
+	"GoVersion": "go1.5",
 	"Packages": [
 		"./..."
 	],
 	"Deps": [
+		{
+			"ImportPath": "bitbucket.org/pkg/inflect",
+			"Comment": "go.r60-12",
+			"Rev": "8961c3750a47b8c0b3e118d52513b97adf85a7e8"
+		},
+		{
+			"ImportPath": "github.com/gorilla/context",
+			"Rev": "215affda49addc4c8ef7e2534915df2c8c35c6cd"
+		},
+		{
+			"ImportPath": "github.com/gorilla/mux",
+			"Rev": "94903de8c98a68d8b4483c529b26a5d146e386a2"
+		},
 		{
 			"ImportPath": "github.com/onsi/ginkgo",
 			"Comment": "v1.2.0-beta-21-gceefce2",
@@ -16,8 +29,13 @@
 			"Rev": "d6c945f9fdbf6cad99e85b0feff591caa268e0db"
 		},
 		{
-			"ImportPath": "github.com/vaughan0/go-zmq",
-			"Rev": "425c333a2ab9e2615ff4ff7deced6e37730b544e"
+			"ImportPath": "github.com/subosito/figo",
+			"Rev": "4f2709582c104a76b1ef6c24d47a682ec1b085c3"
+		},
+		{
+			"ImportPath": "github.com/subosito/twilio",
+			"Comment": "v0.0.1-22-gca29365",
+			"Rev": "ca29365f195cd8e9dfb805d4b8aca69ce8057564"
 		},
 		{
 			"ImportPath": "labix.org/v2/mgo",
