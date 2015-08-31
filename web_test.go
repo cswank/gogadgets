@@ -66,15 +66,24 @@ var _ = Describe("server", func() {
 	})
 	Describe("when all's good", func() {
 		It("sends the status", func() {
-			r, err := http.Get(addr)
 
-			Expect(err).To(BeNil())
+			var r *http.Response
+
+			Eventually(func() int {
+				var err error
+				r, err = http.Get(addr)
+				if err != nil {
+					return 0
+				}
+				return r.StatusCode
+			}).Should(Equal(http.StatusOK))
+
 			defer r.Body.Close()
 
 			Expect(r.StatusCode).To(Equal(http.StatusOK))
 			msgs := map[string]gogadgets.Message{}
 			dec := json.NewDecoder(r.Body)
-			err = dec.Decode(&msgs)
+			err := dec.Decode(&msgs)
 			Expect(err).To(BeNil())
 			Expect(len(msgs)).To(Equal(2))
 			msg, ok := msgs["lab led"]
