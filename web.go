@@ -73,7 +73,7 @@ func (s *Server) Start(i <-chan Message, o chan<- Message) {
 			}
 		case msg := <-s.external:
 			s.setSeen(msg)
-			if msg.Sender == "client" {
+			if s.isMaster && msg.Sender == "client" {
 				s.send(msg)
 			}
 			o <- msg
