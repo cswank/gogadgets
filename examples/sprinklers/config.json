@@ -5,9 +5,8 @@
             "name": "sprinklers",
             "pin": {
                 "type": "gpio",
-                "pin": "16",
-                "platform": "rpi",
-                "direction": "out"
+		"port": "8",
+                "pin": "7"
             }
         },
         {
@@ -15,9 +14,8 @@
             "name": "sprinklers",
             "pin": {
                 "type": "gpio",
-                "pin": "13",
-                "platform": "rpi",
-                "direction": "out"
+		"port": "8",
+                "pin": "8"
             }
         },
         {
@@ -25,9 +23,8 @@
             "name": "sprinklers",
             "pin": {
                 "type": "gpio",
-                "pin": "18",
-                "platform": "rpi",
-                "direction": "out"
+                "port": "8",
+                "pin": "9"
             }
         },
         {
@@ -35,9 +32,8 @@
             "name": "sprinklers",
             "pin": {
                 "type": "gpio",
-                "pin": "11",
-                "platform": "rpi",
-                "direction": "out"
+                "port": "8",
+                "pin": "10"
             }
         },
         {
@@ -45,10 +41,10 @@
             "name": "sprinklers",
             "pin": {
                 "type": "gpio",
-                "pin": "15",
-                "platform": "rpi",
-                "direction": "out"
+                "port": "8",
+                "pin": "11"
             }
         }
     ]
 }
+
