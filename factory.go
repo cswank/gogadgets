@@ -59,6 +59,12 @@ func (f *AppFactory) GetApp() (a *App, err error) {
 
 type InputDeviceFactory func(pin *Pin) (InputDevice, error)
 
+//devices are started as goroutines by the Gadget
+//that contains it.
+type Device interface {
+	Start(<-chan Message, chan<- Message)
+}
+
 //Inputdevices are started as goroutines by the Gadget
 //that contains it.
 type InputDevice interface {
