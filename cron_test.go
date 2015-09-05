@@ -9,12 +9,22 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-type fakeNow struct {
+type fakeAfter struct {
 	t time.Time
+	d time.Duration
+	c chan time.Time
 }
 
-func (f *fakeNow) Now() time.Time {
-	return t
+func (f *fakeAfter) After(d time.Duration) <-chan time.Time {
+	f.d = d
+	f.c = make(chan time.Time)
+	go f.start()
+	return f.c
+}
+
+func (f *fakeAfter) start() {
+	time.Sleep(f.d)
+	f.c <- f.t
 }
 
 func init() {
@@ -24,22 +34,24 @@ func init() {
 var _ = Describe("Switch", func() {
 	var (
 		out  chan gogadgets.Message
-		in   chan gogadgets.Value
-		s    *gogadgets.Switch
-		fn   fakeNow
+		in   chan gogadgets.Message
+		c    *gogadgets.Cron
+		fa   *fakeAfter
 		jobs string
 	)
 
 	BeforeEach(func() {
 		jobs = `
-25, 13, * * * turn on living room light
+25 13 * * * turn on living room light
 `
-		fn = fakeNow{
+		fa = &fakeAfter{
 			t: time.Date(2015, 9, 4, 13, 25, 0, 0, time.UTC),
 		}
+
 		c = &gogadgets.Cron{
-			Now:  fn,
-			jobs: jobs,
+			After: fa.After,
+			Jobs:  jobs,
+			Sleep: time.Millisecond,
 		}
 		out = make(chan gogadgets.Message)
 		in = make(chan gogadgets.Message)
