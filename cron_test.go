@@ -45,7 +45,8 @@ var _ = Describe("Switch", func() {
 			t: time.Date(2015, 9, 4, 13, 25, 0, 0, time.UTC),
 		}
 
-		jobs = `25 13 * * * turn on living room light`
+		jobs = `25 13 * * * turn on living room light
+25 14 * * * turn on living room light`
 		out = make(chan gogadgets.Message)
 		in = make(chan gogadgets.Message)
 
