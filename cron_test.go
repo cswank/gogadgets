@@ -41,27 +41,44 @@ var _ = Describe("Switch", func() {
 	)
 
 	BeforeEach(func() {
-		jobs = `
-25 13 * * * turn on living room light
-`
 		fa = &fakeAfter{
 			t: time.Date(2015, 9, 4, 13, 25, 0, 0, time.UTC),
 		}
 
-		c = &gogadgets.Cron{
-			After: fa.After,
-			Jobs:  jobs,
-			Sleep: time.Millisecond,
-		}
+		jobs = `25 13 * * * turn on living room light`
 		out = make(chan gogadgets.Message)
 		in = make(chan gogadgets.Message)
-		go c.Start(out, in)
+
 	})
 	Describe("when all's good", func() {
-		It("sends a command when its time", func() {
+		It("sends a command when it's time", func() {
+			c = &gogadgets.Cron{
+				After: fa.After,
+				Jobs:  jobs,
+				Sleep: time.Millisecond,
+			}
+			go c.Start(out, in)
 			msg := <-in
 			Expect(msg.Body).To(Equal("turn on living room light"))
 			Expect(msg.Sender).To(Equal("cron"))
+		})
+
+		It("does not send a command when it's not time", func() {
+			jobs = `25 14 * * * turn on living room light`
+			c = &gogadgets.Cron{
+				After: fa.After,
+				Jobs:  jobs,
+				Sleep: time.Millisecond,
+			}
+
+			go c.Start(out, in)
+			var msg *gogadgets.Message
+			select {
+			case m := <-in:
+				msg = &m
+			case <-time.After(100 * time.Millisecond):
+			}
+			Expect(msg).To(BeNil())
 		})
 	})
 })
