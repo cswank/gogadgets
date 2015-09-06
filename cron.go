@@ -66,7 +66,6 @@ func (c *Cron) parseJob(row string) {
 		return
 	}
 	keys := c.getKeys(parts[0:5])
-	fmt.Println("keys", keys)
 	cmd := strings.Join(parts[5:], " ")
 	for _, key := range keys {
 		a, ok := c.jobs[key]
@@ -91,10 +90,8 @@ func (c *Cron) getKeys(parts []string) []string {
 			}
 		}
 	}
-	fmt.Println("has range", hasRange)
 	if !hasRange {
 		out = append(out, strings.Join(parts, " "))
-		fmt.Println(out)
 	}
 	return out
 }
@@ -119,10 +116,11 @@ func (c *Cron) getRange(s string) []string {
 		lg.Printf("could not parse %", s)
 		return []string{}
 	}
-	out := make([]string, end-start)
+	out := make([]string, end-start+1)
 	j := 0
 	for i := start; i <= end; i++ {
 		out[j] = fmt.Sprintf("%d", i)
+		j++
 	}
 	return out
 }

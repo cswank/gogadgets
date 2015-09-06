@@ -78,7 +78,7 @@ var _ = Describe("Switch", func() {
 			Expect(msg.Sender).To(Equal("cron"))
 		})
 
-		FIt("sends a command when there is range of minutes", func() {
+		It("sends a command when there is range of minutes", func() {
 			jobs = `22-26 13 * * * turn on living room light`
 			c = &gogadgets.Cron{
 				After: fa.After,
