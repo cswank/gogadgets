@@ -42,7 +42,6 @@ type Gadget struct {
 	Name           string
 	Output         OutputDevice
 	Input          InputDevice
-	Device         Device
 	Direction      string
 	OnCommand      string
 	OffCommand     string
@@ -70,8 +69,6 @@ func NewGadget(config *GadgetConfig) (*Gadget, error) {
 		return NewOutputGadget(config)
 	} else if t == "thermometer" || t == "switch" {
 		return NewInputGadget(config)
-	} else if t == "cron" {
-		return NewDeviceGadget(config)
 	}
 	err := errors.New(
 		fmt.Sprintf(
@@ -79,24 +76,6 @@ func NewGadget(config *GadgetConfig) (*Gadget, error) {
 			config.Location,
 			config.Name))
 	return nil, err
-}
-
-//Device Gadgets don't interface with physical hardware, they listen
-//to and send out messages
-func NewDeviceGadget(config *GadgetConfig) (gadget *Gadget, err error) {
-	dev, err := NewDevice(&config.Pin)
-	if err == nil {
-		gadget = &Gadget{
-			Location:   config.Location,
-			Name:       config.Name,
-			Device:     dev,
-			Direction:  "input",
-			OnCommand:  "n/a",
-			OffCommand: "n/a",
-			UID:        fmt.Sprintf("%s %s", config.Location, config.Name),
-		}
-	}
-	return gadget, err
 }
 
 //Input Gadgets read from input devices and report their values (thermometer
@@ -171,22 +150,6 @@ func (g *Gadget) Start(in <-chan Message, out chan<- Message) {
 		g.doOutputLoop(in)
 	} else if g.Input != nil {
 		g.doInputLoop(in)
-	} else if g.Device != nil {
-		g.doDeviceLoop(in)
-	}
-}
-
-func (g *Gadget) doDeviceLoop(in <-chan Message) {
-	devOut := make(chan Message, 10)
-	g.devIn = make(chan Message, 10)
-	go g.Device.Start(g.devIn, devOut)
-	for !g.shutdown {
-		select {
-		case msg := <-in:
-			g.readMessage(&msg)
-		case msg := <-devOut:
-			g.out <- msg
-		}
 	}
 }
 
