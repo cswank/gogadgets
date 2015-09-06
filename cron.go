@@ -2,6 +2,7 @@ package gogadgets
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -60,30 +61,74 @@ func (c *Cron) parseJobs() {
 }
 
 func (c *Cron) parseJob(row string) {
-	parts := strings.Split(row, " ")
+	parts := strings.Fields(row)
 	if len(parts) < 6 {
 		return
 	}
-	key := c.getKey(parts[0:5])
+	keys := c.getKeys(parts[0:5])
+	fmt.Println("keys", keys)
 	cmd := strings.Join(parts[5:], " ")
-	a, ok := c.jobs[key]
-	if !ok {
-		a = []string{}
+	for _, key := range keys {
+		a, ok := c.jobs[key]
+		if !ok {
+			a = []string{}
+		}
+		a = append(a, cmd)
+		c.jobs[key] = a
 	}
-	a = append(a, cmd)
-	c.jobs[key] = a
 }
 
-func (c *Cron) getKey(parts []string) string {
-	out := make([]string, len(parts))
+func (c *Cron) getKeys(parts []string) []string {
+	out := []string{}
+	var hasRange bool
 	for i, part := range parts {
-		out[i] = strings.Replace(part, " ", "", -1)
+		if strings.Index(part, "-") >= 1 {
+			hasRange = true
+			r := c.getRange(part)
+			for _, s := range r {
+				parts[i] = s
+				out = append(out, c.getKeys(parts)...)
+			}
+		}
 	}
-	return strings.Join(parts, " ")
+	fmt.Println("has range", hasRange)
+	if !hasRange {
+		out = append(out, strings.Join(parts, " "))
+		fmt.Println(out)
+	}
+	return out
+}
+
+func (c *Cron) getRange(s string) []string {
+	parts := strings.Split(s, "-")
+	if len(parts) != 2 {
+		lg.Printf("could not parse %", s)
+		return []string{}
+	}
+	start, err := strconv.ParseInt(parts[0], 10, 32)
+	if err != nil {
+		lg.Printf("could not parse %", s)
+		return []string{}
+	}
+	end, err := strconv.ParseInt(parts[1], 10, 32)
+	if err != nil {
+		lg.Printf("could not parse %", s)
+		return []string{}
+	}
+	if end <= start {
+		lg.Printf("could not parse %", s)
+		return []string{}
+	}
+	out := make([]string, end-start)
+	j := 0
+	for i := start; i <= end; i++ {
+		out[j] = fmt.Sprintf("%d", i)
+	}
+	return out
 }
 
 func (c *Cron) checkJobs(t time.Time) {
-	keys := c.getKeys(t)
+	keys := c.getPossibilities(t)
 	for _, k := range keys {
 		cmds, ok := c.jobs[k]
 		if ok {
@@ -99,7 +144,7 @@ func (c *Cron) checkJobs(t time.Time) {
 	}
 }
 
-func (c *Cron) getKeys(t time.Time) []string {
+func (c *Cron) getPossibilities(t time.Time) []string {
 	return []string{
 		"* * * * *",
 		fmt.Sprintf("%d * * * *", t.Minute()),

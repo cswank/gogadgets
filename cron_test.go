@@ -64,6 +64,33 @@ var _ = Describe("Switch", func() {
 			Expect(msg.Sender).To(Equal("cron"))
 		})
 
+		It("sends a command when there is lots of extra space", func() {
+			jobs = `25	13     *     *    *    turn on living room light
+25 14 * * * turn on living room light`
+			c = &gogadgets.Cron{
+				After: fa.After,
+				Jobs:  jobs,
+				Sleep: time.Millisecond,
+			}
+			go c.Start(out, in)
+			msg := <-in
+			Expect(msg.Body).To(Equal("turn on living room light"))
+			Expect(msg.Sender).To(Equal("cron"))
+		})
+
+		FIt("sends a command when there is range of minutes", func() {
+			jobs = `22-26 13 * * * turn on living room light`
+			c = &gogadgets.Cron{
+				After: fa.After,
+				Jobs:  jobs,
+				Sleep: time.Millisecond,
+			}
+			go c.Start(out, in)
+			msg := <-in
+			Expect(msg.Body).To(Equal("turn on living room light"))
+			Expect(msg.Sender).To(Equal("cron"))
+		})
+
 		It("does not send a command when it's not time", func() {
 			jobs = `25 14 * * * turn on living room light`
 			c = &gogadgets.Cron{
