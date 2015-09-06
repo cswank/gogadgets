@@ -61,6 +61,9 @@ func (c *Cron) parseJobs() {
 }
 
 func (c *Cron) parseJob(row string) {
+	if strings.Index(row, "#") == 0 {
+		return
+	}
 	parts := strings.Fields(row)
 	if len(parts) < 6 {
 		return

@@ -162,5 +162,23 @@ var _ = Describe("Switch", func() {
 			}
 			Expect(msg).To(BeNil())
 		})
+
+		It("does not send a command when the line is commented out", func() {
+			jobs = `#25 14 * * * turn on living room light`
+			c = &gogadgets.Cron{
+				After: fa.After,
+				Jobs:  jobs,
+				Sleep: time.Millisecond,
+			}
+
+			go c.Start(out, in)
+			var msg *gogadgets.Message
+			select {
+			case m := <-in:
+				msg = &m
+			case <-time.After(100 * time.Millisecond):
+			}
+			Expect(msg).To(BeNil())
+		})
 	})
 })
