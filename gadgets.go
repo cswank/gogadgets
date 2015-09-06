@@ -33,6 +33,11 @@ var (
 
 type Comparitor func(msg *Message) bool
 
+type Gadgeter interface {
+	GetUID() string
+	Start(in <-chan Message, out chan<- Message)
+}
+
 //Each part of a Gadgets system that controls a single
 //piece of hardware (for example: a gpio pin) is represented
 //by Gadget.  A Gadget must have either an InputDevice or
@@ -42,7 +47,6 @@ type Gadget struct {
 	Name           string
 	Output         OutputDevice
 	Input          InputDevice
-	Device         Device
 	Direction      string
 	OnCommand      string
 	OffCommand     string
@@ -64,14 +68,15 @@ type Gadget struct {
 //GoGadgets (header, cooler, gpio, thermometer and switch)
 //NewGadget reads a GadgetConfig and creates the correct
 //type of Gadget.
-func NewGadget(config *GadgetConfig) (*Gadget, error) {
+func NewGadget(config *GadgetConfig) (Gadgeter, error) {
+	if config.Type == "system" {
+		return newSystemGadget(config)
+	}
 	t := config.Pin.Type
 	if t == "heater" || t == "cooler" || t == "gpio" || t == "recorder" || t == "pwm" || t == "motor" || t == "file" {
 		return NewOutputGadget(config)
 	} else if t == "thermometer" || t == "switch" {
 		return NewInputGadget(config)
-	} else if t == "cron" {
-		return NewDeviceGadget(config)
 	}
 	err := errors.New(
 		fmt.Sprintf(
@@ -81,22 +86,11 @@ func NewGadget(config *GadgetConfig) (*Gadget, error) {
 	return nil, err
 }
 
-//Device Gadgets don't interface with physical hardware, they listen
-//to and send out messages
-func NewDeviceGadget(config *GadgetConfig) (gadget *Gadget, err error) {
-	dev, err := NewDevice(&config.Pin)
-	if err == nil {
-		gadget = &Gadget{
-			Location:   config.Location,
-			Name:       config.Name,
-			Device:     dev,
-			Direction:  "input",
-			OnCommand:  "n/a",
-			OffCommand: "n/a",
-			UID:        fmt.Sprintf("%s %s", config.Location, config.Name),
-		}
+func newSystemGadget(config *GadgetConfig) (Gadgeter, error) {
+	if config.Type == "cron" {
+		return NewCron(config)
 	}
-	return gadget, err
+	return nil, fmt.Errorf("don't know how to build %s", config.Name)
 }
 
 //Input Gadgets read from input devices and report their values (thermometer
@@ -171,22 +165,6 @@ func (g *Gadget) Start(in <-chan Message, out chan<- Message) {
 		g.doOutputLoop(in)
 	} else if g.Input != nil {
 		g.doInputLoop(in)
-	} else if g.Device != nil {
-		g.doDeviceLoop(in)
-	}
-}
-
-func (g *Gadget) doDeviceLoop(in <-chan Message) {
-	devOut := make(chan Message, 10)
-	g.devIn = make(chan Message, 10)
-	go g.Device.Start(g.devIn, devOut)
-	for !g.shutdown {
-		select {
-		case msg := <-in:
-			g.readMessage(&msg)
-		case msg := <-devOut:
-			g.out <- msg
-		}
 	}
 }
 

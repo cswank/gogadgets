@@ -15,7 +15,7 @@ var (
 //to them, and receiving Messages from them.  It is the
 //central part of Gadgets system.
 type App struct {
-	Gadgets []GoGadget
+	Gadgets []Gadgeter
 	Master  string
 	Host    string
 	Port    int
@@ -44,8 +44,8 @@ func NewApp(cfg interface{}) *App {
 
 //This is a factory fuction that reads a GadgtConfig
 //and creates all the Gadgets that are defined in it.
-func GetGadgets(configs []GadgetConfig) []GoGadget {
-	g := make([]GoGadget, len(configs))
+func GetGadgets(configs []GadgetConfig) []Gadgeter {
+	g := make([]Gadgeter, len(configs))
 	for i, config := range configs {
 		gadget, err := NewGadget(&config)
 		if err != nil {
@@ -91,7 +91,7 @@ func (a *App) GoStart(input <-chan Message) {
 //built into the system (and hence can't be defined in
 //the config file).  This is a way to add in an instance
 //of a gadget that is not part of the GoGadgets system.
-func (a *App) AddGadget(gadget GoGadget) {
+func (a *App) AddGadget(gadget Gadgeter) {
 	a.Gadgets = append(a.Gadgets, gadget)
 }
 

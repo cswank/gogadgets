@@ -1,7 +1,9 @@
 package gogadgets
 
 import (
+	"bytes"
 	"fmt"
+	"html/template"
 	"strconv"
 	"strings"
 	"time"
@@ -9,9 +11,9 @@ import (
 
 type Afterer func(d time.Duration) <-chan time.Time
 
-func NewCron(pin *Pin) (Device, error) {
+func NewCron(config *GadgetConfig) (*Cron, error) {
 	return &Cron{
-		Jobs:  pin.Args["jobs"].(string),
+		Jobs:  config.Args["jobs"].(string),
 		After: time.After,
 		Sleep: time.Second,
 	}, nil
@@ -25,6 +27,10 @@ type Cron struct {
 	jobs   map[string][]string
 	out    chan<- Message
 	ts     *time.Time
+}
+
+func (c *Cron) GetUID() string {
+	return "cron"
 }
 
 func (c *Cron) Start(in <-chan Message, out chan<- Message) {
@@ -44,6 +50,10 @@ func (c *Cron) Start(in <-chan Message, out chan<- Message) {
 	}
 }
 
+func (c *Cron) readMessage(msg Message) {
+
+}
+
 func (c *Cron) getSleep() time.Duration {
 	if c.ts == nil {
 		return c.Sleep
@@ -61,6 +71,9 @@ func (c *Cron) parseJobs() {
 }
 
 func (c *Cron) parseJob(row string) {
+	if strings.Index(row, "#") == 0 {
+		return
+	}
 	parts := strings.Fields(row)
 	if len(parts) < 6 {
 		return
@@ -149,34 +162,57 @@ func (c *Cron) checkJobs(t time.Time) {
 	}
 }
 
+type now struct {
+	Minute  int
+	Hour    int
+	Day     int
+	Month   int
+	Weekday int
+}
+
 func (c *Cron) getPossibilities(t time.Time) []string {
-	return []string{
-		"* * * * *",
-		fmt.Sprintf("%d * * * *", t.Minute()),
-		fmt.Sprintf("%d %d * * *", t.Minute(), t.Hour()),
-		fmt.Sprintf("%d %d %d * *", t.Minute(), t.Hour(), t.Day()),
-		fmt.Sprintf("%d %d %d %d *", t.Minute(), t.Hour(), t.Day(), t.Month()),
-		fmt.Sprintf("%d %d %d %d %d", t.Minute(), t.Hour(), t.Day(), t.Month(), t.Year()),
+	n := now{
+		Minute:  t.Minute(),
+		Hour:    t.Hour(),
+		Day:     t.Day(),
+		Month:   int(t.Month()),
+		Weekday: int(t.Weekday()),
 	}
-}
-
-//add new cron jobs via message?
-func (c *Cron) readMessage(msg Message) {
-
-}
-
-type jobs struct {
-	jobs map[string][]string
-}
-
-func (j *jobs) parse(s string) map[string]string {
-	rows := strings.Split(s, "\n")
-	for _, row := range rows {
-		j.parseRow(row)
-	}
-	return nil
-}
-
-func (j *jobs) parseRow(row string) {
-
+	tpl, _ := template.New("possibilites").Parse(`
+* * * * *
+{{.Minute}} * * * *
+* {{.Hour}} * * *
+* * {{.Day}} * *
+* * * {{.Month}} *
+* * * * {{.Weekday}}
+{{.Minute}} {{.Hour}} * * *
+{{.Minute}} * {{.Day}} * *
+{{.Minute}} * * {{.Month}} *
+{{.Minute}} * * * {{.Weekday}}
+* {{.Hour}} {{.Day}} * *
+* * {{.Day}} {{.Month}} *
+* * * {{.Month}} {{.Weekday}}
+* {{.Hour}} * {{.Month}} *
+* {{.Hour}} * * {{.Weekday}}
+* * {{.Day}} * {{.Weekday}}
+* * {{.Day}} {{.Month}} {{.Weekday}}
+* {{.Hour}} * {{.Month}} {{.Weekday}}
+* {{.Hour}} {{.Day}} * {{.Weekday}}
+* {{.Hour}} {{.Day}} {{.Month}} *
+{{.Minute}} * * {{.Month}} {{.Weekday}}
+{{.Minute}} {{.Hour}} * * {{.Weekday}}
+{{.Minute}} {{.Hour}} {{.Day}} * *
+{{.Minute}} * {{.Day}} * {{.Weekday}}
+{{.Minute}} * {{.Day}} {{.Month}} *
+{{.Minute}} {{.Hour}} * {{.Month}} *
+{{.Minute}} {{.Hour}} {{.Day}} {{.Month}} *
+{{.Minute}} {{.Hour}} {{.Day}} * {{.Weekday}}
+{{.Minute}} {{.Hour}} * {{.Month}} {{.Weekday}}
+{{.Minute}} * {{.Day}} {{.Month}} {{.Weekday}}
+* {{.Minute}} {{.Hour}} {{.Day}} {{.Weekday}}
+{{.Minute}} {{.Hour}} {{.Day}} {{.Month}} {{.Weekday}}
+`)
+	buf := bytes.Buffer{}
+	tpl.Execute(&buf, n)
+	return strings.Split(buf.String(), "\n")
 }
