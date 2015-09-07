@@ -2,6 +2,7 @@ package gogadgets
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -9,9 +10,9 @@ import (
 
 type Afterer func(d time.Duration) <-chan time.Time
 
-func NewCron(pin *Pin) (Device, error) {
+func NewCron(config *GadgetConfig) (*Cron, error) {
 	return &Cron{
-		Jobs:  pin.Args["jobs"].(string),
+		Jobs:  config.Args["jobs"].(string),
 		After: time.After,
 		Sleep: time.Second,
 	}, nil
@@ -25,6 +26,10 @@ type Cron struct {
 	jobs   map[string][]string
 	out    chan<- Message
 	ts     *time.Time
+}
+
+func (c *Cron) GetUID() string {
+	return "cron"
 }
 
 func (c *Cron) Start(in <-chan Message, out chan<- Message) {
@@ -44,6 +49,10 @@ func (c *Cron) Start(in <-chan Message, out chan<- Message) {
 	}
 }
 
+func (c *Cron) readMessage(msg Message) {
+
+}
+
 func (c *Cron) getSleep() time.Duration {
 	if c.ts == nil {
 		return c.Sleep
@@ -58,6 +67,7 @@ func (c *Cron) parseJobs() {
 	for _, row := range rows {
 		c.parseJob(row)
 	}
+	fmt.Println(c.jobs)
 }
 
 func (c *Cron) parseJob(row string) {
@@ -153,33 +163,59 @@ func (c *Cron) checkJobs(t time.Time) {
 }
 
 func (c *Cron) getPossibilities(t time.Time) []string {
-	return []string{
-		"* * * * *",
-		fmt.Sprintf("%d * * * *", t.Minute()),
-		fmt.Sprintf("%d %d * * *", t.Minute(), t.Hour()),
-		fmt.Sprintf("%d %d %d * *", t.Minute(), t.Hour(), t.Day()),
-		fmt.Sprintf("%d %d %d %d *", t.Minute(), t.Hour(), t.Day(), t.Month()),
-		fmt.Sprintf("%d %d %d %d %d", t.Minute(), t.Hour(), t.Day(), t.Month(), t.Year()),
+	parts := [][]string{
+		[]string{"*", fmt.Sprintf("%d", t.Minute())},
+		[]string{"*", fmt.Sprintf("%d", t.Hour())},
+
+		[]string{"*", fmt.Sprintf("%d", t.Day())},
+		[]string{"*", fmt.Sprintf("%d", t.Month())},
+		[]string{"*", fmt.Sprintf("%d", t.Weekday())},
 	}
-}
+	f := `
+* * * * *
+%s * * * *
+* %s * * *
+* * %s * *
+* * * %s *
+* * * * %s
+%s %s * * *
+%s * %s * *
+%s * * %s *
+%s * * * %s
+* %s %s * *
+* * %s %s *
+* * * %s %s
+* %s * %s *
+* %s * * %s
+* * %s * %s
+* * %s %s %s
+* %s * %s %s
+* %s %s * %s
+* %s %s %s *
+%s * * %s %s
+%s %s * * %s
+%s %s %s * *
+%s * %s * %s
+%s * %s %s *
+%s %s * %s *
+%s %s %s %s *
+%s %s %s * %s
+%s %s * %s %s
+%s * %s %s %s
+* %s %s %s %s
+%s %s %s %s %s
+`
 
-//add new cron jobs via message?
-func (c *Cron) readMessage(msg Message) {
-
-}
-
-type jobs struct {
-	jobs map[string][]string
-}
-
-func (j *jobs) parse(s string) map[string]string {
-	rows := strings.Split(s, "\n")
-	for _, row := range rows {
-		j.parseRow(row)
+	//"* * * * *"
+	a := make([][]string, 25)
+	for i := range a {
+		a[i] = make([]string, 5)
 	}
-	return nil
-}
-
-func (j *jobs) parseRow(row string) {
-
+	for r := 0; r < 25; r++ {
+		for c := 0; c < 5; c++ {
+			a[r][c] = parts[c][((r + c) % 2)]
+		}
+	}
+	log.Fatal(a)
+	return []string{}
 }

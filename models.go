@@ -21,7 +21,7 @@ type Logger interface {
 	Fatal(...interface{})
 }
 
-type GoGadget interface {
+type GoGadger interface {
 	GetUID() string
 	Start(input <-chan Message, output chan<- Message)
 }
@@ -100,12 +100,14 @@ type Pin struct {
 }
 
 type GadgetConfig struct {
-	Location     string `json:"location,omitempty"`
-	Name         string `json:"name,omitempty"`
-	OnCommand    string `json:"onCommand,omitempty"`
-	OffCommand   string `json:"offCommand,omitempty"`
-	InitialValue string `json:"initialValue,omitempty"`
-	Pin          Pin    `json:"pin,omitempty"`
+	Type         string                 `json:"type,omitempty"`
+	Location     string                 `json:"location,omitempty"`
+	Name         string                 `json:"name,omitempty"`
+	OnCommand    string                 `json:"onCommand,omitempty"`
+	OffCommand   string                 `json:"offCommand,omitempty"`
+	InitialValue string                 `json:"initialValue,omitempty"`
+	Pin          Pin                    `json:"pin,omitempty"`
+	Args         map[string]interface{} `json:"args,omitempty"`
 }
 
 type Config struct {
