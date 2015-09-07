@@ -87,7 +87,7 @@ func NewGadget(config *GadgetConfig) (Gadgeter, error) {
 }
 
 func newSystemGadget(config *GadgetConfig) (Gadgeter, error) {
-	if config.Type == "cron" {
+	if config.Name == "cron" {
 		return NewCron(config)
 	}
 	return nil, fmt.Errorf("don't know how to build %s", config.Name)
