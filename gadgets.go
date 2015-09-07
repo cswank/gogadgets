@@ -33,6 +33,11 @@ var (
 
 type Comparitor func(msg *Message) bool
 
+type Gadgeter interface {
+	GetUID() string
+	Start(in <-chan Message, out chan<- Message)
+}
+
 //Each part of a Gadgets system that controls a single
 //piece of hardware (for example: a gpio pin) is represented
 //by Gadget.  A Gadget must have either an InputDevice or
@@ -63,7 +68,10 @@ type Gadget struct {
 //GoGadgets (header, cooler, gpio, thermometer and switch)
 //NewGadget reads a GadgetConfig and creates the correct
 //type of Gadget.
-func NewGadget(config *GadgetConfig) (*Gadget, error) {
+func NewGadget(config *GadgetConfig) (Gadgeter, error) {
+	if config.Type == "system" {
+		return newSystemGadget(config)
+	}
 	t := config.Pin.Type
 	if t == "heater" || t == "cooler" || t == "gpio" || t == "recorder" || t == "pwm" || t == "motor" || t == "file" {
 		return NewOutputGadget(config)
@@ -76,6 +84,13 @@ func NewGadget(config *GadgetConfig) (*Gadget, error) {
 			config.Location,
 			config.Name))
 	return nil, err
+}
+
+func newSystemGadget(config *GadgetConfig) (Gadgeter, error) {
+	if config.Type == "cron" {
+		return NewCron(config)
+	}
+	return nil, fmt.Errorf("don't know how to build %s", config.Name)
 }
 
 //Input Gadgets read from input devices and report their values (thermometer

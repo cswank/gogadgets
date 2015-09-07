@@ -7,7 +7,6 @@ import (
 type AppFactory struct {
 	inputFactories  map[string]InputDeviceFactory
 	outputFactories map[string]OutputDeviceFactory
-	deviceFactories map[string]DeviceFactory
 }
 
 func NewAppFactory() *AppFactory {
@@ -22,9 +21,6 @@ func NewAppFactory() *AppFactory {
 			"cooler":   NewCooler,
 			"recorder": NewRecorder,
 			"file":     NewFile,
-		},
-		deviceFactories: map[string]DeviceFactory{
-			"cron": NewCron,
 		},
 	}
 	return a
@@ -57,29 +53,8 @@ func (f *AppFactory) RegisterOutputFactory(name string, factory OutputDeviceFact
 	f.outputFactories[name] = factory
 }
 
-func (f *AppFactory) RegisterDeviceFactory(name string, factory DeviceFactory) {
-	f.deviceFactories[name] = factory
-}
-
 func (f *AppFactory) GetApp() (a *App, err error) {
 	return a, err
-}
-
-type DeviceFactory func(pin *Pin) (Device, error)
-
-//devices are started as goroutines by the Gadget
-//that contains it.
-type Device interface {
-	Start(<-chan Message, chan<- Message)
-}
-
-func NewDevice(pin *Pin) (dev Device, err error) {
-	if pin.Type == "cron" {
-		dev, err = NewCron(pin)
-	} else {
-		err = errors.New("invalid pin type")
-	}
-	return dev, err
 }
 
 type InputDeviceFactory func(pin *Pin) (InputDevice, error)

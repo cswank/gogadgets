@@ -64,6 +64,45 @@ var _ = Describe("Switch", func() {
 			Expect(msg.Sender).To(Equal("cron"))
 		})
 
+		It("sends a command when there is a weekday specified", func() {
+			jobs = `25 13 * * 5 turn on living room light`
+			c = &gogadgets.Cron{
+				After: fa.After,
+				Jobs:  jobs,
+				Sleep: time.Millisecond,
+			}
+			go c.Start(out, in)
+			msg := <-in
+			Expect(msg.Body).To(Equal("turn on living room light"))
+			Expect(msg.Sender).To(Equal("cron"))
+		})
+
+		It("sends a command when there is a range of weekdays specified", func() {
+			jobs = `25 13 * * 4-6 turn on living room light`
+			c = &gogadgets.Cron{
+				After: fa.After,
+				Jobs:  jobs,
+				Sleep: time.Millisecond,
+			}
+			go c.Start(out, in)
+			msg := <-in
+			Expect(msg.Body).To(Equal("turn on living room light"))
+			Expect(msg.Sender).To(Equal("cron"))
+		})
+
+		It("sends a command when there are several weekdays specified", func() {
+			jobs = `25 13 * * 2,5,6 turn on living room light`
+			c = &gogadgets.Cron{
+				After: fa.After,
+				Jobs:  jobs,
+				Sleep: time.Millisecond,
+			}
+			go c.Start(out, in)
+			msg := <-in
+			Expect(msg.Body).To(Equal("turn on living room light"))
+			Expect(msg.Sender).To(Equal("cron"))
+		})
+
 		It("sends a command when there is lots of extra space", func() {
 			jobs = `25	13     *     *    *    turn on living room light
 25 14 * * * turn on living room light`
