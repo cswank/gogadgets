@@ -1,8 +1,9 @@
 package gogadgets
 
 import (
+	"bytes"
 	"fmt"
-	"log"
+	"html/template"
 	"strconv"
 	"strings"
 	"time"
@@ -67,7 +68,6 @@ func (c *Cron) parseJobs() {
 	for _, row := range rows {
 		c.parseJob(row)
 	}
-	fmt.Println(c.jobs)
 }
 
 func (c *Cron) parseJob(row string) {
@@ -162,60 +162,57 @@ func (c *Cron) checkJobs(t time.Time) {
 	}
 }
 
+type now struct {
+	Minute  int
+	Hour    int
+	Day     int
+	Month   int
+	Weekday int
+}
+
 func (c *Cron) getPossibilities(t time.Time) []string {
-	parts := [][]string{
-		[]string{"*", fmt.Sprintf("%d", t.Minute())},
-		[]string{"*", fmt.Sprintf("%d", t.Hour())},
-
-		[]string{"*", fmt.Sprintf("%d", t.Day())},
-		[]string{"*", fmt.Sprintf("%d", t.Month())},
-		[]string{"*", fmt.Sprintf("%d", t.Weekday())},
+	n := now{
+		Minute:  t.Minute(),
+		Hour:    t.Hour(),
+		Day:     t.Day(),
+		Month:   int(t.Month()),
+		Weekday: int(t.Weekday()),
 	}
-	f := `
+	tpl, _ := template.New("possibilites").Parse(`
 * * * * *
-%s * * * *
-* %s * * *
-* * %s * *
-* * * %s *
-* * * * %s
-%s %s * * *
-%s * %s * *
-%s * * %s *
-%s * * * %s
-* %s %s * *
-* * %s %s *
-* * * %s %s
-* %s * %s *
-* %s * * %s
-* * %s * %s
-* * %s %s %s
-* %s * %s %s
-* %s %s * %s
-* %s %s %s *
-%s * * %s %s
-%s %s * * %s
-%s %s %s * *
-%s * %s * %s
-%s * %s %s *
-%s %s * %s *
-%s %s %s %s *
-%s %s %s * %s
-%s %s * %s %s
-%s * %s %s %s
-* %s %s %s %s
-%s %s %s %s %s
-`
-
-	//"* * * * *"
-	a := make([][]string, 25)
-	for i := range a {
-		a[i] = make([]string, 5)
-	}
-	for r := 0; r < 25; r++ {
-		for c := 0; c < 5; c++ {
-			a[r][c] = parts[c][((r + c) % 2)]
-		}
-	}
-	log.Fatal(a)
-	return []string{}
+{{.Minute}} * * * *
+* {{.Hour}} * * *
+* * {{.Day}} * *
+* * * {{.Month}} *
+* * * * {{.Weekday}}
+{{.Minute}} {{.Hour}} * * *
+{{.Minute}} * {{.Day}} * *
+{{.Minute}} * * {{.Month}} *
+{{.Minute}} * * * {{.Weekday}}
+* {{.Hour}} {{.Day}} * *
+* * {{.Day}} {{.Month}} *
+* * * {{.Month}} {{.Weekday}}
+* {{.Hour}} * {{.Month}} *
+* {{.Hour}} * * {{.Weekday}}
+* * {{.Day}} * {{.Weekday}}
+* * {{.Day}} {{.Month}} {{.Weekday}}
+* {{.Hour}} * {{.Month}} {{.Weekday}}
+* {{.Hour}} {{.Day}} * {{.Weekday}}
+* {{.Hour}} {{.Day}} {{.Month}} *
+{{.Minute}} * * {{.Month}} {{.Weekday}}
+{{.Minute}} {{.Hour}} * * {{.Weekday}}
+{{.Minute}} {{.Hour}} {{.Day}} * *
+{{.Minute}} * {{.Day}} * {{.Weekday}}
+{{.Minute}} * {{.Day}} {{.Month}} *
+{{.Minute}} {{.Hour}} * {{.Month}} *
+{{.Minute}} {{.Hour}} {{.Day}} {{.Month}} *
+{{.Minute}} {{.Hour}} {{.Day}} * {{.Weekday}}
+{{.Minute}} {{.Hour}} * {{.Month}} {{.Weekday}}
+{{.Minute}} * {{.Day}} {{.Month}} {{.Weekday}}
+* {{.Minute}} {{.Hour}} {{.Day}} {{.Weekday}}
+{{.Minute}} {{.Hour}} {{.Day}} {{.Month}} {{.Weekday}}
+`)
+	buf := bytes.Buffer{}
+	tpl.Execute(&buf, n)
+	return strings.Split(buf.String(), "\n")
 }
