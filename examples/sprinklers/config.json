@@ -48,7 +48,7 @@
         {
             "type": "cron",
             "args": {
-                "jobs": "0   5    *  *  3  turn on front yard sprinklers for 20 minutes\n21  5    *  *  3  turn on back yard sprinklers for 20 minutes\n0   5    *  *  6  turn on front yard sprinklers for 20 minutes\n21  5    *  *  6  turn on back yard sprinklers for 20 minutes\n0   4    *  *  *  turn on back garden sprinklers for 5 minutes\n42  9-18 *  *  * turn on front garden sprinklers for 2 minutes\n#50  9-18 * * * turn on sidewalk sprinklers for 2 minutes\n"
+                "jobs": "0   5    *  *  3  turn on front yard sprinklers for 20 minutes\n21  5    *  *  3  turn on back yard sprinklers for 20 minutes\n0   5    *  *  6  turn on front yard sprinklers for 20 minutes\n21  5    *  *  6  turn on back yard sprinklers for 20 minutes\n0   4    *  *  *  turn on back garden sprinklers for 5 minutes\n42  9-18 *  *  * turn on front garden sprinklers for 2 minutes\n#50 9-18 * * * turn on sidewalk sprinklers for 2 minutes\n"
             }
         }
     ]
