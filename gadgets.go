@@ -69,7 +69,7 @@ type Gadget struct {
 //NewGadget reads a GadgetConfig and creates the correct
 //type of Gadget.
 func NewGadget(config *GadgetConfig) (Gadgeter, error) {
-	if config.Type == "system" {
+	if config.Type == "cron" {
 		return newSystemGadget(config)
 	}
 	t := config.Pin.Type
@@ -87,7 +87,7 @@ func NewGadget(config *GadgetConfig) (Gadgeter, error) {
 }
 
 func newSystemGadget(config *GadgetConfig) (Gadgeter, error) {
-	if config.Name == "cron" {
+	if config.Type == "cron" {
 		return NewCron(config)
 	}
 	return nil, fmt.Errorf("don't know how to build %s", config.Name)
