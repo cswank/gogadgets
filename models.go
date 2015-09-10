@@ -72,6 +72,7 @@ type Message struct {
 	Sender      string    `json:"sender,omitempty"`
 	Target      string    `json:"target,omitempty"`
 	Body        string    `json:"body,omitempty"`
+	Host        string    `json:"host,omitempty"`
 	Method      Method    `json:"method,omitempty"`
 	Timestamp   time.Time `json:"timestamp,omitempty"`
 	Value       Value     `json:"value,omitempty"`

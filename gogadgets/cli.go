@@ -62,26 +62,15 @@ func getConfig() string {
 }
 
 func getStatus() {
-
-	r, err := http.Get(addr)
+	r, err := http.Get(fmt.Sprintf("%s/values", addr))
 	if err != nil {
 		log.Fatal("err", err)
 	}
-	var s map[string]gogadgets.Message
+
+	var v map[string]map[string]gogadgets.Value
 	dec := json.NewDecoder(r.Body)
-	if err := dec.Decode(&s); err != nil {
+	if err := dec.Decode(&v); err != nil {
 		log.Fatal("err", err)
-	}
-
-	v := map[string]map[string]gogadgets.Value{}
-
-	for _, msg := range s {
-		l, ok := v[msg.Location]
-		if !ok {
-			l = map[string]gogadgets.Value{}
-		}
-		l[msg.Name] = msg.Value
-		v[msg.Location] = l
 	}
 
 	d, _ := json.MarshalIndent(v, "", "  ")
@@ -89,16 +78,17 @@ func getStatus() {
 }
 
 func getVerbose() {
-
 	r, err := http.Get(addr)
 	if err != nil {
 		log.Fatal("err", err)
 	}
+
 	var s map[string]gogadgets.Message
 	dec := json.NewDecoder(r.Body)
 	if err := dec.Decode(&s); err != nil {
 		log.Fatal("err", err)
 	}
+
 	d, _ := json.MarshalIndent(s, "", "  ")
 	fmt.Println(string(d))
 }

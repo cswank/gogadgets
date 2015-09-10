@@ -90,6 +90,7 @@ func (s *Server) send(msg Message) {
 }
 
 func (s *Server) doSend(host string, msg Message) {
+	msg.Host = s.host
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
 	enc.Encode(msg)
@@ -136,6 +137,7 @@ func (s *Server) GetUID() string {
 func (s *Server) startServer() {
 	r := mux.NewRouter()
 	r.HandleFunc("/gadgets", s.status).Methods("GET")
+	r.HandleFunc("/gadgets/values", s.values).Methods("GET")
 	r.HandleFunc("/gadgets", s.update).Methods("PUT", "POST")
 	if s.isMaster {
 		r.HandleFunc("/clients", s.setClient).Methods("POST")
@@ -182,6 +184,27 @@ func (s *Server) status(w http.ResponseWriter, r *http.Request) {
 	enc := json.NewEncoder(w)
 	s.statusLock.Lock()
 	if err := enc.Encode(s.updates); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		lg.Println(err)
+	}
+	s.statusLock.Unlock()
+}
+
+func (s *Server) values(w http.ResponseWriter, r *http.Request) {
+	enc := json.NewEncoder(w)
+	s.statusLock.Lock()
+	v := map[string]map[string]Value{}
+
+	for _, msg := range s.updates {
+		l, ok := v[msg.Location]
+		if !ok {
+			l = map[string]Value{}
+		}
+		l[msg.Name] = msg.Value
+		v[msg.Location] = l
+	}
+
+	if err := enc.Encode(v); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		lg.Println(err)
 	}
