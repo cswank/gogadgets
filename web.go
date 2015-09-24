@@ -26,17 +26,17 @@ type Server struct {
 	statusLock  sync.Mutex
 	seenLock    sync.Mutex
 	clientsLock sync.Mutex
-	clients     map[string]bool
+	clients     map[string]string
 }
 
 func NewServer(host, master string, port int, lg Logger) *Server {
 	var isMaster bool
-	clients := map[string]bool{}
+	clients := map[string]string{}
 	if master == "" {
 		isMaster = true
 	} else {
-		clients = map[string]bool{
-			master: true,
+		clients = map[string]string{
+			master: "",
 		}
 	}
 	return &Server{
@@ -83,19 +83,22 @@ func (s *Server) Start(i <-chan Message, o chan<- Message) {
 
 func (s *Server) send(msg Message) {
 	s.clientsLock.Lock()
-	for host := range s.clients {
-		go s.doSend(host, msg)
+	for host, cookie := range s.clients {
+		go s.doSend(host, msg, cookie)
 	}
 	s.clientsLock.Unlock()
 }
 
-func (s *Server) doSend(host string, msg Message) {
+func (s *Server) doSend(host string, msg Message, cookie string) {
 	msg.Host = s.host
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
 	enc.Encode(msg)
-	addr := fmt.Sprintf("%s/gadgets", host)
-	r, err := http.Post(addr, "application/json", &buf)
+	req, _ := http.NewRequest("POST", host, &buf)
+	if len(cookie) > 0 {
+		req.Header.Add("Cookie", cookie)
+	}
+	r, err := http.DefaultClient.Do(req)
 	if err != nil || r.StatusCode != http.StatusOK {
 		s.clientsLock.Lock()
 		delete(s.clients, host)
@@ -165,12 +168,12 @@ func (s *Server) setClient(w http.ResponseWriter, r *http.Request) {
 	var a map[string]string
 	dec := json.NewDecoder(r.Body)
 	err := dec.Decode(&a)
-	if err != nil || len(a["address"]) == 0 {
+	if err != nil || len(a["address"]) == 0 || len(a["cookie"]) == 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	s.clientsLock.Lock()
-	s.clients[a["address"]] = true
+	s.clients[a["address"]] = a["cookie"]
 	s.clientsLock.Unlock()
 }
 
