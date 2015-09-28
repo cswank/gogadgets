@@ -83,20 +83,20 @@ func (s *Server) Start(i <-chan Message, o chan<- Message) {
 
 func (s *Server) send(msg Message) {
 	s.clientsLock.Lock()
-	for host, cookie := range s.clients {
-		go s.doSend(host, msg, cookie)
+	for host, token := range s.clients {
+		go s.doSend(host, msg, token)
 	}
 	s.clientsLock.Unlock()
 }
 
-func (s *Server) doSend(host string, msg Message, cookie string) {
+func (s *Server) doSend(host string, msg Message, token string) {
 	msg.Host = s.host
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
 	enc.Encode(msg)
 	req, _ := http.NewRequest("POST", host, &buf)
-	if len(cookie) > 0 {
-		req.Header.Add("Cookie", cookie)
+	if len(token) > 0 {
+		req.Header.Add("Authorization", "Bearer "+token)
 	}
 	r, err := http.DefaultClient.Do(req)
 	if err != nil || r.StatusCode != http.StatusOK {
@@ -141,6 +141,7 @@ func (s *Server) startServer() {
 	r := mux.NewRouter()
 	r.HandleFunc("/gadgets", s.status).Methods("GET")
 	r.HandleFunc("/gadgets/values", s.values).Methods("GET")
+	r.HandleFunc("/gadgets/locations/{location}/devices/{device}/status", s.deviceValue).Methods("GET")
 	r.HandleFunc("/gadgets", s.update).Methods("PUT", "POST")
 	if s.isMaster {
 		r.HandleFunc("/clients", s.setClient).Methods("POST")
@@ -168,12 +169,12 @@ func (s *Server) setClient(w http.ResponseWriter, r *http.Request) {
 	var a map[string]string
 	dec := json.NewDecoder(r.Body)
 	err := dec.Decode(&a)
-	if err != nil || len(a["address"]) == 0 || len(a["cookie"]) == 0 {
+	if err != nil || len(a["address"]) == 0 || len(a["token"]) == 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	s.clientsLock.Lock()
-	s.clients[a["address"]] = a["cookie"]
+	s.clients[a["address"]] = a["token"]
 	s.clientsLock.Unlock()
 }
 
@@ -193,6 +194,22 @@ func (s *Server) status(w http.ResponseWriter, r *http.Request) {
 	s.statusLock.Unlock()
 }
 
+func (s *Server) deviceValue(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	k := fmt.Sprintf("%s %s", vars["location"], vars["device"])
+	s.statusLock.Lock()
+	m, ok := s.updates[k]
+	s.statusLock.Unlock()
+	if !ok {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	enc := json.NewEncoder(w)
+	if err := enc.Encode(m.Value); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+}
+
 func (s *Server) values(w http.ResponseWriter, r *http.Request) {
 	enc := json.NewEncoder(w)
 	s.statusLock.Lock()
@@ -206,12 +223,12 @@ func (s *Server) values(w http.ResponseWriter, r *http.Request) {
 		l[msg.Name] = msg.Value
 		v[msg.Location] = l
 	}
-
+	s.statusLock.Unlock()
 	if err := enc.Encode(v); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		lg.Println(err)
 	}
-	s.statusLock.Unlock()
+
 }
 
 func (s *Server) update(w http.ResponseWriter, r *http.Request) {
