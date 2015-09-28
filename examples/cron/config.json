@@ -1,0 +1,19 @@
+{
+    "gadgets": [
+        {
+            "location": "lab",
+            "name": "led",
+            "pin": {
+                "type": "gpio",
+                "port": "8",
+                "pin": "9"
+            }
+        },
+        {
+            "type": "cron",
+            "args": {
+                "jobs": "* * * * * turn on lab led for 10 seconds"
+            }
+        }
+    ]
+}
