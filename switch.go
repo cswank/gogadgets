@@ -95,6 +95,7 @@ func (s *Switch) Start(in <-chan Message, out chan<- Value) {
 	s.out = out
 	value := make(chan interface{})
 	err := make(chan error)
+	s.SendValue()
 	keepGoing := true
 	go s.wait(value, err)
 	for keepGoing {

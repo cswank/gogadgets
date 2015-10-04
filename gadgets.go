@@ -189,6 +189,9 @@ func (g *Gadget) doInputLoop(in <-chan Message) {
 				Name:      g.Name,
 				Value:     val,
 				Timestamp: time.Now().UTC(),
+				Info: Info{
+					Direction: g.Direction,
+				},
 			}
 		}
 	}
