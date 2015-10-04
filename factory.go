@@ -69,6 +69,7 @@ type InputDevice interface {
 
 type Poller interface {
 	Wait() (bool, error)
+	Status() interface{}
 }
 
 func NewInputDevice(pin *Pin) (dev InputDevice, err error) {

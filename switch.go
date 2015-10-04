@@ -77,6 +77,11 @@ func (s *Switch) wait(out chan<- interface{}, err chan<- error) {
 	}
 }
 
+func (s *Switch) readValue() {
+	v := s.GPIO.Status()
+	s.Value = v.(bool)
+}
+
 func (s *Switch) SendValue() {
 	s.out <- Value{
 		Value: s.Value,
@@ -95,6 +100,7 @@ func (s *Switch) Start(in <-chan Message, out chan<- Value) {
 	s.out = out
 	value := make(chan interface{})
 	err := make(chan error)
+	s.readValue()
 	s.SendValue()
 	keepGoing := true
 	go s.wait(value, err)
