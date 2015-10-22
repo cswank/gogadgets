@@ -203,7 +203,7 @@ var _ = Describe("gadgets", func() {
 			update = <-output
 			Expect(update.Value.Value).To(BeFalse())
 		})
-		It("starts a switch", func() {
+		FIt("starts a switch", func() {
 			location := "lab"
 			name := "switch"
 			poller := &FakePoller{}

@@ -35,6 +35,7 @@ type Comparitor func(msg *Message) bool
 
 type Gadgeter interface {
 	GetUID() string
+	GetDirection() string
 	Start(in <-chan Message, out chan<- Message)
 }
 
@@ -148,6 +149,13 @@ func (g *Gadget) isMyCommand(msg *Message) bool {
 			strings.Index(msg.Body, g.OffCommand) == 0 ||
 			msg.Body == "update" ||
 			msg.Body == "shutdown")
+}
+
+func (g *Gadget) GetDirection() string {
+	if g.Output != nil {
+		return "output"
+	}
+	return "input"
 }
 
 //Start is one of the two interface methods of GoGadget.  Start takes

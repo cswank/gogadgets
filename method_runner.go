@@ -47,6 +47,10 @@ func (m *MethodRunner) GetUID() string {
 	return "method runner"
 }
 
+func (m *MethodRunner) GetDirection() string {
+	return "na"
+}
+
 func (m *MethodRunner) Start(in <-chan Message, out chan<- Message) {
 	m.uid = m.GetUID()
 	m.out = out

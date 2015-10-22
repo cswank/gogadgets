@@ -36,6 +36,10 @@ type FakePoller struct {
 	val bool
 }
 
+func (f *FakePoller) Status() interface{} {
+	return f.val
+}
+
 func (f *FakePoller) Wait() (bool, error) {
 	time.Sleep(100 * time.Millisecond)
 	f.val = !f.val

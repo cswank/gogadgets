@@ -21,7 +21,7 @@ type Logger interface {
 	Fatal(...interface{})
 }
 
-type GoGadger interface {
+type GoGadgeter interface {
 	GetUID() string
 	Start(input <-chan Message, output chan<- Message)
 }
@@ -117,6 +117,7 @@ type Config struct {
 	Port    int            `json:"port,omitempty"`
 	Gadgets []GadgetConfig `json:"gadgets,omitempty"`
 	Logger  Logger         `json:"-"`
+	HomeKit string         `json:"homekit"`
 }
 
 type ConfigHelper struct {

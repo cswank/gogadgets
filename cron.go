@@ -33,6 +33,10 @@ func (c *Cron) GetUID() string {
 	return "cron"
 }
 
+func (c *Cron) GetDirection() string {
+	return "na"
+}
+
 func (c *Cron) Start(in <-chan Message, out chan<- Message) {
 	c.out = out
 	c.parseJobs()

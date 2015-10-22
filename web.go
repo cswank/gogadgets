@@ -137,6 +137,10 @@ func (s *Server) GetUID() string {
 	return s.id
 }
 
+func (s *Server) GetDirection() string {
+	return "na"
+}
+
 func (s *Server) startServer() {
 	r := mux.NewRouter()
 	r.HandleFunc("/gadgets", s.status).Methods("GET")
