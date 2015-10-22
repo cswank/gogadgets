@@ -117,7 +117,6 @@ type Config struct {
 	Port    int            `json:"port,omitempty"`
 	Gadgets []GadgetConfig `json:"gadgets,omitempty"`
 	Logger  Logger         `json:"-"`
-	HomeKit string         `json:"homekit"`
 }
 
 type ConfigHelper struct {

@@ -19,7 +19,6 @@ type App struct {
 	Master  string
 	Host    string
 	Port    int
-	HomeKit string
 }
 
 //NewApp creates a new Gadgets system.  The cfg argument can be a
@@ -40,7 +39,6 @@ func NewApp(cfg interface{}) *App {
 		Host:    config.Host,
 		Port:    config.Port,
 		Gadgets: gadgets,
-		HomeKit: config.HomeKit,
 	}
 }
 
@@ -72,10 +70,6 @@ func (a *App) Start() {
 // gogadget systems upon a command from a central
 // web app.
 func (a *App) GoStart(input <-chan Message) {
-	if a.HomeKit != "" {
-		hk := NewHomeKit(a.Gadgets)
-		a.Gadgets = append(a.Gadgets, hk)
-	}
 	a.Gadgets = append(a.Gadgets, &MethodRunner{})
 
 	srv := NewServer(a.Host, a.Master, a.Port, lg)
