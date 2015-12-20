@@ -1,9 +1,11 @@
 package gogadgets
 
 import (
+	"bytes"
 	"encoding/json"
-	"labix.org/v2/mgo"
+	"fmt"
 	"log"
+	"net/http"
 	"time"
 )
 
@@ -14,25 +16,19 @@ type summary struct {
 }
 
 //Recorder takes all the update messages it receives and saves them
-//in a mongodb.
+//by posting to quimby
 type Recorder struct {
-	DBHost     string
-	DBName     string
-	session    *mgo.Session
-	collection *mgo.Collection
-	status     bool
-	connected  bool
-	filter     []string
-	summaries  map[string]time.Duration
-	history    map[string]summary
-	retries    int
+	url       string
+	status    bool
+	filter    []string
+	summaries map[string]time.Duration
+	history   map[string]summary
 }
 
 func NewRecorder(pin *Pin) (OutputDevice, error) {
 	s := getSummaries(pin.Args["summarize"])
 	r := &Recorder{
-		DBHost:    getDbHost(pin.Args["host"]),
-		DBName:    getDbName(pin.Args["db"]),
+		url:       pin.Args["host"].(string),
 		filter:    getFilter(pin.Args["filter"]),
 		history:   map[string]summary{},
 		summaries: s,
@@ -40,25 +36,10 @@ func NewRecorder(pin *Pin) (OutputDevice, error) {
 	return r, nil
 }
 
-func getDbHost(host interface{}) string {
-	if host == nil {
-		return "localhost"
-	}
-	return host.(string)
-}
-
-func getDbName(db interface{}) string {
-	if db == nil {
-		return "gogadgets"
-	}
-	return db.(string)
-}
-
 func (r *Recorder) Config() ConfigHelper {
 	return ConfigHelper{
 		Args: map[string]interface{}{
 			"host": []string{},
-			"db":   []string{},
 		},
 	}
 }
@@ -90,17 +71,11 @@ func (r *Recorder) Update(msg *Message) {
 }
 
 func (r *Recorder) On(val *Value) error {
-	err := r.connect()
-	if err == nil {
-		r.status = true
-	}
-	return err
+	r.status = true
+	return nil
 }
 
 func (r *Recorder) Off() error {
-	if r.session != nil {
-		r.close()
-	}
 	r.status = false
 	return nil
 }
@@ -152,51 +127,18 @@ func (r *Recorder) summarize(msg *Message, duration time.Duration) {
 }
 
 func (r *Recorder) doSave(msg *Message) {
-	err := r.write(msg)
+	m := map[string]float64{
+		"value": msg.Value.Value.(float64),
+	}
+	buf := bytes.Buffer{}
+	enc := json.NewEncoder(&buf)
+	enc.Encode(m)
+	resp, err := http.Post(fmt.Sprintf(r.url, msg.Location, msg.Name), "application/json", &buf)
 	if err != nil {
-		if r.retries > 5 {
-			log.Println("couldn't connect to the db")
-			return
-		}
-		r.close()
-		err = r.connect()
-		if err != nil {
-			log.Println("couldn't connect to the db")
-			return
-		}
-		r.doSave(msg)
-		r.retries += 1
-	} else {
-		r.retries = 0
+		log.Println("couldn't post data")
+		return
 	}
-}
-
-func (r *Recorder) close() {
-	if r.session != nil {
-		r.session.Close()
-	}
-	r.session = nil
-	r.collection = nil
-}
-
-func (r *Recorder) write(msg *Message) error {
-	var err error
-	if r.collection == nil {
-		if err = r.connect(); err != nil {
-			return err
-		}
-	}
-	return r.collection.Insert(msg)
-}
-
-func (r *Recorder) connect() error {
-	session, err := mgo.Dial(r.DBHost)
-	if err != nil {
-		return err
-	}
-	r.session = session
-	r.collection = session.DB(r.DBName).C("updates")
-	return nil
+	resp.Body.Close()
 }
 
 func getFilter(f interface{}) []string {
