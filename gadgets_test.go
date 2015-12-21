@@ -208,10 +208,11 @@ var _ = Describe("gadgets", func() {
 			name := "switch"
 			poller := &FakePoller{}
 			s := &gogadgets.Switch{
-				GPIO:      poller,
-				Value:     5.0,
-				TrueValue: 5.0,
-				Units:     "liters",
+				GPIO:       poller,
+				Value:      0.0,
+				TrueValue:  5.0,
+				FalseValue: 0.0,
+				Units:      "liters",
 			}
 			g := gogadgets.Gadget{
 				Location: location,
@@ -223,6 +224,8 @@ var _ = Describe("gadgets", func() {
 			output := make(chan gogadgets.Message)
 			go g.Start(input, output)
 			val := <-output
+			Expect(val.Value.Value.(float64)).To(Equal(0.0))
+			val = <-output
 			Expect(val.Value.Value.(float64)).To(Equal(5.0))
 			val = <-output
 			Expect(val.Value.Value.(float64)).To(Equal(0.0))

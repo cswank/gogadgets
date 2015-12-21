@@ -127,7 +127,10 @@ var _ = Describe("server", func() {
 			}))
 			defer ts.Close()
 
-			a := map[string]string{"address": ts.URL}
+			a := map[string]string{
+				"address": ts.URL,
+				"token":   "xyxx",
+			}
 			buf := &bytes.Buffer{}
 			enc := json.NewEncoder(buf)
 			enc.Encode(&a)
@@ -144,13 +147,13 @@ var _ = Describe("server", func() {
 			r, err := http.Get(cliAddr)
 			Expect(err).To(BeNil())
 			Expect(r.StatusCode).To(Equal(http.StatusOK))
-			var c map[string]bool
+			var c map[string]string
 			dec := json.NewDecoder(r.Body)
 			err = dec.Decode(&c)
 			Expect(err).To(BeNil())
 			r.Body.Close()
 
-			Expect(c[ts.URL]).To(BeTrue())
+			Expect(c[ts.URL]).To(Equal("xyxx"))
 
 			msg := gogadgets.Message{
 				Type:   gogadgets.COMMAND,
@@ -172,7 +175,10 @@ var _ = Describe("server", func() {
 				dec.Decode(&msg)
 				msgs = append(msgs, msg)
 			}))
-			a := map[string]string{"address": ts.URL}
+			a := map[string]string{
+				"address": ts.URL,
+				"token":   "xxxy",
+			}
 			buf := &bytes.Buffer{}
 			enc := json.NewEncoder(buf)
 			enc.Encode(&a)
@@ -189,13 +195,13 @@ var _ = Describe("server", func() {
 			r, err := http.Get(cliAddr)
 			Expect(err).To(BeNil())
 			Expect(r.StatusCode).To(Equal(http.StatusOK))
-			var c map[string]bool
+			var c map[string]string
 			dec := json.NewDecoder(r.Body)
 			err = dec.Decode(&c)
 			Expect(err).To(BeNil())
 			r.Body.Close()
 
-			Expect(c[ts.URL]).To(BeTrue())
+			Expect(c[ts.URL]).To(Equal("xxxy"))
 
 			ts.Close()
 

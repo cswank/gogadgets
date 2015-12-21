@@ -19,7 +19,7 @@ type summary struct {
 //by posting to quimby
 type Recorder struct {
 	url       string
-	apikey    string
+	token     string
 	status    bool
 	filter    []string
 	summaries map[string]time.Duration
@@ -30,6 +30,7 @@ func NewRecorder(pin *Pin) (OutputDevice, error) {
 	s := getSummaries(pin.Args["summarize"])
 	r := &Recorder{
 		url:       pin.Args["host"].(string),
+		token:     pin.Args["token"].(string),
 		filter:    getFilter(pin.Args["filter"]),
 		history:   map[string]summary{},
 		summaries: s,
@@ -134,9 +135,17 @@ func (r *Recorder) doSave(msg *Message) {
 	buf := bytes.Buffer{}
 	enc := json.NewEncoder(&buf)
 	enc.Encode(m)
-	resp, err := http.Post(fmt.Sprintf(r.url, msg.Location, msg.Name), "application/json", &buf)
+
+	u := fmt.Sprintf(r.url, msg.Location, msg.Name)
+	req, err := http.NewRequest("POST", u, &buf)
 	if err != nil {
-		log.Println("couldn't post data")
+		log.Println("couldn't post data", err)
+		return
+	}
+	req.Header.Add("Authorization", r.token)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		log.Println("couldn't post data", err)
 		return
 	}
 	resp.Body.Close()

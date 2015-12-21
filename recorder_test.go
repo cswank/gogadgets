@@ -33,7 +33,8 @@ var _ = Describe("Recorder", func() {
 		}))
 		cfg := fmt.Sprintf(`{
   "args": {
-    "host": "%s/api/fakeid/locations/%%s/devices/%%s/datapoints"
+    "host": "%s/api/fakeid/locations/%%s/devices/%%s/datapoints",
+    "token": "xyz"
   }
 }`, ts.URL)
 		p := &gogadgets.Pin{}
@@ -52,7 +53,7 @@ var _ = Describe("Recorder", func() {
 	})
 
 	Describe("when all's good", func() {
-		FIt("does it's thing", func() {
+		It("does it's thing", func() {
 			msg := &gogadgets.Message{
 				Type:     gogadgets.UPDATE,
 				Location: "lab",

@@ -137,7 +137,7 @@ var _ = Describe("gogadgets", func() {
 				if err != nil || r.StatusCode != http.StatusOK {
 					return false
 				}
-				var c map[string]bool
+				var c map[string]string
 				dec := json.NewDecoder(r.Body)
 				dec.Decode(&c)
 				r.Body.Close()

@@ -99,6 +99,7 @@ func (s *Server) doSend(host string, msg Message, token string) {
 		req.Header.Add("Authorization", "Bearer "+token)
 	}
 	r, err := http.DefaultClient.Do(req)
+
 	if err != nil || r.StatusCode != http.StatusOK {
 		s.clientsLock.Lock()
 		delete(s.clients, host)
@@ -248,11 +249,11 @@ func (s *Server) update(w http.ResponseWriter, r *http.Request) {
 	s.external <- msg
 }
 
+//
 func (s *Server) register() {
 	var tries int
-
 	addr := fmt.Sprintf("%s/clients", s.master)
-	a := map[string]string{"address": s.host}
+	a := map[string]string{"address": fmt.Sprintf("%s/gadgets", s.host), "token": "n/a"}
 	for {
 		buf := &bytes.Buffer{}
 		enc := json.NewEncoder(buf)

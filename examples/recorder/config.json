@@ -2,7 +2,7 @@
             "location": "brewery",
             "name": "recorder",
             "pin": {
-                "host": "http://gadgets.dyndns-ip.com/api/gadgets/02d401e3-aa19-4357-b03a-858ab67205d4/locations/%%s/devices/%%s/datapoints",
+                "host": "http://192.168.1.15:8112/internal/gadgets/02d401e3-aa19-4357-b03a-858ab67205d4/locations/%%s/devices/%%s/datapoints",
                 "apikey": "xxx",
                 "type": "recorder",
                 "filter": ["hlt temperature", "mash tun temperature", "boiler temperature"],
