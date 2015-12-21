@@ -1,25 +1,15 @@
-{
-    "gadgets": [
         {
-	    "location": "lab",
-	    "name": "recorder",
-            "initialValue": "turn on lab recorder",
-	    "pin": {
-		"type": "recorder",
-		"args": {
-                    "host": "localhost",
-                    "db": "test"
-                }
-	    }
-        },
-        {
-            "location": "lab",
-            "name": "temperature",
+            "location": "brewery",
+            "name": "recorder",
             "pin": {
-                "type": "thermometer",
-		"onewireId": "28-0000047ade8f",
-		"units": "C"
+                "host": "http://gadgets.dyndns-ip.com/api/gadgets/02d401e3-aa19-4357-b03a-858ab67205d4/locations/%%s/devices/%%s/datapoints",
+                "apikey": "xxx",
+                "type": "recorder",
+                "filter": ["hlt temperature", "mash tun temperature", "boiler temperature"],
+                "summarize": {
+                    "hlt temperature": 10,
+                    "mash tun temperature": 10,
+                    "boiler temperature": 10
+                }
             }
         }
-    ]
-}

@@ -19,6 +19,7 @@ type summary struct {
 //by posting to quimby
 type Recorder struct {
 	url       string
+	apikey    string
 	status    bool
 	filter    []string
 	summaries map[string]time.Duration
