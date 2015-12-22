@@ -129,8 +129,12 @@ func (r *Recorder) summarize(msg *Message, duration time.Duration) {
 }
 
 func (r *Recorder) doSave(msg *Message) {
+	v, ok := msg.Value.Value.(float64)
+	if !ok {
+		return
+	}
 	m := map[string]float64{
-		"value": msg.Value.Value.(float64),
+		"value": v,
 	}
 	buf := bytes.Buffer{}
 	enc := json.NewEncoder(&buf)
@@ -142,7 +146,7 @@ func (r *Recorder) doSave(msg *Message) {
 		log.Println("couldn't post data", err)
 		return
 	}
-	req.Header.Add("Authorization", r.token)
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", r.token))
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		log.Println("couldn't post data", err)
