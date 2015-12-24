@@ -36,11 +36,6 @@
 			"ImportPath": "github.com/subosito/twilio",
 			"Comment": "v0.0.1-22-gca29365",
 			"Rev": "ca29365f195cd8e9dfb805d4b8aca69ce8057564"
-		},
-		{
-			"ImportPath": "labix.org/v2/mgo",
-			"Comment": "287",
-			"Rev": "gustavo@niemeyer.net-20140501184651-975yyw9ipld92pji"
 		}
 	]
 }
