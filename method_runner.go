@@ -78,7 +78,7 @@ func (m *MethodRunner) readMessage(msg *Message) (shutdown bool) {
 	} else if msg.Type == COMMAND && msg.Body == "clear method" {
 		m.clear()
 		m.sendUpdate()
-	} else if len(m.method.Steps) != 0 && msg.Type == UPDATE {
+	} else if len(m.method.Steps) != 0 && (msg.Type == UPDATE || msg.Type == METHODUPDATE) {
 		m.checkUpdate(msg)
 		shutdown = false
 	} else if msg.Type == COMMAND && msg.Body == "shutdown" {

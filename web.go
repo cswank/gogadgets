@@ -233,7 +233,6 @@ func (s *Server) values(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		lg.Println(err)
 	}
-
 }
 
 func (s *Server) update(w http.ResponseWriter, r *http.Request) {
