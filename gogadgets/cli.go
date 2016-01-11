@@ -14,7 +14,6 @@ import (
 )
 
 const (
-	version       = "0.0.1"
 	defaultDir    = "~/.gadgets"
 	defaultConfig = "/Users/Cswank/.gadgets/config.json"
 )
@@ -29,7 +28,7 @@ var (
 )
 
 func main() {
-	kingpin.Version(version)
+	kingpin.Version(gogadgets.Version)
 	kingpin.Parse()
 	addr = fmt.Sprintf("http://%s:%d/gadgets", *host, 6111)
 	if len(*cmd) > 0 {

@@ -12,6 +12,7 @@ type Thermostat struct {
 	gpio       OutputDevice
 	lastChange *time.Time
 	cmp        cmp
+	sensor     string //the location + name id of the temperature sensor (must be in the same location)
 }
 
 func NewThermostat(pin *Pin) (OutputDevice, error) {
@@ -40,6 +41,7 @@ func NewThermostat(pin *Pin) (OutputDevice, error) {
 		highTarget: h,
 		lowTarget:  l,
 		cmp:        c,
+		sensor:     pin.Args["sensor"].(string),
 	}
 	return t, err
 }
@@ -53,6 +55,9 @@ func (t *Thermostat) Config() ConfigHelper {
 }
 
 func (t *Thermostat) Update(msg *Message) {
+	if msg.Sender != t.sensor {
+		return
+	}
 	now := time.Now()
 	// if t.lastChange != nil && now.Sub(*t.lastChange) < 120*time.Second {
 	// 	return

@@ -42,9 +42,10 @@ var _ = Describe("thermostat", func() {
 				Pin:       "11",
 				Direction: "out",
 				Args: map[string]interface{}{
-					"type": "heater",
-					"high": 150.0,
-					"low":  130.0,
+					"type":   "heater",
+					"high":   150.0,
+					"low":    130.0,
+					"sensor": "my thermometer",
 				},
 			}
 			var err error
@@ -86,6 +87,7 @@ var _ = Describe("thermostat", func() {
 
 			for _, c := range cases {
 				msg := &gogadgets.Message{
+					Sender: "my thermometer",
 					Value: gogadgets.Value{
 						Value: c.temperature,
 					},
@@ -105,9 +107,10 @@ var _ = Describe("thermostat", func() {
 				Pin:       "11",
 				Direction: "out",
 				Args: map[string]interface{}{
-					"type": "cooler",
-					"high": 150.0,
-					"low":  130.0,
+					"type":   "cooler",
+					"high":   150.0,
+					"low":    130.0,
+					"sensor": "my thermometer",
 				},
 			}
 			var err error
@@ -139,6 +142,57 @@ var _ = Describe("thermostat", func() {
 
 			for _, c := range cases {
 				msg := &gogadgets.Message{
+					Sender: "my thermometer",
+					Value: gogadgets.Value{
+						Value: c.temperature,
+					},
+				}
+				therm.Update(msg)
+				b, err := ioutil.ReadFile(sys["value"])
+				Expect(err).To(BeNil())
+				Expect(string(b)).To(Equal(c.output))
+			}
+		})
+	})
+
+	Describe("temperature for other sensors", func() {
+		BeforeEach(func() {
+			pin = &gogadgets.Pin{
+				Port:      "8",
+				Pin:       "11",
+				Direction: "out",
+				Args: map[string]interface{}{
+					"type":   "cooler",
+					"high":   150.0,
+					"low":    130.0,
+					"sensor": "my thermometer",
+				},
+			}
+			var err error
+			therm, err = gogadgets.NewThermostat(pin)
+			Expect(err).To(BeNil())
+		})
+
+		It("does not react to other sensors", func() {
+			Expect(therm.On(nil)).To(BeNil())
+			b, err := ioutil.ReadFile(sys["value"])
+			Expect(err).To(BeNil())
+			Expect(string(b)).To(Equal("1"))
+
+			cases := []thermCase{
+				{149.0, "1"},
+				{150.0, "1"},
+				{149.0, "1"},
+				{129.0, "1"},
+				{131.0, "1"},
+				{149.0, "1"},
+				{129.0, "1"},
+				{150.0, "1"},
+			}
+
+			for _, c := range cases {
+				msg := &gogadgets.Message{
+					Sender: "that other thermometer",
 					Value: gogadgets.Value{
 						Value: c.temperature,
 					},
