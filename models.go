@@ -7,6 +7,7 @@ import (
 
 var (
 	COMMAND      = "command"
+	ERROR        = "error"
 	METHOD       = "method"
 	DONE         = "done"
 	UPDATE       = "update"

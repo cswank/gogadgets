@@ -2,6 +2,7 @@ package gogadgets
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -33,27 +34,35 @@ func NewApp(cfg interface{}) *App {
 	if config.Port == 0 {
 		config.Port = 6111
 	}
-	gadgets := GetGadgets(config.Gadgets)
-	return &App{
-		Master:  config.Master,
-		Host:    config.Host,
-		Port:    config.Port,
-		Gadgets: gadgets,
+
+	a := &App{
+		Master: config.Master,
+		Host:   config.Host,
+		Port:   config.Port,
 	}
+	a.GetGadgets(config.Gadgets)
+	return a
 }
 
 //This is a factory fuction that reads a GadgtConfig
 //and creates all the Gadgets that are defined in it.
-func GetGadgets(configs []GadgetConfig) []Gadgeter {
-	g := make([]Gadgeter, len(configs))
+func (a *App) GetGadgets(configs []GadgetConfig) {
+	a.Gadgets = make([]Gadgeter, len(configs))
 	for i, config := range configs {
 		gadget, err := NewGadget(&config)
 		if err != nil {
-			panic(err)
+			a.Gadgets[i] = &Error{
+				location: config.Location,
+				name:     config.Name,
+				error:    fmt.Errorf("couldn't initialize %s %s: %s\n", config.Location, config.Name, err),
+			}
+		} else {
+			a.Gadgets[i] = gadget
 		}
-		g[i] = gadget
 	}
-	return g
+	a.Gadgets = append(a.Gadgets, &MethodRunner{})
+	srv := NewServer(a.Host, a.Master, a.Port, lg)
+	a.Gadgets = append(a.Gadgets, srv)
 }
 
 //The main entry point for a Gadget system.  It takes
@@ -70,11 +79,6 @@ func (a *App) Start() {
 // gogadget systems upon a command from a central
 // web app.
 func (a *App) GoStart(input <-chan Message) {
-	a.Gadgets = append(a.Gadgets, &MethodRunner{})
-
-	srv := NewServer(a.Host, a.Master, a.Port, lg)
-
-	a.Gadgets = append(a.Gadgets, srv)
 
 	collect := make(chan Message)
 	channels := make(map[string]chan Message)
