@@ -5,6 +5,8 @@
 NOTE: on arch linux be sure to install dtc-overlay:
 
     # pacman -S dtc-overlay
+
+
 */
 
 /dts-v1/;
@@ -33,7 +35,7 @@ NOTE: on arch linux be sure to install dtc-overlay:
                                 compatible      = "w1-gpio";
                                 pinctrl-names   = "default";
                                 pinctrl-0       = <&bb_w1_pins>;
-                                gpios           = <&gpio2 13 0>;
+                                gpios           = <&gpio1 13 0>;
                         };
                 };
         };

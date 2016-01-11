@@ -3,31 +3,34 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"log"
 	"net/http"
+
+	"gopkg.in/alecthomas/kingpin.v2"
 
 	"github.com/cswank/gogadgets"
 	"github.com/cswank/gogadgets/utils"
 )
 
 const (
+	version       = "0.0.1"
 	defaultDir    = "~/.gadgets"
 	defaultConfig = "/Users/Cswank/.gadgets/config.json"
 )
 
 var (
-	host    = flag.String("h", "localhost", "Name of Host")
-	config  = flag.String("g", "", "Path to a Gadgets config file")
-	cmd     = flag.String("c", "", "a Robot Command Language string")
-	status  = flag.Bool("s", false, "get the status of a gadgets system")
-	verbose = flag.Bool("v", false, "get the status of a gadgets system")
+	host    = kingpin.Flag("host", "Name of Host").Short('h').Default("localhost").String()
+	config  = kingpin.Flag("config", "Path to a Gadgets config file").Short('c').Default("/etc/gogadgets/config.json").String()
+	cmd     = kingpin.Flag("cmd", "a Robot Command Language string").String()
+	status  = kingpin.Flag("status", "get the status of a gadgets system").Short('s').Bool()
+	verbose = kingpin.Flag("verbose", "get the verbose status of a gadgets system").Short('v').Bool()
 	addr    string
 )
 
 func main() {
-	flag.Parse()
+	kingpin.Version(version)
+	kingpin.Parse()
 	addr = fmt.Sprintf("http://%s:%d/gadgets", *host, 6111)
 	if len(*cmd) > 0 {
 		sendCommand()

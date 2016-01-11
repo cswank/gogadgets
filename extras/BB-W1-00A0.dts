@@ -1,36 +1,42 @@
+/*compile:
+
+    $ dtc -O dtb -o BB-W1-00B0.dtbo -b o -@ BB-W1-00B0.dts
+
+NOTE: on arch linux be sure to install dtc-overlay:
+
+    # pacman -S dtc-overlay
+*/
+
 /dts-v1/;
 /plugin/;
-
 / {
-	compatible = "ti,beaglebone", "ti,beaglebone-black";
-	part-number = "BB-BONE-WTHR-01";
-	version = "00A0";
-
-	/* state the resources this cape uses */
-	exclusive-use =
-	"P8.6",		/* gpio1_3 */
-	"gpio1_3";
-
-	fragment@0 {
+        compatible = "ti,beaglebone", "ti,beaglebone-black";
+        part-number = "BB-W1";
+        version = "00A0";
+        
+        exclusive-use = "P9.22";
+        
+        fragment@0 {
                 target = <&am33xx_pinmux>;
                 __overlay__ {
-			weather_cape_w1_pins: pinmux_weather_cape_w1_pins {
-				pinctrl-single,pins = <
-				0x0c 0x37       /* gpmc_ad3.gpio1_3, OMAP_PIN_INPUT_PULLUP | OMAP_MUX_MODE7 - w1-gpio */
-				>;
-			};
+                        dallas_w1_pins: pinmux_dallas_w1_pins {
+                                pinctrl-single,pins = < 0x150 0x37 >;
+                        };
                 };
-	};
+        };
+        
         fragment@1 {
                 target = <&ocp>;
                 __overlay__ {
-		        onewire@0 {
-			        compatible      = "w1-gpio";
-			        pinctrl-names   = "default";
-			        pinctrl-0       = <&weather_cape_w1_pins>;
-			        status          = "okay";
-			        gpios = <&gpio2 3 0>;
-		        };
+                        #address-cells = ;
+                        #size-cells = ;
+                        onewire {
+                                compatible      = "w1-gpio";
+                                pinctrl-names   = "default";
+                                pinctrl-0       = <&dallas_w1_pins>;
+                                status          = "okay";
+                                gpios           = <&gpio0 2 0>;
+                        };
                 };
-	};
+        };
 };
