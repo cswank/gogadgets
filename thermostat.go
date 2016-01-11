@@ -5,7 +5,9 @@ import "time"
 type cmp func(float64, float64) bool
 
 type Thermostat struct {
-	target     float64
+	highTarget float64
+	lowTarget  float64
+	timeout    time.Duration
 	status     bool
 	gpio       OutputDevice
 	lastChange *time.Time
@@ -28,9 +30,10 @@ func NewThermostat(pin *Pin) (OutputDevice, error) {
 	}
 	if err == nil {
 		t = &Thermostat{
-			gpio:   g,
-			target: 0.0,
-			cmp:    c,
+			gpio:       g,
+			highTarget: pin.Args["high"].(float64),
+			lowTarget:  pin.Args["low"].(float64),
+			cmp:        c,
 		}
 	}
 	return t, err
@@ -50,11 +53,11 @@ func (t *Thermostat) Update(msg *Message) {
 	// 	return
 	// }
 	temperature, ok := msg.Value.Value.(float64)
-	if ok && t.status {
-		if t.cmp(temperature, t.target) {
+	if t.status && ok {
+		if t.cmp(temperature, t.highTarget) {
 			t.gpio.Off()
 			t.lastChange = &now
-		} else {
+		} else if t.cmp(t.lowTarget, temperature) {
 			t.gpio.On(nil)
 			t.lastChange = &now
 		}
@@ -62,12 +65,6 @@ func (t *Thermostat) Update(msg *Message) {
 }
 
 func (t *Thermostat) On(val *Value) error {
-	if val != nil {
-		target, ok := val.Value.(float64)
-		if ok {
-			t.target = target
-		}
-	}
 	t.status = true
 	t.gpio.On(nil)
 	return nil

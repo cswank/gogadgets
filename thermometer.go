@@ -10,8 +10,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-
-	"github.com/cswank/gogadgets/utils"
 )
 
 /*Reads temperature from a Dallas 1-Wire thermometer and
@@ -84,10 +82,6 @@ func NewThermometer(pin *Pin) (InputDevice, error) {
 		pin.Sleep = 5 * time.Second
 	}
 	path := fmt.Sprintf(pin.OneWirePath, pin.OneWireId)
-	if pin.OneWireId == "" || !utils.FileExists(path) {
-		err = errors.New(fmt.Sprintf("invalid one-wire device path: %s", pin.OneWireId))
-		return therm, err
-	}
 	therm = &Thermometer{
 		devicePath: path,
 		units:      pin.Units,
