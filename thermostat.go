@@ -19,22 +19,27 @@ func NewThermostat(pin *Pin) (OutputDevice, error) {
 	var err error
 	g, err := NewGPIO(pin)
 	var c cmp
+
+	var h, l float64
 	if pin.Args["type"] == "cooler" {
+		l = pin.Args["high"].(float64)
+		h = pin.Args["low"].(float64)
 		c = func(x, y float64) bool {
 			return x <= y
 		}
 	} else {
+		h = pin.Args["high"].(float64)
+		l = pin.Args["low"].(float64)
 		c = func(x, y float64) bool {
 			return x >= y
 		}
 	}
-	if err == nil {
-		t = &Thermostat{
-			gpio:       g,
-			highTarget: pin.Args["high"].(float64),
-			lowTarget:  pin.Args["low"].(float64),
-			cmp:        c,
-		}
+
+	t = &Thermostat{
+		gpio:       g,
+		highTarget: h,
+		lowTarget:  l,
+		cmp:        c,
 	}
 	return t, err
 }

@@ -21,6 +21,7 @@ var _ = Describe("thermostat", func() {
 		tmp   string
 		sys   map[string]string
 		therm gogadgets.OutputDevice
+		pin   *gogadgets.Pin
 	)
 	BeforeEach(func() {
 		var err error
@@ -29,30 +30,44 @@ var _ = Describe("thermostat", func() {
 		sys = setupGPIO(tmp, gogadgets.Pins["gpio"]["8"]["11"])
 		gogadgets.GPIO_DEV_PATH = tmp
 		gogadgets.GPIO_DEV_MODE = 0777
-		pin := &gogadgets.Pin{
-			Port:      "8",
-			Pin:       "11",
-			Direction: "out",
-			Args: map[string]interface{}{
-				"high": 150.0,
-				"low":  130.0,
-			},
-		}
-		therm, err = gogadgets.NewThermostat(pin)
-		Expect(err).To(BeNil())
 	})
 
 	AfterEach(func() {
 		os.RemoveAll(tmp)
 	})
 	Describe("heater", func() {
-		FIt("turns on", func() {
+		BeforeEach(func() {
+			pin = &gogadgets.Pin{
+				Port:      "8",
+				Pin:       "11",
+				Direction: "out",
+				Args: map[string]interface{}{
+					"type": "heater",
+					"high": 150.0,
+					"low":  130.0,
+				},
+			}
+			var err error
+			therm, err = gogadgets.NewThermostat(pin)
+			Expect(err).To(BeNil())
+		})
+
+		It("sets up the gpio stuff correctly", func() {
+			b, err := ioutil.ReadFile(sys["direction"])
+			Expect(err).To(BeNil())
+			Expect(string(b)).To(Equal("out"))
+
+			b, err = ioutil.ReadFile(sys["value"])
+			Expect(err).To(BeNil())
+			Expect(string(b)).To(Equal("0"))
+		})
+		It("turns on", func() {
 			Expect(therm.On(nil)).To(BeNil())
 			b, err := ioutil.ReadFile(sys["value"])
 			Expect(err).To(BeNil())
 			Expect(string(b)).To(Equal("1"))
 		})
-		FIt("turns off when the temperature is above range and back on when the temperature is below range", func() {
+		It("turns off when the temperature is above range and back on when the temperature is below range", func() {
 			Expect(therm.On(nil)).To(BeNil())
 			b, err := ioutil.ReadFile(sys["value"])
 			Expect(err).To(BeNil())
@@ -67,6 +82,59 @@ var _ = Describe("thermostat", func() {
 				{149.0, "1"},
 				{129.0, "1"},
 				{150.0, "0"},
+			}
+
+			for _, c := range cases {
+				msg := &gogadgets.Message{
+					Value: gogadgets.Value{
+						Value: c.temperature,
+					},
+				}
+				therm.Update(msg)
+				b, err := ioutil.ReadFile(sys["value"])
+				Expect(err).To(BeNil())
+				Expect(string(b)).To(Equal(c.output))
+			}
+		})
+	})
+
+	Describe("cooler", func() {
+		BeforeEach(func() {
+			pin = &gogadgets.Pin{
+				Port:      "8",
+				Pin:       "11",
+				Direction: "out",
+				Args: map[string]interface{}{
+					"type": "cooler",
+					"high": 150.0,
+					"low":  130.0,
+				},
+			}
+			var err error
+			therm, err = gogadgets.NewThermostat(pin)
+			Expect(err).To(BeNil())
+		})
+		It("turns on", func() {
+			Expect(therm.On(nil)).To(BeNil())
+			b, err := ioutil.ReadFile(sys["value"])
+			Expect(err).To(BeNil())
+			Expect(string(b)).To(Equal("1"))
+		})
+		It("turns off when the temperature is above range and back on when the temperature is below range", func() {
+			Expect(therm.On(nil)).To(BeNil())
+			b, err := ioutil.ReadFile(sys["value"])
+			Expect(err).To(BeNil())
+			Expect(string(b)).To(Equal("1"))
+
+			cases := []thermCase{
+				{149.0, "1"},
+				{150.0, "1"},
+				{149.0, "1"},
+				{129.0, "0"},
+				{131.0, "0"},
+				{149.0, "0"},
+				{129.0, "0"},
+				{150.0, "1"},
 			}
 
 			for _, c := range cases {

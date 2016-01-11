@@ -33,14 +33,14 @@ func GetTypes() map[string]ConfigHelper {
 	s := Switch{}
 	g := GPIO{}
 	h := Heater{}
-	c := Cooler{}
+	th := Thermostat{}
 	r := Recorder{}
 	return map[string]ConfigHelper{
 		"thermometer": t.Config(),
 		"switch":      s.Config(),
 		"gpio":        g.Config(),
 		"heater":      h.Config(),
-		"thermostat":  c.Config(),
+		"thermostat":  th.Config(),
 		"recorder":    r.Config(),
 	}
 }

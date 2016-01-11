@@ -2,7 +2,6 @@ package gogadgets
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -51,14 +50,9 @@ func (a *App) GetGadgets(configs []GadgetConfig) {
 	for i, config := range configs {
 		gadget, err := NewGadget(&config)
 		if err != nil {
-			a.Gadgets[i] = &Error{
-				location: config.Location,
-				name:     config.Name,
-				error:    fmt.Errorf("couldn't initialize %s %s: %s\n", config.Location, config.Name, err),
-			}
-		} else {
-			a.Gadgets[i] = gadget
+			log.Fatal(err)
 		}
+		a.Gadgets[i] = gadget
 	}
 	a.Gadgets = append(a.Gadgets, &MethodRunner{})
 	srv := NewServer(a.Host, a.Master, a.Port, lg)
