@@ -4,6 +4,48 @@ import "time"
 
 type cmp func(float64, float64) bool
 
+/*
+Configure a thermostat like:
+
+	{
+	    "host": "http://192.168.1.30:6111",
+	    "gadgets": [
+	        {
+	            "location": "the lab",
+	            "name": "temperature",
+	            "pin": {
+	                "type": "thermometer",
+	                "OneWireId": "28-0000041cb544",
+	                "Units": "F"
+	            }
+	        },
+	        {
+	            "location": "the lab",
+	            "name": "heater",
+	            "pin": {
+	                "type": "thermostat",
+	                "port": "8",
+	                "pin": "11",
+	                "args": {
+	                    "type": "heater",
+	                    "sensor": "the lab temperature",
+	                    "high": 150.0,
+	                    "low": 120.0
+	                }
+	            }
+	        }
+	    ]
+	}
+
+With this config the thermostat will react to temperatures from
+'the lab temperature' (which is the location + name of the thermometer)
+and turn on the gpio if the temperature is > 120.0, turn and turn it
+off when the temperature > 150.0.
+
+If you set args.type = "cooler" then it will start cooling when the
+temperature gets above 150, and stop cooling when the temperature gets
+below 120.
+*/
 type Thermostat struct {
 	highTarget float64
 	lowTarget  float64
