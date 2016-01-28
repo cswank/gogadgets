@@ -1,4 +1,4 @@
-fpackage gogadgets
+package gogadgets
 
 import (
 	"errors"
