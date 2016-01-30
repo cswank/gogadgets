@@ -18,6 +18,7 @@ func NewAppFactory() *AppFactory {
 		outputFactories: map[string]OutputDeviceFactory{
 			"gpio":       NewGPIO,
 			"heater":     NewHeater,
+			"cooler":     NewCooler,
 			"thermostat": NewThermostat,
 			"recorder":   NewRecorder,
 			"file":       NewFile,
@@ -33,6 +34,7 @@ func GetTypes() map[string]ConfigHelper {
 	s := Switch{}
 	g := GPIO{}
 	h := Heater{}
+	c := Cooler{}
 	th := Thermostat{}
 	r := Recorder{}
 	return map[string]ConfigHelper{
@@ -40,6 +42,7 @@ func GetTypes() map[string]ConfigHelper {
 		"switch":      s.Config(),
 		"gpio":        g.Config(),
 		"heater":      h.Config(),
+		"cooler":      c.Config(),
 		"thermostat":  th.Config(),
 		"recorder":    r.Config(),
 	}
@@ -100,6 +103,8 @@ func NewOutputDevice(pin *Pin) (dev OutputDevice, err error) {
 		dev, err = NewGPIO(pin)
 	} else if pin.Type == "heater" {
 		dev, err = NewHeater(pin)
+	} else if pin.Type == "cooler" {
+		dev, err = NewCooler(pin)
 	} else if pin.Type == "thermostat" {
 		dev, err = NewThermostat(pin)
 	} else if pin.Type == "recorder" {

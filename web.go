@@ -63,7 +63,7 @@ func (s *Server) Start(i <-chan Message, o chan<- Message) {
 	for {
 		select {
 		case msg := <-i:
-			if msg.Type == UPDATE && s.isMaster {
+			if (msg.Type == UPDATE || msg.Type == METHODUPDATE) && s.isMaster {
 				s.statusLock.Lock()
 				s.updates[msg.Sender] = msg
 				s.statusLock.Unlock()
