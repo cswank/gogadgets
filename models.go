@@ -30,6 +30,7 @@ type GoGadgeter interface {
 type Value struct {
 	Value  interface{} `json:"value,omitempty"`
 	Units  string      `json:"units,omitempty"`
+	Diff   float64     `json:"diff,omitempty"`
 	Output interface{} `json:"io,omitempty"`
 	ID     string      `json:"id,omitempty"`
 }

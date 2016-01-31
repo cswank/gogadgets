@@ -187,7 +187,7 @@ func (g *Gadget) doInputLoop(in <-chan Message) {
 	for !g.shutdown {
 		select {
 		case msg := <-in:
-			g.readMessage(&msg)
+			g.readInputMessage(&msg)
 		case val := <-devOut:
 			g.out <- Message{
 				UUID:      GetUUID(),
@@ -241,10 +241,13 @@ func (g *Gadget) off() {
 	g.sendUpdate(nil)
 }
 
-func (g *Gadget) readMessage(msg *Message) {
+func (g *Gadget) readInputMessage(msg *Message) {
 	if g.devIn != nil {
 		g.devIn <- *msg
 	}
+}
+
+func (g *Gadget) readMessage(msg *Message) {
 	if msg.Type == COMMAND && g.isMyCommand(msg) {
 		g.readCommand(msg)
 	} else if g.status && msg.Type == UPDATE {
