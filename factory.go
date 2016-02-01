@@ -14,6 +14,7 @@ func NewAppFactory() *AppFactory {
 		inputFactories: map[string]InputDeviceFactory{
 			"thermometer": NewThermometer,
 			"switch":      NewSwitch,
+			"flow_meter":  NewFlowMeter,
 		},
 		outputFactories: map[string]OutputDeviceFactory{
 			"gpio":       NewGPIO,
@@ -35,6 +36,7 @@ func GetTypes() map[string]ConfigHelper {
 	g := GPIO{}
 	h := Heater{}
 	c := Cooler{}
+	f := FlowMeter{}
 	th := Thermostat{}
 	r := Recorder{}
 	return map[string]ConfigHelper{
@@ -45,6 +47,7 @@ func GetTypes() map[string]ConfigHelper {
 		"cooler":      c.Config(),
 		"thermostat":  th.Config(),
 		"recorder":    r.Config(),
+		"flow_meter":  f.Config(),
 	}
 }
 
@@ -80,6 +83,8 @@ func NewInputDevice(pin *Pin) (dev InputDevice, err error) {
 		dev, err = NewThermometer(pin)
 	} else if pin.Type == "switch" {
 		dev, err = NewSwitch(pin)
+	} else if pin.Type == "flow_meter" {
+		dev, err = NewFlowMeter(pin)
 	} else {
 		err = errors.New("invalid pin type")
 	}
