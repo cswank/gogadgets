@@ -71,10 +71,14 @@ func (t *Tank) Start(in <-chan Message, out chan<- Value) {
 }
 
 func (t *Tank) update(msg Message) {
-	v, changed := t.source(t.volume, msg)
-	if changed {
-		t.volume = v
-		t.SendValue()
+	if msg.Sender == "" {
+
+	} else {
+		v, changed := t.source(t.volume, msg)
+		if changed {
+			t.volume = v
+			t.SendValue()
+		}
 	}
 }
 

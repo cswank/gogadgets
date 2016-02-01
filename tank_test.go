@@ -1,6 +1,8 @@
 package gogadgets_test
 
 import (
+	"time"
+
 	"github.com/cswank/gogadgets"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -20,23 +22,80 @@ var _ = Describe("Tank", func() {
 	AfterEach(func() {
 
 	})
-	Context("valve source", func() {
+	Context("filling up", func() {
+		Context("valve source", func() {
+			BeforeEach(func() {
+				pin = &gogadgets.Pin{
+					Args: map[string]interface{}{
+						"type":         "valve",
+						"float_switch": "hlt float switch",
+						"full":         8.0,
+					},
+				}
+				var err error
+				t, err = gogadgets.NewTank(pin)
+				Expect(err).To(BeNil())
+			})
+			It("creates a tank", func() {
+				Expect(t).ToNot(BeNil())
+			})
+			It("responds to the float switch message to fill itself", func() {
+				go t.Start(out, in)
+				out <- gogadgets.Message{
+					Sender: "hlt float switch",
+					Value: gogadgets.Value{
+						Value: true,
+					},
+				}
+				v := <-in
+				Expect(v.Value).To(Equal(8.0))
+			})
+		})
+		Context("tank source", func() {
+			BeforeEach(func() {
+				pin = &gogadgets.Pin{
+					Args: map[string]interface{}{
+						"type":   "tank",
+						"source": "hlt tank",
+					},
+				}
+				var err error
+				t, err = gogadgets.NewTank(pin)
+				Expect(err).To(BeNil())
+			})
+			It("creates a tank", func() {
+				Expect(t).ToNot(BeNil())
+			})
+			It("responds to source tank messages to fill itself", func() {
+				go t.Start(out, in)
+				for i := 1; i <= 8; i++ {
+					out <- gogadgets.Message{
+						Sender: "hlt tank",
+						Value: gogadgets.Value{
+							Diff: -0.5,
+						},
+					}
+					v := <-in
+					Expect(v.Value).To(Equal(-1 * 0.5 * float64(i)))
+				}
+			})
+		})
+	})
+	Context("draining", func() {
 		BeforeEach(func() {
 			pin = &gogadgets.Pin{
 				Args: map[string]interface{}{
 					"type":         "valve",
 					"float_switch": "hlt float switch",
 					"full":         8.0,
+					"valve":        "boiler valve",
+					"time":         time.Millisecond,
 				},
 			}
 			var err error
 			t, err = gogadgets.NewTank(pin)
 			Expect(err).To(BeNil())
-		})
-		It("creates a tank", func() {
-			Expect(t).ToNot(BeNil())
-		})
-		It("responds to the float switch message to fill itself", func() {
+
 			go t.Start(out, in)
 			out <- gogadgets.Message{
 				Sender: "hlt float switch",
@@ -47,34 +106,17 @@ var _ = Describe("Tank", func() {
 			v := <-in
 			Expect(v.Value).To(Equal(8.0))
 		})
-	})
-	Context("tank source", func() {
-		BeforeEach(func() {
-			pin = &gogadgets.Pin{
-				Args: map[string]interface{}{
-					"type":   "tank",
-					"source": "hlt tank",
-				},
-			}
-			var err error
-			t, err = gogadgets.NewTank(pin)
-			Expect(err).To(BeNil())
-		})
-		It("creates a tank", func() {
-			Expect(t).ToNot(BeNil())
-		})
-		It("responds to hlt tank messages to fill itself", func() {
-			go t.Start(out, in)
-			for i := 1; i <= 8; i++ {
+		Context("time based drain", func() {
+			FIt("is drained after the alotted drain time", func() {
 				out <- gogadgets.Message{
-					Sender: "hlt tank",
+					Sender: "boiler valve",
 					Value: gogadgets.Value{
-						Diff: -0.5,
+						Value: true,
 					},
 				}
 				v := <-in
-				Expect(v.Value).To(Equal(-1 * 0.5 * float64(i)))
-			}
+				Expect(v.Value).To(Equal(0.0))
+			})
 		})
 	})
 })
