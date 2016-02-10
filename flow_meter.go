@@ -14,11 +14,12 @@ type FlowMeter struct {
 	GPIO Poller
 	//Value represents the total volume represented by
 	//a pulse (rate is calculated from this total volume).
-	Value float64
-	value float64
-	ts    time.Time
-	Units string
-	out   chan<- Value
+	Value   float64
+	value   float64
+	ts      time.Time
+	MinSpan float64
+	Units   string
+	out     chan<- Value
 }
 
 func NewFlowMeter(pin *Pin) (InputDevice, error) {
@@ -28,16 +29,29 @@ func NewFlowMeter(pin *Pin) (InputDevice, error) {
 	if err != nil {
 		return nil, err
 	}
+	minSpan := getMinSpan(pin)
 	poller, ok := gpio.(Poller)
 	if !ok {
 		return nil, errors.New(fmt.Sprintf("couldn't create a poller: %s", pin))
 	}
 
 	return &FlowMeter{
-		GPIO:  poller,
-		Value: pin.Value.(float64),
-		Units: pin.Units,
+		GPIO:    poller,
+		Value:   pin.Value.(float64),
+		Units:   pin.Units,
+		MinSpan: minSpan,
 	}, nil
+}
+
+//min_span is the minimum number of seconds between
+//2 pulses from the physical flow meter.  It is used
+//for de-bouncing the signal.
+func getMinSpan(pin *Pin) float64 {
+	v, ok := pin.Args["min_span"].(float64)
+	if !ok {
+		return 0.1
+	}
+	return v
 }
 
 func (f *FlowMeter) Config() ConfigHelper {
@@ -59,12 +73,15 @@ func (f *FlowMeter) wait(err chan<- error) {
 		if t1.Year() == 1 {
 			continue
 		}
-		f.value = f.Value / float64(f.ts.Sub(t1).Seconds())
+		span := f.ts.Sub(t1).Seconds()
+		if span < f.MinSpan {
+			continue
+		}
+		f.value = f.Value / float64(span)
 		f.out <- Value{
 			Value: f.value,
 			Units: f.Units,
 		}
-		time.Sleep(100 * time.Millisecond)
 	}
 }
 

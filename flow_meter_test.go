@@ -19,9 +19,10 @@ var _ = Describe("flow meter", func() {
 		trigger = make(chan bool)
 		poller := &FakePoller{trigger: trigger}
 		m = &gogadgets.FlowMeter{
-			GPIO:  poller,
-			Value: 5.0,
-			Units: "liters/minute",
+			GPIO:    poller,
+			Value:   5.0,
+			Units:   "liters/minute",
+			MinSpan: 0.001,
 		}
 		out = make(chan gogadgets.Message)
 		in = make(chan gogadgets.Value)
@@ -36,11 +37,11 @@ var _ = Describe("flow meter", func() {
 			time.Sleep(100 * time.Millisecond)
 			trigger <- true
 			val = <-in
-			Expect(val.Value.(float64)).Should(BeNumerically("~", 50.0, 1.0))
+			Expect(val.Value.(float64)).Should(BeNumerically("~", 50.0, 2.0))
 			time.Sleep(100 * time.Millisecond)
 			trigger <- true
 			val = <-in
-			Expect(val.Value.(float64)).Should(BeNumerically("~", 50.0, 1.0))
+			Expect(val.Value.(float64)).Should(BeNumerically("~", 50.0, 2.0))
 		})
 
 	})
