@@ -37,11 +37,11 @@ var _ = Describe("flow meter", func() {
 			time.Sleep(100 * time.Millisecond)
 			trigger <- true
 			val = <-in
-			Expect(val.Value.(float64)).Should(BeNumerically("~", 50.0, 2.0))
+			Expect(val.Value.(float64)).Should(BeNumerically("~", 50.0, 5.0))
 			time.Sleep(100 * time.Millisecond)
 			trigger <- true
 			val = <-in
-			Expect(val.Value.(float64)).Should(BeNumerically("~", 50.0, 2.0))
+			Expect(val.Value.(float64)).Should(BeNumerically("~", 50.0, 5.0))
 		})
 
 	})

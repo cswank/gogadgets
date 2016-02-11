@@ -73,18 +73,17 @@ func NewGadget(config *GadgetConfig) (Gadgeter, error) {
 	if config.Type == "cron" {
 		return newSystemGadget(config)
 	}
-	t := config.Pin.Type
-	if t == "heater" || t == "thermostat" || t == "gpio" || t == "recorder" || t == "pwm" || t == "motor" || t == "file" {
-		return NewOutputGadget(config)
-	} else if t == "thermometer" || t == "switch" {
+	switch deviceType(config.Pin.Type) {
+	case "input":
 		return NewInputGadget(config)
+	case "output":
+		return NewOutputGadget(config)
 	}
-	err := errors.New(
-		fmt.Sprintf(
-			"couldn't build a gadget based on config: %s %s",
-			config.Location,
-			config.Name))
-	return nil, err
+	return nil, fmt.Errorf(
+		"couldn't build a gadget based on config: %s %s",
+		config.Location,
+		config.Name,
+	)
 }
 
 func newSystemGadget(config *GadgetConfig) (Gadgeter, error) {
