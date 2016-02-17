@@ -7,16 +7,21 @@ import (
 	"time"
 )
 
-//Flow meter waits for a high pulse from a gpio pin
+//FlowMeter waits for a high pulse from a gpio pin
 //then caclulates the flow based on the time between
 //high pulses.
 type FlowMeter struct {
 	GPIO Poller
+
 	//Value represents the total volume represented by
 	//a pulse (rate is calculated from this total volume).
-	Value   float64
-	value   float64
-	ts      time.Time
+	Value float64
+	value float64
+	ts    time.Time
+
+	//min_span is the minimum number of seconds between
+	//2 pulses from the physical flow meter.  It is used
+	//for de-bouncing the signal.
 	MinSpan float64
 	Units   string
 	out     chan<- Value
@@ -41,17 +46,6 @@ func NewFlowMeter(pin *Pin) (InputDevice, error) {
 		Units:   pin.Units,
 		MinSpan: minSpan,
 	}, nil
-}
-
-//min_span is the minimum number of seconds between
-//2 pulses from the physical flow meter.  It is used
-//for de-bouncing the signal.
-func getMinSpan(pin *Pin) float64 {
-	v, ok := pin.Args["min_span"].(float64)
-	if !ok {
-		return 0.1
-	}
-	return v
 }
 
 func (f *FlowMeter) Config() ConfigHelper {
@@ -110,4 +104,12 @@ func (f *FlowMeter) Start(in <-chan Message, out chan<- Value) {
 			log.Println(e)
 		}
 	}
+}
+
+func getMinSpan(pin *Pin) float64 {
+	v, ok := pin.Args["min_span"].(float64)
+	if !ok {
+		return 0.1
+	}
+	return v
 }

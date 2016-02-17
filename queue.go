@@ -32,13 +32,13 @@ func NewQueue() *Queue {
 
 func (q *Queue) Len() int {
 	q.lock.Lock()
-	defer q.lock.Unlock()
-	return q.count
+	c := q.count
+	q.lock.Unlock()
+	return c
 }
 
 func (q *Queue) Push(item *Message) {
 	q.lock.Lock()
-	defer q.lock.Unlock()
 	n := &queuenode{data: item}
 	if q.tail == nil {
 		q.tail = n
@@ -49,6 +49,7 @@ func (q *Queue) Push(item *Message) {
 	}
 	q.count++
 	q.cond.Signal()
+	q.lock.Unlock()
 }
 
 func (q *Queue) Get() *Message {

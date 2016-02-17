@@ -13,7 +13,10 @@
         {
             "type": "cron",
             "args": {
-                "jobs": "40 19 * * * turn on lab file for 10 seconds"
+                "jobs": [
+                    "40 19 * * * turn on lab file for 10 seconds",
+                    "* * * * * turn on lab file for 10 seconds"
+                ]
             }
         }
     ]
