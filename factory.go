@@ -9,20 +9,28 @@ type AppFactory struct {
 	outputFactories map[string]OutputDeviceFactory
 }
 
+var (
+	inputFactories = map[string]InputDeviceFactory{
+		"thermometer": NewThermometer,
+		"switch":      NewSwitch,
+		"flow_meter":  NewFlowMeter,
+	}
+	outputFactories = map[string]OutputDeviceFactory{
+		"heater":     NewHeater,
+		"cooler":     NewCooler,
+		"thermostat": NewThermostat,
+		"gpio":       NewGPIO,
+		"recorder":   NewRecorder,
+		"pwm":        NewPWM,
+		"motor":      NewMotor,
+		"file":       NewFile,
+	}
+)
+
 func NewAppFactory() *AppFactory {
 	a := &AppFactory{
-		inputFactories: map[string]InputDeviceFactory{
-			"thermometer": NewThermometer,
-			"switch":      NewSwitch,
-		},
-		outputFactories: map[string]OutputDeviceFactory{
-			"gpio":       NewGPIO,
-			"heater":     NewHeater,
-			"cooler":     NewCooler,
-			"thermostat": NewThermostat,
-			"recorder":   NewRecorder,
-			"file":       NewFile,
-		},
+		inputFactories:  inputFactories,
+		outputFactories: outputFactories,
 	}
 	return a
 }
@@ -35,6 +43,7 @@ func GetTypes() map[string]ConfigHelper {
 	g := GPIO{}
 	h := Heater{}
 	c := Cooler{}
+	f := FlowMeter{}
 	th := Thermostat{}
 	r := Recorder{}
 	return map[string]ConfigHelper{
@@ -45,6 +54,7 @@ func GetTypes() map[string]ConfigHelper {
 		"cooler":      c.Config(),
 		"thermostat":  th.Config(),
 		"recorder":    r.Config(),
+		"flow_meter":  f.Config(),
 	}
 }
 
@@ -75,21 +85,29 @@ type Poller interface {
 	Status() interface{}
 }
 
-func NewInputDevice(pin *Pin) (dev InputDevice, err error) {
-	if pin.Type == "thermometer" {
-		dev, err = NewThermometer(pin)
-	} else if pin.Type == "switch" {
-		dev, err = NewSwitch(pin)
-	} else {
-		err = errors.New("invalid pin type")
+func deviceType(t string) string {
+	_, ok := inputFactories[t]
+	if ok {
+		return "input"
 	}
-	return dev, err
+	_, ok = outputFactories[t]
+	if ok {
+		return "output"
+	}
+	return ""
+}
+
+func NewInputDevice(pin *Pin) (dev InputDevice, err error) {
+	f, ok := inputFactories[pin.Type]
+	if !ok {
+		return nil, errors.New("invalid pin type")
+	}
+	return f(pin)
 }
 
 type OutputDeviceFactory func(pin *Pin) (OutputDevice, error)
 
 //Outputdevices turn things on and off.  Currently the
-//only
 type OutputDevice interface {
 	On(val *Value) error
 	Off() error
@@ -99,24 +117,9 @@ type OutputDevice interface {
 }
 
 func NewOutputDevice(pin *Pin) (dev OutputDevice, err error) {
-	if pin.Type == "gpio" {
-		dev, err = NewGPIO(pin)
-	} else if pin.Type == "heater" {
-		dev, err = NewHeater(pin)
-	} else if pin.Type == "cooler" {
-		dev, err = NewCooler(pin)
-	} else if pin.Type == "thermostat" {
-		dev, err = NewThermostat(pin)
-	} else if pin.Type == "recorder" {
-		dev, err = NewRecorder(pin)
-	} else if pin.Type == "pwm" {
-		dev, err = NewPWM(pin)
-	} else if pin.Type == "motor" {
-		dev, err = NewMotor(pin)
-	} else if pin.Type == "file" {
-		dev, err = NewFile(pin)
-	} else {
-		dev, err = nil, errors.New("invalid pin type")
+	f, ok := outputFactories[pin.Type]
+	if !ok {
+		return nil, errors.New("invalid pin type")
 	}
-	return dev, err
+	return f(pin)
 }

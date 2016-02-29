@@ -33,7 +33,8 @@ func (f *FakeOutput) Status() interface{} {
 }
 
 type FakePoller struct {
-	val bool
+	trigger chan bool
+	val     bool
 }
 
 func (f *FakePoller) Status() interface{} {
@@ -41,7 +42,11 @@ func (f *FakePoller) Status() interface{} {
 }
 
 func (f *FakePoller) Wait() (bool, error) {
-	time.Sleep(100 * time.Millisecond)
-	f.val = !f.val
+	if f.trigger == nil {
+		time.Sleep(100 * time.Millisecond)
+		f.val = !f.val
+	} else {
+		f.val = <-f.trigger
+	}
 	return f.val, nil
 }

@@ -12,8 +12,13 @@ import (
 type Afterer func(d time.Duration) <-chan time.Time
 
 func NewCron(config *GadgetConfig) (*Cron, error) {
+	v := config.Args["jobs"].([]interface{})
+	jobs := make([]string, len(v))
+	for i, r := range v {
+		jobs[i] = r.(string)
+	}
 	return &Cron{
-		Jobs:  config.Args["jobs"].(string),
+		Jobs:  jobs,
 		After: time.After,
 		Sleep: time.Second,
 	}, nil
@@ -21,7 +26,7 @@ func NewCron(config *GadgetConfig) (*Cron, error) {
 
 type Cron struct {
 	After  Afterer
-	Jobs   string
+	Jobs   []string
 	Sleep  time.Duration
 	status bool
 	jobs   map[string][]string
@@ -48,14 +53,9 @@ func (c *Cron) Start(in <-chan Message, out chan<- Message) {
 			if t.Second() == 0 {
 				c.checkJobs(t)
 			}
-		case msg := <-in:
-			c.readMessage(msg)
+		case <-in:
 		}
 	}
-}
-
-func (c *Cron) readMessage(msg Message) {
-
 }
 
 func (c *Cron) getSleep() time.Duration {
@@ -68,13 +68,13 @@ func (c *Cron) getSleep() time.Duration {
 
 func (c *Cron) parseJobs() {
 	c.jobs = map[string][]string{}
-	rows := strings.Split(c.Jobs, "\n")
-	for _, row := range rows {
+	for _, row := range c.Jobs {
 		c.parseJob(row)
 	}
 }
 
 func (c *Cron) parseJob(row string) {
+
 	if strings.Index(row, "#") == 0 {
 		return
 	}
