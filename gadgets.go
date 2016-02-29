@@ -74,7 +74,7 @@ func NewGadget(config *GadgetConfig) (Gadgeter, error) {
 		return newSystemGadget(config)
 	}
 	t := config.Pin.Type
-	if t == "heater" || t == "thermostat" || t == "gpio" || t == "recorder" || t == "pwm" || t == "motor" || t == "file" {
+	if t == "heater" || t == "thermostat" || t == "gpio" || t == "recorder" || t == "pwm" || t == "motor" || t == "file" || t == "cooler" {
 		return NewOutputGadget(config)
 	} else if t == "thermometer" || t == "switch" {
 		return NewInputGadget(config)
