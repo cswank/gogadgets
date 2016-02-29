@@ -11,14 +11,15 @@ type AppFactory struct {
 
 var (
 	inputFactories = map[string]InputDeviceFactory{
-		"thermomter": NewThermometer,
-		"switch":     NewSwitch,
-		"flow_meter": NewFlowMeter,
+		"thermometer": NewThermometer,
+		"switch":      NewSwitch,
+		"flow_meter":  NewFlowMeter,
 	}
 	outputFactories = map[string]OutputDeviceFactory{
 		"heater":     NewHeater,
+		"cooler":     NewCooler,
 		"thermostat": NewThermostat,
-		"gpip":       NewGPIO,
+		"gpio":       NewGPIO,
 		"recorder":   NewRecorder,
 		"pwm":        NewPWM,
 		"motor":      NewMotor,
