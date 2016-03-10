@@ -1,8 +1,10 @@
 package gogadgets
 
 import (
+	"crypto/rand"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"strconv"
 	"strings"
@@ -183,6 +185,7 @@ func (g *Gadget) doInputLoop(in <-chan Message) {
 	devOut := make(chan Value, 10)
 	g.devIn = make(chan Message, 10)
 	go g.Input.Start(g.devIn, devOut)
+	g.sendUpdate(nil)
 	for !g.shutdown {
 		select {
 		case msg := <-in:
@@ -427,4 +430,18 @@ func stripCommand(cmd string) string {
 		return cmd[i+4:]
 	}
 	return ""
+}
+
+// GetUUID generates a random UUID according to RFC 4122
+func GetUUID() string {
+	uuid := make([]byte, 16)
+	n, err := io.ReadFull(rand.Reader, uuid)
+	if n != len(uuid) || err != nil {
+		return ""
+	}
+	// variant bits; see section 4.1.1
+	uuid[8] = uuid[8]&^0xc0 | 0x80
+	// version 4 (pseudo-random); see section 4.1.3
+	uuid[6] = uuid[6]&^0xf0 | 0x40
+	return fmt.Sprintf("%x-%x-%x-%x-%x", uuid[0:4], uuid[4:6], uuid[6:8], uuid[8:10], uuid[10:])
 }

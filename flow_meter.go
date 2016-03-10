@@ -42,7 +42,7 @@ func NewFlowMeter(pin *Pin) (InputDevice, error) {
 
 	return &FlowMeter{
 		GPIO:    poller,
-		Value:   pin.Value.(float64),
+		Value:   0.0,
 		Units:   pin.Units,
 		MinSpan: minSpan,
 	}, nil

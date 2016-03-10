@@ -35,8 +35,7 @@ var _ = Describe("gogadgets", func() {
 		port = 1024 + rand.Intn(65535-1024)
 		lg = &fakeLogger{}
 	})
-	AfterEach(func() {
-	})
+
 	Describe("app", func() {
 		It("starts up a gogadgets app", func() {
 			fo := &FakeOutput{}
