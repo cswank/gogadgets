@@ -100,9 +100,10 @@ func (s *Server) doSend(host string, msg Message, token string) {
 		req.Header.Add("Authorization", "Bearer "+token)
 	}
 	r, err := http.DefaultClient.Do(req)
-	if err == nil {
+	if r != nil {
 		r.Body.Close()
 	}
+
 	if err != nil || r.StatusCode != http.StatusOK {
 		s.clientsLock.Lock()
 		delete(s.clients, host)
