@@ -153,6 +153,8 @@ var _ = Describe("gadgets", func() {
 			input <- msg
 			update = <-output
 			Expect(update.Value.Value).To(BeTrue())
+			Expect(update.TargetValue).ToNot(BeNil())
+			Expect(update.TargetValue.Value).To(Equal(0.01))
 
 			//wait for a second
 			update = <-output

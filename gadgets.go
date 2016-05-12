@@ -65,80 +65,6 @@ type Gadget struct {
 	timerOut       chan bool
 }
 
-//There are 5 types of Input/Output devices build into
-//GoGadgets (header, cooler, gpio, thermometer and switch)
-//NewGadget reads a GadgetConfig and creates the correct
-//type of Gadget.
-func NewGadget(config *GadgetConfig) (Gadgeter, error) {
-	if config.Type == "cron" {
-		return newSystemGadget(config)
-	}
-	switch deviceType(config.Pin.Type) {
-	case "input":
-		return NewInputGadget(config)
-	case "output":
-		return NewOutputGadget(config)
-	}
-	return nil, fmt.Errorf(
-		"couldn't build a gadget based on config: %s %s",
-		config.Location,
-		config.Name,
-	)
-}
-
-func newSystemGadget(config *GadgetConfig) (Gadgeter, error) {
-	if config.Type == "cron" {
-		return NewCron(config)
-	}
-	return nil, fmt.Errorf("don't know how to build %s", config.Name)
-}
-
-//Input Gadgets read from input devices and report their values (thermometer
-//is an example).
-func NewInputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
-	dev, err := NewInputDevice(&config.Pin)
-	if err == nil {
-		gadget = &Gadget{
-			Location:   config.Location,
-			Name:       config.Name,
-			Input:      dev,
-			Direction:  "input",
-			OnCommand:  "n/a",
-			OffCommand: "n/a",
-			UID:        fmt.Sprintf("%s %s", config.Location, config.Name),
-		}
-	}
-	return gadget, err
-}
-
-//Output Gadgets turn devices on and off.
-func NewOutputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
-	dev, err := NewOutputDevice(&config.Pin)
-	if config.OnCommand == "" {
-		config.OnCommand = fmt.Sprintf("turn on %s %s", config.Location, config.Name)
-	}
-	if config.OffCommand == "" {
-		config.OffCommand = fmt.Sprintf("turn off %s %s", config.Location, config.Name)
-	}
-	if err == nil {
-		gadget = &Gadget{
-			Location:       config.Location,
-			Name:           config.Name,
-			Direction:      "output",
-			OnCommand:      config.OnCommand,
-			OffCommand:     config.OffCommand,
-			InitialValue:   config.InitialValue,
-			Output:         dev,
-			Operator:       ">=",
-			UID:            fmt.Sprintf("%s %s", config.Location, config.Name),
-			filterMessages: config.Pin.Type != "recorder",
-		}
-	} else {
-		panic(err)
-	}
-	return gadget, err
-}
-
 //All gadgets respond to Robot Command Language (RCL) messages.  isMyCommand
 //reads an RCL message and decides if it was meant for this instance
 //of Gadget.
@@ -292,23 +218,20 @@ func (g *Gadget) readOnArguments(cmd string) (*Value, error) {
 		return val, errors.New(fmt.Sprintf("could not parse %s", cmd))
 	}
 	gadget, ok := units[unit]
-	if ok {
-		if gadget == "time" {
-			go g.startTimer(value, unit, g.timerIn, g.timerOut)
-		} else if gadget == "volume" || gadget == "temperature" {
-			if gadget == "volume" {
-				g.setCompare(value, unit, gadget)
-			}
-			val = &Value{
-				Value: value,
-				Units: unit,
-			}
-		} else if gadget == "power" {
-			val = &Value{
-				Value: value,
-				Units: unit,
-			}
-		}
+
+	if !ok {
+		return nil, nil
+	}
+
+	val = &Value{
+		Value: value,
+		Units: unit,
+	}
+
+	if gadget == "time" {
+		go g.startTimer(value, unit, g.timerIn, g.timerOut)
+	} else if gadget == "volume" {
+		g.setCompare(value, unit, gadget)
 	}
 	return val, nil
 }
@@ -380,7 +303,7 @@ func (g *Gadget) sendUpdate(val *Value) {
 			Output: g.Output.Status(),
 		}
 	}
-	msg := Message{
+	g.out <- Message{
 		UUID:        GetUUID(),
 		Sender:      g.UID,
 		Type:        UPDATE,
@@ -395,7 +318,6 @@ func (g *Gadget) sendUpdate(val *Value) {
 			Off:       g.OffCommand,
 		},
 	}
-	g.out <- msg
 }
 
 func ParseCommand(cmd string) (float64, string, error) {

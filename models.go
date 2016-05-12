@@ -77,7 +77,7 @@ type Message struct {
 	Method      Method    `json:"method,omitempty"`
 	Timestamp   time.Time `json:"timestamp,omitempty"`
 	Value       Value     `json:"value,omitempty"`
-	TargetValue *Value    `json:"targetValue,omitempty"`
+	TargetValue *Value    `json:"target_value,omitempty"`
 	Info        Info      `json:"info,omitempty"`
 	Config      Config    `json:"config,omitempty"`
 }
