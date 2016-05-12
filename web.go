@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/cswank/rex"
-	"github.com/gorilla/mux"
 )
 
 type Server struct {
@@ -205,7 +204,7 @@ func (s *Server) status(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) deviceValue(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
+	vars := rex.Vars(r, "main")
 	k := fmt.Sprintf("%s %s", vars["location"], vars["device"])
 	s.statusLock.Lock()
 	m, ok := s.updates[k]
