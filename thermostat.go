@@ -107,11 +107,9 @@ func (t *Thermostat) Update(msg *Message) {
 	temperature, ok := msg.Value.Value.(float64)
 	if t.status && ok {
 		if t.cmp(temperature, t.highTarget) {
-			t.status = false
 			t.gpio.Off()
 			t.lastChange = &now
 		} else if t.cmp(t.lowTarget, temperature) {
-			t.status = true
 			t.gpio.On(nil)
 			t.lastChange = &now
 		}
