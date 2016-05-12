@@ -225,6 +225,7 @@ var _ = Describe("gadgets", func() {
 			input := make(chan gogadgets.Message)
 			output := make(chan gogadgets.Message)
 			go g.Start(input, output)
+			<-output
 			val := <-output
 			Expect(val.Value.Value.(float64)).To(Equal(0.0))
 			val = <-output
