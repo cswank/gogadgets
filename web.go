@@ -97,10 +97,8 @@ func (s *Server) doSend(host string, msg Message, token string) {
 	enc.Encode(msg)
 	req, err := http.NewRequest("POST", host, &buf)
 	if err != nil {
-		log.Printf("error posting to quimby host: %s, err: %v\n", host, err)
-		s.clientsLock.Lock()
 		delete(s.clients, host)
-		s.clientsLock.Unlock()
+		log.Printf("error posting to quimby host: %s, err: %v\n", host, err)
 		return
 	}
 	if len(token) > 0 {
@@ -112,9 +110,7 @@ func (s *Server) doSend(host string, msg Message, token string) {
 	}
 
 	if err != nil || r.StatusCode != http.StatusOK {
-		s.clientsLock.Lock()
 		delete(s.clients, host)
-		s.clientsLock.Unlock()
 	}
 }
 
