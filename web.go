@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"sync"
 	"time"
@@ -94,7 +95,14 @@ func (s *Server) doSend(host string, msg Message, token string) {
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
 	enc.Encode(msg)
-	req, _ := http.NewRequest("POST", host, &buf)
+	req, err := http.NewRequest("POST", host, &buf)
+	if err != nil {
+		log.Printf("error posting to quimby host: %s, err: %v\n", host, err)
+		s.clientsLock.Lock()
+		delete(s.clients, host)
+		s.clientsLock.Unlock()
+		return
+	}
 	if len(token) > 0 {
 		req.Header.Add("Authorization", "Bearer "+token)
 	}
