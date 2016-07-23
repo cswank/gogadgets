@@ -123,21 +123,21 @@ func (c *Cron) getKeys(parts []string) []string {
 func (c *Cron) getRange(s string) []string {
 	parts := strings.Split(s, "-")
 	if len(parts) != 2 {
-		lg.Printf("could not parse %", s)
+		lg.Printf("could not parse %s", s)
 		return []string{}
 	}
 	start, err := strconv.ParseInt(parts[0], 10, 32)
 	if err != nil {
-		lg.Printf("could not parse %", s)
+		lg.Printf("could not parse %s", s)
 		return []string{}
 	}
 	end, err := strconv.ParseInt(parts[1], 10, 32)
 	if err != nil {
-		lg.Printf("could not parse %", s)
+		lg.Printf("could not parse %s", s)
 		return []string{}
 	}
 	if end <= start {
-		lg.Printf("could not parse %", s)
+		lg.Printf("could not parse %s", s)
 		return []string{}
 	}
 	out := make([]string, end-start+1)

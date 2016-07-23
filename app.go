@@ -15,15 +15,15 @@ var (
 //to them, and receiving Messages from them.  It is the
 //central part of Gadgets system.
 type App struct {
-	Gadgets []Gadgeter
-	Master  string
-	Host    string
-	Port    int
+	gadgets []Gadgeter
+	master  string
+	host    string
+	port    int
 }
 
 //NewApp creates a new Gadgets system.  The cfg argument can be a
 //path to a json file or a Config object itself.
-func NewApp(cfg interface{}) *App {
+func NewApp(cfg interface{}, gadgets ...Gadgeter) *App {
 	config := GetConfig(cfg)
 	if config.Logger != nil {
 		lg = config.Logger
@@ -35,28 +35,30 @@ func NewApp(cfg interface{}) *App {
 	}
 
 	a := &App{
-		Master: config.Master,
-		Host:   config.Host,
-		Port:   config.Port,
+		master: config.Master,
+		host:   config.Host,
+		port:   config.Port,
 	}
 	a.GetGadgets(config.Gadgets)
+	a.gadgets = append(a.gadgets, gadgets...)
 	return a
 }
 
 //This is a factory fuction that reads a GadgtConfig
 //and creates all the Gadgets that are defined in it.
 func (a *App) GetGadgets(configs []GadgetConfig) {
-	a.Gadgets = make([]Gadgeter, len(configs))
+	a.gadgets = make([]Gadgeter, len(configs))
 	for i, config := range configs {
 		gadget, err := NewGadget(&config)
 		if err != nil {
 			log.Fatal(err)
 		}
-		a.Gadgets[i] = gadget
+		a.gadgets[i] = gadget
 	}
-	a.Gadgets = append(a.Gadgets, &MethodRunner{})
-	srv := NewServer(a.Host, a.Master, a.Port, lg)
-	a.Gadgets = append(a.Gadgets, srv)
+	a.gadgets = append(a.gadgets, &MethodRunner{})
+	srv := NewServer(a.host, a.master, a.port, lg)
+	a.gadgets = append(a.gadgets, srv)
+
 }
 
 //The main entry point for a Gadget system.  It takes
@@ -76,7 +78,7 @@ func (a *App) GoStart(input <-chan Message) {
 
 	collect := make(chan Message)
 	channels := make(map[string]chan Message)
-	for _, gadget := range a.Gadgets {
+	for _, gadget := range a.gadgets {
 		out := make(chan Message)
 		channels[gadget.GetUID()] = out
 		go gadget.Start(out, collect)
@@ -84,14 +86,6 @@ func (a *App) GoStart(input <-chan Message) {
 	lg.Println("started gagdgets")
 	b := NewBroker(channels, input, collect)
 	b.Start()
-}
-
-//Some systems might have a few GoGadgets that are not
-//built into the system (and hence can't be defined in
-//the config file).  This is a way to add in an instance
-//of a gadget that is not part of the GoGadgets system.
-func (a *App) AddGadget(gadget Gadgeter) {
-	a.Gadgets = append(a.Gadgets, gadget)
 }
 
 func GetConfig(config interface{}) *Config {

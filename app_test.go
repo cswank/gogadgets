@@ -67,9 +67,7 @@ var _ = Describe("gogadgets", func() {
 				Port:   port,
 				Logger: lg,
 			}
-			a := gogadgets.NewApp(cfg)
-			a.AddGadget(p)
-			a.AddGadget(s)
+			a := gogadgets.NewApp(cfg, p, s)
 
 			input := make(chan gogadgets.Message)
 			go a.GoStart(input)
@@ -121,10 +119,8 @@ var _ = Describe("gogadgets", func() {
 				Logger: lg,
 			}
 
-			a := gogadgets.NewApp(cfg)
-			a.AddGadget(light1)
-			a2 := gogadgets.NewApp(cfg2)
-			a2.AddGadget(light2)
+			a := gogadgets.NewApp(cfg, light1)
+			a2 := gogadgets.NewApp(cfg2, light2)
 
 			input := make(chan gogadgets.Message)
 			go a.GoStart(input)
