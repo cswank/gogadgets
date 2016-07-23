@@ -44,7 +44,7 @@ func NewApp(cfg interface{}, gadgets ...Gadgeter) *App {
 	return a
 }
 
-//This is a factory fuction that reads a GadgtConfig
+//GetGadgets is a factory fuction that reads a GadgtConfig
 //and creates all the Gadgets that are defined in it.
 func (a *App) GetGadgets(configs []GadgetConfig) {
 	a.gadgets = make([]Gadgeter, len(configs))
@@ -61,7 +61,7 @@ func (a *App) GetGadgets(configs []GadgetConfig) {
 
 }
 
-//The main entry point for a Gadget system.  It takes
+//Start is the main entry point for a Gadget system.  It takes
 //a chan in case the system is started as a goroutine,
 //but it can just be called directly.
 func (a *App) Start() {
@@ -96,7 +96,7 @@ func GetConfig(config interface{}) *Config {
 	case *Config:
 		c = v
 	default:
-		panic("invalid config")
+		lg.Fatal("invalid config")
 	}
 	return c
 }
@@ -105,11 +105,11 @@ func getConfigFromFile(configPath string) *Config {
 	c := &Config{}
 	b, err := ioutil.ReadFile(configPath)
 	if err != nil {
-		panic(err)
+		lg.Fatal(err)
 	}
 	err = json.Unmarshal(b, c)
 	if err != nil {
-		panic(err)
+		lg.Fatal(err)
 	}
 	return c
 }
