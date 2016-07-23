@@ -42,10 +42,11 @@ var _ = Describe("thermostat", func() {
 				Pin:       "11",
 				Direction: "out",
 				Args: map[string]interface{}{
-					"type":   "heater",
-					"high":   150.0,
-					"low":    130.0,
-					"sensor": "my thermometer",
+					"type":    "heater",
+					"high":    150.0,
+					"low":     130.0,
+					"sensor":  "my thermometer",
+					"timeout": "0s",
 				},
 			}
 			var err error
@@ -107,10 +108,11 @@ var _ = Describe("thermostat", func() {
 				Pin:       "11",
 				Direction: "out",
 				Args: map[string]interface{}{
-					"type":   "cooler",
-					"high":   150.0,
-					"low":    130.0,
-					"sensor": "my thermometer",
+					"type":    "cooler",
+					"high":    150.0,
+					"low":     130.0,
+					"sensor":  "my thermometer",
+					"timeout": "0s",
 				},
 			}
 			var err error

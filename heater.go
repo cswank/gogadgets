@@ -48,6 +48,10 @@ func NewHeater(pin *Pin) (OutputDevice, error) {
 	return h, err
 }
 
+func (h *Heater) Commands(location, name string) *Commands {
+	return nil
+}
+
 func (h *Heater) Config() ConfigHelper {
 	return ConfigHelper{
 		PinType: "pwm",

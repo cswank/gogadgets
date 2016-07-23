@@ -51,8 +51,8 @@ type Gadget struct {
 	Output         OutputDevice
 	Input          InputDevice
 	Direction      string
-	OnCommand      string
-	OffCommand     string
+	OnCommands     []string
+	OffCommands    []string
 	InitialValue   string
 	UID            string
 	status         bool
@@ -70,12 +70,27 @@ type Gadget struct {
 //All gadgets respond to Robot Command Language (RCL) messages.  isMyCommand
 //reads an RCL message and decides if it was meant for this instance
 //of Gadget.
-func (g *Gadget) isMyCommand(msg *Message) bool {
-	return msg.Type == COMMAND &&
-		(strings.Index(msg.Body, g.OnCommand) == 0 ||
-			strings.Index(msg.Body, g.OffCommand) == 0 ||
-			msg.Body == "update" ||
-			msg.Body == "shutdown")
+func (g *Gadget) isMyCommand(msg *Message) (bool, string, string) {
+	if msg.Type != COMMAND {
+		return false, "", ""
+	}
+
+	if msg.Body == "update" || msg.Body == "shutdown" {
+		return true, "", ""
+	}
+
+	for _, cmd := range g.OnCommands {
+		if strings.Index(msg.Body, cmd) == 0 {
+			return true, "on", cmd
+		}
+	}
+
+	for _, cmd := range g.OffCommands {
+		if strings.Index(msg.Body, cmd) == 0 {
+			return true, "off", cmd
+		}
+	}
+	return false, "", ""
 }
 
 func (g *Gadget) GetDirection() string {
@@ -138,7 +153,7 @@ func (g *Gadget) readInitialValue() {
 		UUID: GetUUID(),
 		Body: g.InitialValue,
 	}
-	g.readCommand(msg)
+	g.readCommand(msg, "on", g.InitialValue)
 }
 
 func (g *Gadget) doOutputLoop(in <-chan Message) {
@@ -173,8 +188,9 @@ func (g *Gadget) readMessage(msg *Message) {
 	if g.devIn != nil {
 		g.devIn <- *msg
 	}
-	if msg.Type == COMMAND && g.isMyCommand(msg) {
-		g.readCommand(msg)
+	mine, onoff, matched := g.isMyCommand(msg)
+	if msg.Type == COMMAND && mine {
+		g.readCommand(msg, onoff, matched)
 	} else if g.status && msg.Type == UPDATE {
 		g.readUpdate(msg)
 	}
@@ -188,22 +204,22 @@ func (g *Gadget) readUpdate(msg *Message) {
 	}
 }
 
-func (g *Gadget) readCommand(msg *Message) {
+func (g *Gadget) readCommand(msg *Message, onoff, matched string) {
 	if msg.Body == "shutdown" {
 		g.shutdown = true
 		g.off()
 	} else if msg.Body == "update" {
 		g.sendUpdate(nil)
-	} else if strings.Index(msg.Body, g.OnCommand) == 0 {
-		g.readOnCommand(msg)
-	} else if strings.Index(msg.Body, g.OffCommand) == 0 {
+	} else if onoff == "on" {
+		g.readOnCommand(msg, matched)
+	} else if onoff == "off" {
 		g.readOffCommand(msg)
 	}
 }
 
-func (g *Gadget) readOnCommand(msg *Message) {
+func (g *Gadget) readOnCommand(msg *Message, matched string) {
 	var val *Value
-	if len(strings.Trim(msg.Body, " ")) > len(g.OnCommand) {
+	if len(strings.Trim(msg.Body, " ")) > len(matched) {
 		val, err := g.readOnArguments(msg.Body)
 		if err == nil {
 			g.on(val)
@@ -218,7 +234,7 @@ func (g *Gadget) readOnArguments(cmd string) (*Value, error) {
 	var val *Value
 	value, unit, err := ParseCommand(cmd)
 	if err != nil {
-		return val, errors.New(fmt.Sprintf("could not parse %s", cmd))
+		return val, fmt.Errorf("could not parse %s", cmd)
 	}
 	gadget, ok := units[unit]
 
@@ -317,8 +333,8 @@ func (g *Gadget) sendUpdate(val *Value) {
 		Timestamp:   time.Now().UTC(),
 		Info: Info{
 			Direction: g.Direction,
-			On:        g.OnCommand,
-			Off:       g.OffCommand,
+			On:        g.OnCommands,
+			Off:       g.OffCommands,
 		},
 	}
 }

@@ -34,6 +34,10 @@ func NewMotor(pin *Pin) (OutputDevice, error) {
 	}, nil
 }
 
+func (m *Motor) Commands(location, name string) *Commands {
+	return nil
+}
+
 func (m *Motor) Config() ConfigHelper {
 	// g := GPIO{}
 	// gpio := g.Config()

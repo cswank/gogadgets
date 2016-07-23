@@ -48,13 +48,13 @@ var _ = Describe("gadgets", func() {
 			location := "lab"
 			name := "led"
 			g := gogadgets.Gadget{
-				Location:   location,
-				Name:       name,
-				Direction:  "output",
-				OnCommand:  fmt.Sprintf("turn on %s %s", location, name),
-				OffCommand: fmt.Sprintf("turn off %s %s", location, name),
-				Output:     &FakeOutput{},
-				UID:        fmt.Sprintf("%s %s", location, name),
+				Location:    location,
+				Name:        name,
+				Direction:   "output",
+				OnCommands:  []string{fmt.Sprintf("turn on %s %s", location, name)},
+				OffCommands: []string{fmt.Sprintf("turn off %s %s", location, name)},
+				Output:      &FakeOutput{},
+				UID:         fmt.Sprintf("%s %s", location, name),
 			}
 			input := make(chan gogadgets.Message)
 			output := make(chan gogadgets.Message)
@@ -90,13 +90,13 @@ var _ = Describe("gadgets", func() {
 			location := "tank"
 			name := "valve"
 			g := gogadgets.Gadget{
-				Location:   location,
-				Name:       name,
-				Operator:   ">=",
-				OnCommand:  fmt.Sprintf("fill %s", location),
-				OffCommand: fmt.Sprintf("stop filling %s", location),
-				Output:     &FakeOutput{},
-				UID:        fmt.Sprintf("%s %s", location, name),
+				Location:    location,
+				Name:        name,
+				Operator:    ">=",
+				OnCommands:  []string{fmt.Sprintf("fill %s", location)},
+				OffCommands: []string{fmt.Sprintf("stop filling %s", location)},
+				Output:      &FakeOutput{},
+				UID:         fmt.Sprintf("%s %s", location, name),
 			}
 			input := make(chan gogadgets.Message)
 			output := make(chan gogadgets.Message)
@@ -132,13 +132,13 @@ var _ = Describe("gadgets", func() {
 			location := "lab"
 			name := "led"
 			g := gogadgets.Gadget{
-				Location:   location,
-				Name:       name,
-				OnCommand:  "turn on lab led",
-				Operator:   ">=",
-				OffCommand: "turn off lab led",
-				Output:     &FakeOutput{},
-				UID:        fmt.Sprintf("%s %s", location, name),
+				Location:    location,
+				Name:        name,
+				OnCommands:  []string{"turn on lab led"},
+				Operator:    ">=",
+				OffCommands: []string{"turn off lab led"},
+				Output:      &FakeOutput{},
+				UID:         fmt.Sprintf("%s %s", location, name),
 			}
 			input := make(chan gogadgets.Message)
 			output := make(chan gogadgets.Message)
@@ -165,12 +165,12 @@ var _ = Describe("gadgets", func() {
 			location := "lab"
 			name := "led"
 			g := gogadgets.Gadget{
-				Location:   location,
-				Name:       name,
-				OnCommand:  "turn on lab led",
-				OffCommand: "turn off lab led",
-				Output:     &FakeOutput{},
-				UID:        fmt.Sprintf("%s %s", location, name),
+				Location:    location,
+				Name:        name,
+				OnCommands:  []string{"turn on lab led"},
+				OffCommands: []string{"turn off lab led"},
+				Output:      &FakeOutput{},
+				UID:         fmt.Sprintf("%s %s", location, name),
 			}
 			input := make(chan gogadgets.Message)
 			output := make(chan gogadgets.Message)

@@ -79,6 +79,10 @@ func NewGPIO(pin *Pin) (OutputDevice, error) {
 	return g, err
 }
 
+func (g *GPIO) Commands(location, name string) *Commands {
+	return nil
+}
+
 func (g *GPIO) Config() ConfigHelper {
 	return ConfigHelper{
 		PinType: "gpio",

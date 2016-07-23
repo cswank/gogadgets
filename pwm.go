@@ -48,6 +48,10 @@ func NewPWM(pin *Pin) (OutputDevice, error) {
 	return pwm, err
 }
 
+func (p *PWM) Commands(location, name string) *Commands {
+	return nil
+}
+
 func (p *PWM) Config() ConfigHelper {
 	return ConfigHelper{
 		PinType: "pwm",

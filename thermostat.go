@@ -1,17 +1,20 @@
 package gogadgets
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 type cmp func(float64, float64) bool
 
-/*
+/*Thermostat is used for controlling a furnace.
 Configure a thermostat like:
 
 	{
 	    "host": "http://192.168.1.30:6111",
 	    "gadgets": [
 	        {
-	            "location": "the lab",
+	            "location": "home",
 	            "name": "temperature",
 	            "pin": {
 	                "type": "thermometer",
@@ -20,17 +23,18 @@ Configure a thermostat like:
 	            }
 	        },
 	        {
-	            "location": "the lab",
-	            "name": "heater",
+	            "location": "home",
+	            "name": "furnace",
 	            "pin": {
 	                "type": "thermostat",
 	                "port": "8",
 	                "pin": "11",
 	                "args": {
 	                    "type": "heater",
-	                    "sensor": "the lab temperature",
+	                    "sensor": "home temperature",
 	                    "high": 150.0,
-	                    "low": 120.0
+	                    "low": 120.0,
+                        "timeout": "5m"
 	                }
 	            }
 	        }
@@ -49,12 +53,17 @@ below 120.
 type Thermostat struct {
 	highTarget float64
 	lowTarget  float64
-	timeout    time.Duration
+
+	//minimum time between state changes
+	timeout time.Duration
+
 	status     bool
 	gpio       OutputDevice
 	lastChange *time.Time
 	cmp        cmp
-	sensor     string //the location + name id of the temperature sensor (must be in the same location)
+
+	//the location + name id of the temperature sensor (must be in the same location)
+	sensor string
 }
 
 func NewThermostat(pin *Pin) (OutputDevice, error) {
@@ -84,8 +93,40 @@ func NewThermostat(pin *Pin) (OutputDevice, error) {
 		lowTarget:  l,
 		cmp:        c,
 		sensor:     pin.Args["sensor"].(string),
+		timeout:    getTimeout(pin.Args),
 	}
 	return t, err
+}
+
+func (t *Thermostat) Commands(location, name string) *Commands {
+	return &Commands{
+		On: []string{
+			fmt.Sprintf("heat %s", location),
+			fmt.Sprintf("cool %s", location),
+		},
+		Off: []string{
+			fmt.Sprintf("turn off %s $s", location, name),
+		},
+	}
+}
+
+func getTimeout(args map[string]interface{}) time.Duration {
+	to := 5 * time.Minute
+
+	i, ok := args["timeout"]
+	if !ok {
+		return to
+	}
+
+	s, ok := i.(string)
+	if !ok {
+		return to
+	}
+
+	if x, err := time.ParseDuration(s); err == nil {
+		to = x
+	}
+	return to
 }
 
 func (t *Thermostat) Config() ConfigHelper {
@@ -101,9 +142,11 @@ func (t *Thermostat) Update(msg *Message) {
 		return
 	}
 	now := time.Now()
-	// if t.lastChange != nil && now.Sub(*t.lastChange) < 120*time.Second {
-	// 	return
-	// }
+
+	if t.lastChange != nil && now.Sub(*t.lastChange) < t.timeout {
+		return
+	}
+
 	temperature, ok := msg.Value.Value.(float64)
 	if t.status && ok {
 		if t.cmp(temperature, t.highTarget) {

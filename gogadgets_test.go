@@ -10,6 +10,10 @@ type FakeOutput struct {
 	on bool
 }
 
+func (f *FakeOutput) Commands(l, n string) *gogadgets.Commands {
+	return nil
+}
+
 func (f *FakeOutput) Config() gogadgets.ConfigHelper {
 	return gogadgets.ConfigHelper{}
 }

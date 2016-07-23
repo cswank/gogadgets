@@ -40,12 +40,12 @@ var _ = Describe("gogadgets", func() {
 		It("starts up a gogadgets app", func() {
 			fo := &FakeOutput{}
 			p := &gogadgets.Gadget{
-				Location:   "tank",
-				Name:       "pump",
-				OnCommand:  fmt.Sprintf("turn on %s %s", "tank", "pump"),
-				OffCommand: fmt.Sprintf("turn off %s %s", "tank", "pump"),
-				Output:     fo,
-				UID:        fmt.Sprintf("%s %s", "tank", "pump"),
+				Location:    "tank",
+				Name:        "pump",
+				OnCommands:  []string{fmt.Sprintf("turn on %s %s", "tank", "pump")},
+				OffCommands: []string{fmt.Sprintf("turn off %s %s", "tank", "pump")},
+				Output:      fo,
+				UID:         fmt.Sprintf("%s %s", "tank", "pump"),
 			}
 			location := "tank"
 			name := "switch"
@@ -89,20 +89,20 @@ var _ = Describe("gogadgets", func() {
 			fo1 := &FakeOutput{}
 			fo2 := &FakeOutput{}
 			light1 := &gogadgets.Gadget{
-				Location:   "living room",
-				Name:       "light",
-				OnCommand:  fmt.Sprintf("turn on %s %s", "living room", "light"),
-				OffCommand: fmt.Sprintf("turn off %s %s", "living room", "light"),
-				Output:     fo1,
-				UID:        fmt.Sprintf("%s %s", "living room", "light"),
+				Location:    "living room",
+				Name:        "light",
+				OnCommands:  []string{fmt.Sprintf("turn on %s %s", "living room", "light")},
+				OffCommands: []string{fmt.Sprintf("turn off %s %s", "living room", "light")},
+				Output:      fo1,
+				UID:         fmt.Sprintf("%s %s", "living room", "light"),
 			}
 			light2 := &gogadgets.Gadget{
-				Location:   "kitchen",
-				Name:       "light",
-				OnCommand:  fmt.Sprintf("turn on %s %s", "kitchen", "light"),
-				OffCommand: fmt.Sprintf("turn off %s %s", "kitchen", "light"),
-				Output:     fo2,
-				UID:        fmt.Sprintf("%s %s", "kitchen room", "light"),
+				Location:    "kitchen",
+				Name:        "light",
+				OnCommands:  []string{fmt.Sprintf("turn on %s %s", "kitchen", "light")},
+				OffCommands: []string{fmt.Sprintf("turn off %s %s", "kitchen", "light")},
+				Output:      fo2,
+				UID:         fmt.Sprintf("%s %s", "kitchen room", "light"),
 			}
 
 			cfg := &gogadgets.Config{

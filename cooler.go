@@ -22,6 +22,10 @@ func NewCooler(pin *Pin) (OutputDevice, error) {
 	return c, err
 }
 
+func (c *Cooler) Commands(location, name string) *Commands {
+	return nil
+}
+
 func (c *Cooler) Config() ConfigHelper {
 	return ConfigHelper{
 		PinType: "gpio",

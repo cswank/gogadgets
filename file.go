@@ -17,6 +17,10 @@ func NewFile(pin *Pin) (OutputDevice, error) {
 	}, nil
 }
 
+func (f *File) Commands(location, name string) *Commands {
+	return nil
+}
+
 func (f *File) Config() ConfigHelper {
 	return ConfigHelper{}
 }

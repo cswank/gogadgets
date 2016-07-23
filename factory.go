@@ -70,13 +70,11 @@ func NewInputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
 	dev, err := NewInputDevice(&config.Pin)
 	if err == nil {
 		gadget = &Gadget{
-			Location:   config.Location,
-			Name:       config.Name,
-			Input:      dev,
-			Direction:  "input",
-			OnCommand:  "n/a",
-			OffCommand: "n/a",
-			UID:        fmt.Sprintf("%s %s", config.Location, config.Name),
+			Location:  config.Location,
+			Name:      config.Name,
+			Input:     dev,
+			Direction: "input",
+			UID:       fmt.Sprintf("%s %s", config.Location, config.Name),
 		}
 	}
 	return gadget, err
@@ -85,29 +83,34 @@ func NewInputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
 //Output Gadgets turn devices on and off.
 func NewOutputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
 	dev, err := NewOutputDevice(&config.Pin)
-	if config.OnCommand == "" {
-		config.OnCommand = fmt.Sprintf("turn on %s %s", config.Location, config.Name)
-	}
-	if config.OffCommand == "" {
-		config.OffCommand = fmt.Sprintf("turn off %s %s", config.Location, config.Name)
-	}
-	if err == nil {
-		gadget = &Gadget{
-			Location:       config.Location,
-			Name:           config.Name,
-			Direction:      "output",
-			OnCommand:      config.OnCommand,
-			OffCommand:     config.OffCommand,
-			InitialValue:   config.InitialValue,
-			Output:         dev,
-			Operator:       ">=",
-			UID:            fmt.Sprintf("%s %s", config.Location, config.Name),
-			filterMessages: config.Pin.Type != "recorder",
-		}
-	} else {
+	if err != nil {
 		panic(err)
 	}
-	return gadget, err
+
+	if cmds := dev.Commands(config.Location, config.Name); cmds != nil {
+		config.OnCommands = cmds.On
+		config.OffCommands = cmds.Off
+	} else {
+		if len(config.OnCommands) == 0 {
+			config.OnCommands = []string{fmt.Sprintf("turn on %s %s", config.Location, config.Name)}
+		}
+		if len(config.OffCommands) == 0 {
+			config.OffCommands = []string{fmt.Sprintf("turn off %s %s", config.Location, config.Name)}
+		}
+	}
+	gadget = &Gadget{
+		Location:       config.Location,
+		Name:           config.Name,
+		Direction:      "output",
+		OnCommands:     config.OnCommands,
+		OffCommands:    config.OffCommands,
+		InitialValue:   config.InitialValue,
+		Output:         dev,
+		Operator:       ">=",
+		UID:            fmt.Sprintf("%s %s", config.Location, config.Name),
+		filterMessages: config.Pin.Type != "recorder",
+	}
+	return gadget, nil
 }
 
 //Each input and output device has a config method that returns a Pin with
@@ -182,6 +185,11 @@ func NewInputDevice(pin *Pin) (dev InputDevice, err error) {
 
 type OutputDeviceFactory func(pin *Pin) (OutputDevice, error)
 
+type Commands struct {
+	On  []string
+	Off []string
+}
+
 //Outputdevices turn things on and off.  Currently the
 type OutputDevice interface {
 	On(val *Value) error
@@ -189,6 +197,7 @@ type OutputDevice interface {
 	Update(msg *Message)
 	Status() interface{}
 	Config() ConfigHelper
+	Commands(string, string) *Commands
 }
 
 func NewOutputDevice(pin *Pin) (dev OutputDevice, err error) {

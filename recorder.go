@@ -38,6 +38,10 @@ func NewRecorder(pin *Pin) (OutputDevice, error) {
 	return r, nil
 }
 
+func (r *Recorder) Commands(location, name string) *Commands {
+	return nil
+}
+
 func (r *Recorder) Config() ConfigHelper {
 	return ConfigHelper{
 		Args: map[string]interface{}{

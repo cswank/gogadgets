@@ -31,6 +31,10 @@ func NewSMS(pin *Pin) (OutputDevice, error) {
 	}, nil
 }
 
+func (s *SMS) Commands(location, name string) *Commands {
+	return nil
+}
+
 func (s *SMS) Config() ConfigHelper {
 	return ConfigHelper{}
 }

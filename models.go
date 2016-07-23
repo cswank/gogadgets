@@ -51,9 +51,9 @@ func (v *Value) ToFloat() (f float64, ok bool) {
 }
 
 type Info struct {
-	Direction string `json:"direction,omitempty"`
-	On        string `json:"on,omitempty"`
-	Off       string `json:"off,omitempty"`
+	Direction string   `json:"direction,omitempty"`
+	On        []string `json:"on,omitempty"`
+	Off       []string `json:"off,omitempty"`
 }
 
 type Method struct {
@@ -105,8 +105,8 @@ type GadgetConfig struct {
 	Type         string                 `json:"type,omitempty"`
 	Location     string                 `json:"location,omitempty"`
 	Name         string                 `json:"name,omitempty"`
-	OnCommand    string                 `json:"onCommand,omitempty"`
-	OffCommand   string                 `json:"offCommand,omitempty"`
+	OnCommands   []string               `json:"onCommands,omitempty"`
+	OffCommands  []string               `json:"offCommands,omitempty"`
 	InitialValue string                 `json:"initialValue,omitempty"`
 	Pin          Pin                    `json:"pin,omitempty"`
 	Args         map[string]interface{} `json:"args,omitempty"`
