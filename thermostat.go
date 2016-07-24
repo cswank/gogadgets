@@ -2,6 +2,7 @@ package gogadgets
 
 import (
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -51,51 +52,53 @@ temperature gets above 150, and stop cooling when the temperature gets
 below 120.
 */
 type Thermostat struct {
-	highTarget float64
-	lowTarget  float64
+	target float64
 
 	//minimum time between state changes
 	timeout time.Duration
 
 	status     bool
-	gpio       OutputDevice
+	gpios      map[string]OutputDevice
 	lastChange *time.Time
-	cmp        cmp
+	lastCmd    string
+	cmp        map[string]cmp
 
 	//the location + name id of the temperature sensor (must be in the same location)
 	sensor string
 }
 
 func NewThermostat(pin *Pin) (OutputDevice, error) {
-	var t *Thermostat
-	var err error
-	g, err := NewGPIO(pin)
-	var c cmp
-
-	var h, l float64
-	if pin.Args["type"] == "cooler" {
-		l = pin.Args["high"].(float64)
-		h = pin.Args["low"].(float64)
-		c = func(x, y float64) bool {
-			return x <= y
-		}
-	} else {
-		h = pin.Args["high"].(float64)
-		l = pin.Args["low"].(float64)
-		c = func(x, y float64) bool {
-			return x >= y
-		}
+	p, ok := pin.Pins["heat"]
+	if !ok {
+		return nil, fmt.Errorf("invalid heat pin: %v", pin)
+	}
+	h, err := NewGPIO(&p)
+	if err != nil {
+		lg.Fatal(err)
 	}
 
-	t = &Thermostat{
-		gpio:       g,
-		highTarget: h,
-		lowTarget:  l,
-		cmp:        c,
-		sensor:     pin.Args["sensor"].(string),
-		timeout:    getTimeout(pin.Args),
+	p, ok = pin.Pins["cool"]
+	if !ok {
+		return nil, fmt.Errorf("invalid cool pin: %v", pin)
 	}
-	return t, err
+
+	c, err := NewGPIO(&p)
+	if err != nil {
+		lg.Fatal(err)
+	}
+
+	return &Thermostat{
+		gpios: map[string]OutputDevice{
+			"heat": h,
+			"cool": c,
+		},
+		cmp: map[string]cmp{
+			"heat": func(x, y float64) bool { return x >= y },
+			"cool": func(x, y float64) bool { return x < y },
+		},
+		sensor:  pin.Args["sensor"].(string),
+		timeout: getTimeout(pin.Args),
+	}, nil
 }
 
 func (t *Thermostat) Commands(location, name string) *Commands {
@@ -149,26 +152,37 @@ func (t *Thermostat) Update(msg *Message) {
 
 	temperature, ok := msg.Value.Value.(float64)
 	if t.status && ok {
-		if t.cmp(temperature, t.highTarget) {
-			t.gpio.Off()
-			t.lastChange = &now
-		} else if t.cmp(t.lowTarget, temperature) {
-			t.gpio.On(nil)
-			t.lastChange = &now
+		gpio := t.gpios[t.lastCmd]
+		t.lastChange = &now
+		if t.cmp[t.lastCmd](temperature, t.target) {
+			gpio.Off()
+		} else {
+			gpio.On(nil)
 		}
 	}
 }
 
 func (t *Thermostat) On(val *Value) error {
+	if val == nil {
+		return nil
+	}
+	tar, ok := val.Value.(float64)
+	if !ok {
+		return nil
+	}
+	parts := strings.Split(val.Cmd, " ")
+	t.lastCmd = parts[0]
+	t.target = tar
+	t.gpios[t.lastCmd].On(nil)
 	t.status = true
-	t.gpio.On(nil)
 	return nil
 }
 
 func (t *Thermostat) Off() error {
 	if t.status {
 		t.status = false
-		t.gpio.Off()
+		t.gpios["heat"].Off()
+		t.gpios["cool"].Off()
 	}
 	return nil
 }

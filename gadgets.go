@@ -245,6 +245,7 @@ func (g *Gadget) readOnArguments(cmd string) (*Value, error) {
 	val = &Value{
 		Value: value,
 		Units: unit,
+		Cmd:   cmd,
 	}
 
 	if gadget == "time" {

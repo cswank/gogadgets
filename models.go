@@ -32,6 +32,7 @@ type Value struct {
 	Units  string      `json:"units,omitempty"`
 	Output interface{} `json:"io,omitempty"`
 	ID     string      `json:"id,omitempty"`
+	Cmd    string      `json:"-"`
 }
 
 func (v *Value) ToFloat() (f float64, ok bool) {
@@ -108,7 +109,7 @@ type GadgetConfig struct {
 	OnCommands   []string               `json:"onCommands,omitempty"`
 	OffCommands  []string               `json:"offCommands,omitempty"`
 	InitialValue string                 `json:"initialValue,omitempty"`
-	Pin          Pin                    `json:"pin,omitempty"`
+	Pin          Pin                    `json:"pins,omitempty"`
 	Args         map[string]interface{} `json:"args,omitempty"`
 }
 
