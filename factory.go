@@ -20,6 +20,7 @@ var (
 		"heater":     NewHeater,
 		"cooler":     NewCooler,
 		"thermostat": NewThermostat,
+		"boiler":     NewBoiler,
 		"gpio":       NewGPIO,
 		"recorder":   NewRecorder,
 		"pwm":        NewPWM,
