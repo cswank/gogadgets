@@ -1,0 +1,37 @@
+{
+    "host": "http://192.168.1.18:6111",
+    "gadgets": [
+        {
+            "location": "home",
+            "name": "temperature",
+            "pin": {
+                "type": "thermometer",
+                "OneWireId": "28-0000041cb544",
+                "Units": "F"
+            }
+        },
+        {
+            "location": "home",
+            "name": "furnace",
+            "pin": {
+                "type": "thermostat",
+                "pins": {
+                    "heat": {
+                        "platform": "rpi",
+                        "pin": "11",
+                        "direction": "out"
+                    },
+                    "cool": {
+                        "platform": "rpi",
+                        "pin": "13",
+                        "direction": "out"
+                    }
+                },
+                "args": {
+                    "sensor": "home temperature",
+                    "timeout": "5m"
+                }
+            }
+        }
+    ]
+}

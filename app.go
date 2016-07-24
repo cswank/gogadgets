@@ -105,11 +105,11 @@ func getConfigFromFile(configPath string) *Config {
 	c := &Config{}
 	b, err := ioutil.ReadFile(configPath)
 	if err != nil {
-		lg.Fatal(err)
+		panic(err)
 	}
 	err = json.Unmarshal(b, c)
 	if err != nil {
-		lg.Fatal(err)
+		panic(err)
 	}
 	return c
 }

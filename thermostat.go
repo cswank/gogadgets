@@ -12,7 +12,7 @@ type cmp func(float64, float64) bool
 Configure a thermostat like:
 
 	{
-	    "host": "http://192.168.1.30:6111",
+	    "host": "http://192.168.1.18:6111",
 	    "gadgets": [
 	        {
 	            "location": "home",
@@ -28,13 +28,20 @@ Configure a thermostat like:
 	            "name": "furnace",
 	            "pin": {
 	                "type": "thermostat",
-	                "port": "8",
-	                "pin": "11",
+                    "pins": {
+                        "heat": {
+                            "platform": "rpi",
+	                        "pin": "11",
+                            "direction": "out"
+                        },
+                        "cool": {
+                            "platform": "rpi",
+	                        "pin": "13",
+                            "direction": "out"
+                        },
+                    },
 	                "args": {
-	                    "type": "heater",
 	                    "sensor": "home temperature",
-	                    "high": 150.0,
-	                    "low": 120.0,
                         "timeout": "5m"
 	                }
 	            }

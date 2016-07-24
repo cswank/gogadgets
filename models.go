@@ -109,7 +109,7 @@ type GadgetConfig struct {
 	OnCommands   []string               `json:"onCommands,omitempty"`
 	OffCommands  []string               `json:"offCommands,omitempty"`
 	InitialValue string                 `json:"initialValue,omitempty"`
-	Pin          Pin                    `json:"pins,omitempty"`
+	Pin          Pin                    `json:"pin,omitempty"`
 	Args         map[string]interface{} `json:"args,omitempty"`
 }
 
