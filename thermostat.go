@@ -115,7 +115,7 @@ func (t *Thermostat) Commands(location, name string) *Commands {
 			fmt.Sprintf("cool %s", location),
 		},
 		Off: []string{
-			fmt.Sprintf("turn off %s $s", location, name),
+			fmt.Sprintf("turn off %s", name),
 		},
 	}
 }
@@ -147,18 +147,20 @@ func (t *Thermostat) Config() ConfigHelper {
 	}
 }
 
-func (t *Thermostat) Update(msg *Message) {
+func (t *Thermostat) Update(msg *Message) bool {
 	if msg.Sender != t.sensor {
-		return
+		return false
 	}
 	now := time.Now()
 
 	if t.lastChange != nil && now.Sub(*t.lastChange) < t.timeout {
-		return
+		return false
 	}
 
+	var changed bool
 	temperature, ok := msg.Value.Value.(float64)
 	if t.status && ok {
+		changed = true
 		gpio := t.gpios[t.lastCmd]
 		t.lastChange = &now
 		if t.cmp[t.lastCmd](temperature, t.target) {
@@ -167,6 +169,7 @@ func (t *Thermostat) Update(msg *Message) {
 			gpio.On(nil)
 		}
 	}
+	return changed
 }
 
 func (t *Thermostat) On(val *Value) error {
@@ -179,8 +182,8 @@ func (t *Thermostat) On(val *Value) error {
 	}
 	parts := strings.Split(val.Cmd, " ")
 	t.lastCmd = parts[0]
+	t.lastChange = nil
 	t.target = tar
-	t.gpios[t.lastCmd].On(nil)
 	t.status = true
 	return nil
 }
@@ -195,5 +198,8 @@ func (t *Thermostat) Off() error {
 }
 
 func (t *Thermostat) Status() interface{} {
-	return t.status
+	if !t.status || t.lastCmd == "" {
+		return false
+	}
+	return t.gpios[t.lastCmd].Status()
 }

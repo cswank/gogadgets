@@ -46,8 +46,8 @@ func (m *Motor) Config() ConfigHelper {
 	return ConfigHelper{}
 }
 
-func (m *Motor) Update(msg *Message) {
-
+func (m *Motor) Update(msg *Message) bool {
+	return false
 }
 
 func (m *Motor) On(val *Value) error {

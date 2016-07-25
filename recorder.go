@@ -70,10 +70,11 @@ func getSummaries(s interface{}) map[string]time.Duration {
 	return out
 }
 
-func (r *Recorder) Update(msg *Message) {
+func (r *Recorder) Update(msg *Message) bool {
 	if r.status && msg.Type == "update" {
 		r.save(msg)
 	}
+	return false
 }
 
 func (r *Recorder) On(val *Value) error {

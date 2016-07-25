@@ -195,7 +195,7 @@ type Commands struct {
 type OutputDevice interface {
 	On(val *Value) error
 	Off() error
-	Update(msg *Message)
+	Update(msg *Message) bool
 	Status() interface{}
 	Config() ConfigHelper
 	Commands(string, string) *Commands

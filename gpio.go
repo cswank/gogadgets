@@ -116,8 +116,8 @@ func (g *GPIO) Init() error {
 	return nil
 }
 
-func (g *GPIO) Update(msg *Message) {
-
+func (g *GPIO) Update(msg *Message) bool {
+	return false
 }
 
 func (g *GPIO) On(val *Value) error {

@@ -34,13 +34,16 @@ func (c *Cooler) Config() ConfigHelper {
 	}
 }
 
-func (c *Cooler) Update(msg *Message) {
+func (c *Cooler) Update(msg *Message) bool {
 	now := time.Now()
 	if c.lastChange != nil && now.Sub(*c.lastChange) < 120*time.Second {
-		return
+		return false
 	}
+
+	var changed bool
 	temperature, ok := msg.Value.Value.(float64)
 	if ok && c.status {
+		changed = true
 		if temperature <= c.target {
 			c.gpio.Off()
 			c.lastChange = &now
@@ -49,6 +52,7 @@ func (c *Cooler) Update(msg *Message) {
 			c.lastChange = &now
 		}
 	}
+	return changed
 }
 
 func (c *Cooler) On(val *Value) error {

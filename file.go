@@ -25,8 +25,8 @@ func (f *File) Config() ConfigHelper {
 	return ConfigHelper{}
 }
 
-func (f *File) Update(msg *Message) {
-
+func (f *File) Update(msg *Message) bool {
+	return false
 }
 
 func (f *File) On(val *Value) error {

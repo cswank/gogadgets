@@ -39,12 +39,13 @@ func (s *SMS) Config() ConfigHelper {
 	return ConfigHelper{}
 }
 
-func (s *SMS) Update(msg *Message) {
+func (s *SMS) Update(msg *Message) bool {
 	if s.shouldSend(msg) {
 		if err := s.Driver.Send(); err != nil {
 			log.Println("unable to send sms", err)
 		}
 	}
+	return false
 }
 
 func (s *SMS) shouldSend(msg *Message) bool {

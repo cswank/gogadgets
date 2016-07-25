@@ -18,8 +18,8 @@ func (f *FakeOutput) Config() gogadgets.ConfigHelper {
 	return gogadgets.ConfigHelper{}
 }
 
-func (f *FakeOutput) Update(msg *gogadgets.Message) {
-
+func (f *FakeOutput) Update(msg *gogadgets.Message) bool {
+	return false
 }
 
 func (f *FakeOutput) On(val *gogadgets.Value) error {

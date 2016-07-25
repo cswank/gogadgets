@@ -84,12 +84,28 @@ var _ = Describe("thermostat", func() {
 		})
 		It("turns on", func() {
 			Expect(therm.On(val)).To(BeNil())
+			msg := &gogadgets.Message{
+				Sender: "my thermometer",
+				Value: gogadgets.Value{
+					Value: 69.0,
+				},
+			}
+			therm.Update(msg)
 			b, err := ioutil.ReadFile(sys["heat-value"])
 			Expect(err).To(BeNil())
 			Expect(string(b)).To(Equal("1"))
 		})
 		It("turns off when the temperature is above range and back on when the temperature is below range", func() {
 			Expect(therm.On(val)).To(BeNil())
+
+			msg := &gogadgets.Message{
+				Sender: "my thermometer",
+				Value: gogadgets.Value{
+					Value: 69.0,
+				},
+			}
+			therm.Update(msg)
+
 			b, err := ioutil.ReadFile(sys["heat-value"])
 			Expect(err).To(BeNil())
 			Expect(string(b)).To(Equal("1"))
@@ -133,12 +149,27 @@ var _ = Describe("thermostat", func() {
 		})
 		It("turns on", func() {
 			Expect(therm.On(val)).To(BeNil())
+			msg := &gogadgets.Message{
+				Sender: "my thermometer",
+				Value: gogadgets.Value{
+					Value: 70.1,
+				},
+			}
+			therm.Update(msg)
 			b, err := ioutil.ReadFile(sys["cool-value"])
 			Expect(err).To(BeNil())
 			Expect(string(b)).To(Equal("1"))
 		})
 		It("turns off when the temperature is above range and back on when the temperature is below range", func() {
 			Expect(therm.On(val)).To(BeNil())
+			msg := &gogadgets.Message{
+				Sender: "my thermometer",
+				Value: gogadgets.Value{
+					Value: 70.1,
+				},
+			}
+			therm.Update(msg)
+
 			b, err := ioutil.ReadFile(sys["cool-value"])
 			Expect(err).To(BeNil())
 			Expect(string(b)).To(Equal("1"))
@@ -177,6 +208,13 @@ var _ = Describe("thermostat", func() {
 				Value: float64(70.0),
 			}
 			Expect(therm.On(val)).To(BeNil())
+			msg := &gogadgets.Message{
+				Sender: "my thermometer",
+				Value: gogadgets.Value{
+					Value: 70.1,
+				},
+			}
+			therm.Update(msg)
 			b, err := ioutil.ReadFile(sys["cool-value"])
 			Expect(err).To(BeNil())
 			Expect(string(b)).To(Equal("1"))

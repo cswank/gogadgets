@@ -98,16 +98,18 @@ func (b *Boiler) Config() ConfigHelper {
 	}
 }
 
-func (b *Boiler) Update(msg *Message) {
+func (b *Boiler) Update(msg *Message) bool {
 	if msg.Sender != b.sensor {
-		return
+		return false
 	}
 	now := time.Now()
 	// if b.lastChange != nil && now.Sub(*b.lastChange) < 120*time.Second {
 	// 	return
 	// }
+	var ch bool
 	temperature, ok := msg.Value.Value.(float64)
 	if b.status && ok {
+		ch = true
 		if b.cmp(temperature, b.highTarget) {
 			b.gpio.Off()
 			b.lastChange = &now
@@ -116,6 +118,7 @@ func (b *Boiler) Update(msg *Message) {
 			b.lastChange = &now
 		}
 	}
+	return ch
 }
 
 func (b *Boiler) On(val *Value) error {

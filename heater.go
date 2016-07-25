@@ -60,12 +60,15 @@ func (h *Heater) Config() ConfigHelper {
 	}
 }
 
-func (h *Heater) Update(msg *Message) {
+func (h *Heater) Update(msg *Message) bool {
+	var ret bool
 	if h.status && msg.Name == "temperature" {
+		ret = true
 		h.update <- msg
 	} else {
 		h.readTemperature(msg)
 	}
+	return ret
 }
 
 func (h *Heater) On(val *Value) error {

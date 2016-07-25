@@ -62,8 +62,8 @@ func (p *PWM) Config() ConfigHelper {
 	}
 }
 
-func (p *PWM) Update(msg *Message) {
-
+func (p *PWM) Update(msg *Message) bool {
+	return false
 }
 
 func (p *PWM) On(val *Value) error {

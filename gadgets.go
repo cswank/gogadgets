@@ -2,7 +2,6 @@ package gogadgets
 
 import (
 	"crypto/rand"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -200,7 +199,9 @@ func (g *Gadget) readUpdate(msg *Message) {
 	if g.status && g.compare != nil && g.compare(msg) {
 		g.off()
 	} else if g.status && (msg.Location == g.Location || !g.filterMessages) {
-		g.Output.Update(msg)
+		if g.Output.Update(msg) {
+			g.sendUpdate(&msg.Value)
+		}
 	}
 }
 
@@ -353,7 +354,7 @@ func ParseCommand(cmd string) (float64, string, error) {
 func splitCommand(cmd string) (string, string, error) {
 	parts := strings.Split(cmd, " ")
 	if len(parts) != 2 {
-		return "", "", errors.New(fmt.Sprintf("invalide command: %s", cmd))
+		return "", "", fmt.Errorf("invalid command: %s", cmd)
 	}
 	return parts[0], parts[1], nil
 }
