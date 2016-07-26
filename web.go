@@ -96,6 +96,8 @@ func (s *Server) doSend(host string, msg Message, token string) {
 	enc := json.NewEncoder(&buf)
 	enc.Encode(msg)
 	req, err := http.NewRequest("POST", host, &buf)
+	s.clientsLock.Lock()
+	defer s.clientsLock.Unlock()
 	if err != nil {
 		delete(s.clients, host)
 		log.Printf("error posting to quimby host: %s, err: %v\n", host, err)
