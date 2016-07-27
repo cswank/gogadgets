@@ -188,7 +188,7 @@ func (g *Gadget) readMessage(msg *Message) {
 		g.devIn <- *msg
 	}
 	mine, onoff, matched := g.isMyCommand(msg)
-	if msg.Type == COMMAND && mine {
+	if mine && msg.Type == COMMAND {
 		g.readCommand(msg, onoff, matched)
 	} else if g.status && msg.Type == UPDATE {
 		g.readUpdate(msg)

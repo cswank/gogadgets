@@ -159,7 +159,7 @@ func (t *Thermostat) Update(msg *Message) bool {
 
 	var changed bool
 	temperature, ok := msg.Value.Value.(float64)
-	if t.status && ok {
+	if t.status && ok && (t.lastCmd == "heat" || t.lastCmd == "cool") {
 		changed = true
 		gpio := t.gpios[t.lastCmd]
 		t.lastChange = &now
@@ -181,6 +181,10 @@ func (t *Thermostat) On(val *Value) error {
 		return nil
 	}
 	parts := strings.Split(val.Cmd, " ")
+	if len(parts) == 0 {
+		return nil
+	}
+
 	t.lastCmd = parts[0]
 	t.lastChange = nil
 	t.target = tar
