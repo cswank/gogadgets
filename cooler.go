@@ -75,6 +75,6 @@ func (c *Cooler) Off() error {
 	return nil
 }
 
-func (c *Cooler) Status() interface{} {
-	return c.status
+func (c *Cooler) Status() map[string]bool {
+	return c.gpio.Status()
 }

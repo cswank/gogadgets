@@ -50,7 +50,7 @@ var _ = Describe("server", func() {
 			Name:     "led",
 			Value: gogadgets.Value{
 				Value:  true,
-				Output: true,
+				Output: map[string]bool{"gpio": true},
 			},
 		}
 		out <- gogadgets.Message{
@@ -60,7 +60,7 @@ var _ = Describe("server", func() {
 			Name:     "led",
 			Value: gogadgets.Value{
 				Value:  false,
-				Output: false,
+				Output: map[string]bool{"gpio": true},
 			},
 		}
 	})

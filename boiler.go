@@ -135,6 +135,6 @@ func (b *Boiler) Off() error {
 	return nil
 }
 
-func (b *Boiler) Status() interface{} {
-	return b.status
+func (b *Boiler) Status() map[string]bool {
+	return b.gpio.Status()
 }

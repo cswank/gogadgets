@@ -20,8 +20,8 @@ func (g *GPIO) On(val *Value) error {
 	return nil
 }
 
-func (g *GPIO) Status() interface{} {
-	return 0
+func (g *GPIO) Status() map[string]bool {
+	return nil
 }
 
 func (g *GPIO) Off() error {

@@ -166,11 +166,11 @@ var _ = Describe("thermostat", func() {
 			b, err := ioutil.ReadFile(sys["cool-value"])
 			Expect(err).To(BeNil())
 			Expect(string(b)).To(Equal("1"))
-			Expect(therm.Status()).To(BeTrue())
+			Expect(therm.Status()["cool"]).To(BeTrue())
 		})
 
 		It("gives the right status", func() {
-			Expect(therm.Status()).To(BeFalse())
+			Expect(therm.Status()["cool"]).To(BeFalse())
 			Expect(therm.On(val)).To(BeNil())
 			msg := &gogadgets.Message{
 				Sender: "my thermometer",
@@ -179,7 +179,7 @@ var _ = Describe("thermostat", func() {
 				},
 			}
 			therm.Update(msg)
-			Expect(therm.Status()).To(BeTrue())
+			Expect(therm.Status()["cool"]).To(BeTrue())
 		})
 
 		It("turns off when the temperature is above range and back on when the temperature is below range", func() {

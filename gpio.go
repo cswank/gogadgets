@@ -124,9 +124,9 @@ func (g *GPIO) On(val *Value) error {
 	return g.writeValue(g.valuePath, "1")
 }
 
-func (g *GPIO) Status() interface{} {
+func (g *GPIO) Status() map[string]bool {
 	data, err := ioutil.ReadFile(g.valuePath)
-	return err == nil && strings.Replace(string(data), "\n", "", -1) == "1"
+	return map[string]bool{"gpio": err == nil && strings.Replace(string(data), "\n", "", -1) == "1"}
 }
 
 func (g *GPIO) Off() error {

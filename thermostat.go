@@ -221,9 +221,10 @@ func (t *Thermostat) Off() error {
 	return nil
 }
 
-func (t *Thermostat) Status() interface{} {
-	if !t.status || t.lastCmd == "" {
-		return false
+func (t *Thermostat) Status() map[string]bool {
+	m := map[string]bool{}
+	for key, val := range t.gpios {
+		m[key] = val.Status()["gpio"]
 	}
-	return t.gpios[t.lastCmd].Status()
+	return m
 }

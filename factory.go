@@ -196,7 +196,7 @@ type OutputDevice interface {
 	On(val *Value) error
 	Off() error
 	Update(msg *Message) bool
-	Status() interface{}
+	Status() map[string]bool
 	Config() ConfigHelper
 	Commands(string, string) *Commands
 }

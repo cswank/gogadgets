@@ -33,9 +33,9 @@ func (f *File) On(val *Value) error {
 	return ioutil.WriteFile(f.path, []byte("1"), 0666)
 }
 
-func (f *File) Status() interface{} {
+func (f *File) Status() map[string]bool {
 	data, err := ioutil.ReadFile(f.path)
-	return err == nil && bytes.Equal(data, []byte("1"))
+	return map[string]bool{"gpio": err == nil && bytes.Equal(data, []byte("1"))}
 }
 
 func (f *File) Off() error {

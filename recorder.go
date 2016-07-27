@@ -87,8 +87,8 @@ func (r *Recorder) Off() error {
 	return nil
 }
 
-func (r *Recorder) Status() interface{} {
-	return r.status
+func (r *Recorder) Status() map[string]bool {
+	return map[string]bool{"recorder": r.status}
 }
 
 func (r *Recorder) save(msg *Message) {

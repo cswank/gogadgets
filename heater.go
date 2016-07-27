@@ -84,8 +84,8 @@ func (h *Heater) On(val *Value) error {
 	return nil
 }
 
-func (h *Heater) Status() interface{} {
-	return h.status
+func (h *Heater) Status() map[string]bool {
+	return h.gpio.Status()
 }
 
 func (h *Heater) Off() error {

@@ -72,8 +72,11 @@ func (m *Motor) On(val *Value) error {
 	return nil
 }
 
-func (m *Motor) Status() interface{} {
-	return m.status
+func (m *Motor) Status() map[string]bool {
+	return map[string]bool{
+		"gpio_a": m.gpioA.Status()["gpio"],
+		"gpio_b": m.gpioB.Status()["gpio"],
+	}
 }
 
 func (m *Motor) Off() error {

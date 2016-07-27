@@ -83,8 +83,8 @@ func (p *PWM) Off() error {
 	return ioutil.WriteFile(p.runPath, []byte("0"), PWMMode)
 }
 
-func (p *PWM) Status() interface{} {
-	return p.status
+func (p *PWM) Status() map[string]bool {
+	return map[string]bool{"pwm": p.status}
 }
 
 func (p *PWM) getDuty(val interface{}) []byte {

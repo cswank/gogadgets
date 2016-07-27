@@ -32,8 +32,8 @@ func (f *FakeOutput) Off() error {
 	return nil
 }
 
-func (f *FakeOutput) Status() interface{} {
-	return f.on
+func (f *FakeOutput) Status() map[string]bool {
+	return map[string]bool{"gpio": f.on}
 }
 
 type FakePoller struct {
