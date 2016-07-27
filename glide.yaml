@@ -1,7 +1,5 @@
 package: github.com/cswank/gogadgets
 import:
 - package: github.com/cswank/rex
-- package: github.com/subosito/twilio
-  version: ^0.0.1
 - package: gopkg.in/alecthomas/kingpin.v2
   version: ^2.2.2

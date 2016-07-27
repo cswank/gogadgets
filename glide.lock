@@ -1,5 +1,5 @@
-hash: 0f98cf7e0a31704334f1b402c2fbf2e45c64ddf3753d45ff739329edc03f85bb
-updated: 2016-07-27T07:19:37.330192731-06:00
+hash: 288e0ee6fbc48325317518ad15e3d40dc2e22ecb242763cc14ea4a1445ab2157
+updated: 2016-07-27T07:24:41.767646014-06:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -9,8 +9,6 @@ imports:
   version: 2efee857e7cfd4f3d0138cc3cbb1b4966962b93a
 - name: github.com/cswank/rex
   version: d994161bbe349b93a0db6377275db7ff09bdbf93
-- name: github.com/subosito/twilio
-  version: 6ea1f36757671e928fcb67f8ff23141b9895a9c8
 - name: gopkg.in/alecthomas/kingpin.v2
   version: e5900212cbf65b181d3d8e08308ef06a01d117cf
 testImports: []
