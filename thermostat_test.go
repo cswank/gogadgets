@@ -33,6 +33,7 @@ var _ = Describe("thermostat", func() {
 			map[string]string{
 				"heat": gogadgets.Pins["gpio"]["8"]["11"],
 				"cool": gogadgets.Pins["gpio"]["8"]["12"],
+				"fan":  gogadgets.Pins["gpio"]["8"]["14"],
 			})
 		gogadgets.GPIO_DEV_PATH = tmp
 		gogadgets.GPIO_DEV_MODE = 0777
@@ -49,6 +50,12 @@ var _ = Describe("thermostat", func() {
 					Type:      "gpio",
 					Port:      "8",
 					Pin:       "12",
+					Direction: "out",
+				},
+				"fan": {
+					Type:      "gpio",
+					Port:      "8",
+					Pin:       "14",
 					Direction: "out",
 				},
 			},
