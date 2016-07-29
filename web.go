@@ -104,7 +104,7 @@ func (s *Server) doSend(host string, msg Message, token string) {
 		return
 	}
 	if len(token) > 0 {
-		req.Header.Add("Authorization", "Bearer "+token)
+		req.Header.Add("Authorization", token)
 	}
 	r, err := http.DefaultClient.Do(req)
 	if r != nil {

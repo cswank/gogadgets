@@ -69,11 +69,12 @@ type Thermostat struct {
 	//minimum time between state changes
 	timeout time.Duration
 
-	status     bool
-	gpios      map[string]OutputDevice
-	lastChange *time.Time
-	lastCmd    string
-	cmp        map[string]cmp
+	status          bool
+	gpios           map[string]OutputDevice
+	lastChange      *time.Time
+	lastCmd         string
+	lastTemperature *float64
+	cmp             map[string]cmp
 
 	//the location + name id of the temperature sensor (must be in the same location)
 	sensor string
@@ -176,19 +177,24 @@ func (t *Thermostat) Update(msg *Message) bool {
 	var changed bool
 	temperature, ok := msg.Value.Value.(float64)
 	if t.status && ok && (t.lastCmd == "heat" || t.lastCmd == "cool") {
-		changed = true
-		gpio := t.gpios[t.lastCmd]
-		fan := t.gpios["fan"]
+		t.lastTemperature = &temperature
 		t.lastChange = &now
-		if t.cmp[t.lastCmd](temperature, t.target) {
-			gpio.Off()
-			fan.Off()
-		} else {
-			gpio.On(nil)
-			fan.On(nil)
-		}
+		changed = true
+		t.checkTemperature()
 	}
 	return changed
+}
+
+func (t *Thermostat) checkTemperature() {
+	if t.lastTemperature == nil {
+		return
+	}
+	gpio := t.gpios[t.lastCmd]
+	if t.cmp[t.lastCmd](*t.lastTemperature, t.target) {
+		gpio.Off()
+	} else {
+		gpio.On(nil)
+	}
 }
 
 func (t *Thermostat) On(val *Value) error {
@@ -203,11 +209,11 @@ func (t *Thermostat) On(val *Value) error {
 	if len(parts) == 0 {
 		return nil
 	}
-
 	t.lastCmd = parts[0]
 	t.lastChange = nil
 	t.target = tar
 	t.status = true
+	t.checkTemperature()
 	return nil
 }
 
