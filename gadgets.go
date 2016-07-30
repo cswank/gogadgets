@@ -54,6 +54,7 @@ type Gadget struct {
 	OffCommands    []string
 	InitialValue   string
 	UID            string
+	lastCmd        string
 	status         bool
 	compare        Comparitor
 	shutdown       bool
@@ -189,6 +190,7 @@ func (g *Gadget) readMessage(msg *Message) {
 	}
 	mine, onoff, matched := g.isMyCommand(msg)
 	if mine && msg.Type == COMMAND {
+		g.lastCmd = matched
 		g.readCommand(msg, onoff, matched)
 	} else if g.status && msg.Type == UPDATE {
 		g.readUpdate(msg)
@@ -314,14 +316,15 @@ func (g *Gadget) GetUID() string {
 }
 
 func (g *Gadget) sendUpdate(val *Value) {
-	var value *Value
+	var value Value
 	if g.Input != nil {
-		value = g.Input.GetValue()
+		value = *(g.Input.GetValue())
 	} else {
-		value = &Value{
+		value = Value{
 			Units:  g.units,
 			Value:  g.status,
 			Output: g.Output.Status(),
+			Cmd:    g.lastCmd,
 		}
 	}
 	g.out <- Message{
@@ -330,7 +333,7 @@ func (g *Gadget) sendUpdate(val *Value) {
 		Type:        UPDATE,
 		Location:    g.Location,
 		Name:        g.Name,
-		Value:       *value,
+		Value:       value,
 		TargetValue: val,
 		Timestamp:   time.Now().UTC(),
 		Info: Info{
