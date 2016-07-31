@@ -11,12 +11,14 @@ import (
 
 type Afterer func(d time.Duration) <-chan time.Time
 
-func NewCron(config *GadgetConfig, options ...func(*Cron)) (*Cron, error) {
+func NewCron(config *GadgetConfig, options ...func(*Cron) error) (*Cron, error) {
 
 	c := &Cron{}
 
 	for _, opt := range options {
-		opt(c)
+		if err := opt(c); err != nil {
+			return c, err
+		}
 	}
 
 	if c.after == nil {
@@ -27,33 +29,41 @@ func NewCron(config *GadgetConfig, options ...func(*Cron)) (*Cron, error) {
 		c.sleep = time.Second
 	}
 
+	var err error
 	if c.jobs == nil {
 		v := config.Args["jobs"].([]interface{})
 		jobs := make([]string, len(v))
 		for i, r := range v {
 			jobs[i] = r.(string)
 		}
-		c.jobs = c.parseJobs(jobs)
+		c.jobs, err = c.parseJobs(jobs)
+		if err != nil {
+			return c, err
+		}
 	}
 
 	return c, nil
 }
 
-func CronAfter(a Afterer) func(*Cron) {
-	return func(c *Cron) {
+func CronAfter(a Afterer) func(*Cron) error {
+	return func(c *Cron) error {
 		c.after = a
+		return nil
 	}
 }
 
-func CronSleep(d time.Duration) func(*Cron) {
-	return func(c *Cron) {
+func CronSleep(d time.Duration) func(*Cron) error {
+	return func(c *Cron) error {
 		c.sleep = d
+		return nil
 	}
 }
 
-func CronJobs(j []string) func(*Cron) {
-	return func(c *Cron) {
-		c.jobs = c.parseJobs(j)
+func CronJobs(j []string) func(*Cron) error {
+	return func(c *Cron) error {
+		var err error
+		c.jobs, err = c.parseJobs(j)
+		return err
 	}
 }
 
@@ -97,22 +107,24 @@ func (c *Cron) getSleep() time.Duration {
 	return c.sleep - diff
 }
 
-func (c *Cron) parseJobs(jobs []string) map[string][]string {
+func (c *Cron) parseJobs(jobs []string) (map[string][]string, error) {
 	m := map[string][]string{}
 	for _, row := range jobs {
-		c.parseJob(row, m)
+		if err := c.parseJob(row, m); err != nil {
+			return m, err
+		}
 	}
-	return m
+	return m, nil
 }
 
-func (c *Cron) parseJob(row string, m map[string][]string) {
-
+func (c *Cron) parseJob(row string, m map[string][]string) error {
 	if strings.Index(row, "#") == 0 {
-		return
+		return nil
 	}
+
 	parts := strings.Fields(row)
 	if len(parts) < 6 {
-		return
+		return fmt.Errorf("could not parse job: %s", row)
 	}
 	keys := c.getKeys(parts[0:5])
 	cmd := strings.Join(parts[5:], " ")
@@ -124,6 +136,7 @@ func (c *Cron) parseJob(row string, m map[string][]string) {
 		a = append(a, cmd)
 		m[key] = a
 	}
+	return nil
 }
 
 func (c *Cron) getKeys(parts []string) []string {

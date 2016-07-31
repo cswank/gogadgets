@@ -1,6 +1,7 @@
 package gogadgets_test
 
 import (
+	"errors"
 	"math/rand"
 	"time"
 
@@ -33,15 +34,17 @@ func init() {
 
 var _ = Describe("Cron", func() {
 	var (
-		out   chan gogadgets.Message
-		in    chan gogadgets.Message
-		c     *gogadgets.Cron
-		fa    *fakeAfter
-		jobs  []string
-		start func() *gogadgets.Message
+		out     chan gogadgets.Message
+		in      chan gogadgets.Message
+		c       *gogadgets.Cron
+		fa      *fakeAfter
+		jobs    []string
+		start   func() *gogadgets.Message
+		cronErr error
 	)
 
 	BeforeEach(func() {
+		cronErr = nil
 		fa = &fakeAfter{
 			t: time.Date(2015, 9, 4, 13, 25, 0, 0, time.UTC),
 		}
@@ -61,18 +64,30 @@ var _ = Describe("Cron", func() {
 				gogadgets.CronJobs(jobs),
 				gogadgets.CronSleep(time.Millisecond),
 			)
-			Expect(err).To(BeNil())
-			go c.Start(out, in)
 			var msg *gogadgets.Message
-			select {
-			case m := <-in:
-				msg = &m
-			case <-time.After(100 * time.Millisecond):
-				return nil
+			if cronErr != nil {
+				Expect(err).To(MatchError(cronErr))
+			} else {
+				go c.Start(out, in)
+				select {
+				case m := <-in:
+					msg = &m
+				case <-time.After(100 * time.Millisecond):
+					return nil
+				}
 			}
 			return msg
 		}
 	})
+
+	Describe("bunk cron jobs", func() {
+		It("returns an error when the numbers aren't numbers", func() {
+			jobs = []string{"25 start"}
+			cronErr = errors.New("could not parse job: 25 start")
+			start()
+		})
+	})
+
 	Describe("when all's good", func() {
 		It("sends a command when it's time", func() {
 			msg := start()
@@ -113,7 +128,7 @@ var _ = Describe("Cron", func() {
 
 		It("sends a command when there is lots of extra space", func() {
 			jobs = []string{
-				"25	13     *     *    *    turn on living room light",
+				"25	13         *     *    *    turn on living room light",
 				"25 14 * * * turn on living room light",
 			}
 			msg := start()
