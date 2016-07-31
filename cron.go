@@ -4,9 +4,14 @@ import (
 	"bytes"
 	"fmt"
 	"html/template"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
+)
+
+var (
+	cronExp, _ = regexp.Compile("^[*0-9,-]+$")
 )
 
 type Afterer func(d time.Duration) <-chan time.Time
@@ -126,6 +131,13 @@ func (c *Cron) parseJob(row string, m map[string][]string) error {
 	if len(parts) < 6 {
 		return fmt.Errorf("could not parse job: %s", row)
 	}
+
+	for _, p := range parts[0:5] {
+		if !cronExp.MatchString(p) {
+			return fmt.Errorf("could not parse job: %s", row)
+		}
+	}
+
 	keys := c.getKeys(parts[0:5])
 	cmd := strings.Join(parts[5:], " ")
 	for _, key := range keys {

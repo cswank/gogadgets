@@ -68,6 +68,7 @@ var _ = Describe("Cron", func() {
 			if cronErr != nil {
 				Expect(err).To(MatchError(cronErr))
 			} else {
+				Expect(err).To(BeNil())
 				go c.Start(out, in)
 				select {
 				case m := <-in:
@@ -81,9 +82,15 @@ var _ = Describe("Cron", func() {
 	})
 
 	Describe("bunk cron jobs", func() {
-		It("returns an error when the numbers aren't numbers", func() {
+		It("returns an error when there isn't enough stuff in the job", func() {
 			jobs = []string{"25 start"}
 			cronErr = errors.New("could not parse job: 25 start")
+			start()
+		})
+
+		It("returns an error when the numbers aren't numbers", func() {
+			jobs = []string{"25 * b * * start"}
+			cronErr = errors.New("could not parse job: 25 * b * * start")
 			start()
 		})
 	})
