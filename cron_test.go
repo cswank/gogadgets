@@ -31,13 +31,14 @@ func init() {
 	rand.Seed(time.Now().Unix())
 }
 
-var _ = Describe("Switch", func() {
+var _ = Describe("Cron", func() {
 	var (
-		out  chan gogadgets.Message
-		in   chan gogadgets.Message
-		c    *gogadgets.Cron
-		fa   *fakeAfter
-		jobs []string
+		out   chan gogadgets.Message
+		in    chan gogadgets.Message
+		c     *gogadgets.Cron
+		fa    *fakeAfter
+		jobs  []string
+		start func() *gogadgets.Message
 	)
 
 	BeforeEach(func() {
@@ -52,55 +53,60 @@ var _ = Describe("Switch", func() {
 		out = make(chan gogadgets.Message)
 		in = make(chan gogadgets.Message)
 
+		start = func() *gogadgets.Message {
+			var err error
+			c, err = gogadgets.NewCron(
+				nil,
+				gogadgets.CronAfter(fa.After),
+				gogadgets.CronJobs(jobs),
+				gogadgets.CronSleep(time.Millisecond),
+			)
+			Expect(err).To(BeNil())
+			go c.Start(out, in)
+			var msg *gogadgets.Message
+			select {
+			case m := <-in:
+				msg = &m
+			case <-time.After(100 * time.Millisecond):
+				return nil
+			}
+			return msg
+		}
 	})
 	Describe("when all's good", func() {
 		It("sends a command when it's time", func() {
-			c = &gogadgets.Cron{
-				After: fa.After,
-				Jobs:  jobs,
-				Sleep: time.Millisecond,
-			}
-			go c.Start(out, in)
-			msg := <-in
+			msg := start()
+			Expect(msg).ToNot(BeNil())
 			Expect(msg.Body).To(Equal("turn on living room light"))
 			Expect(msg.Sender).To(Equal("cron"))
 		})
 
 		It("sends a command when there is a weekday specified", func() {
 			jobs = []string{"25 13 * * 5 turn on living room light"}
-			c = &gogadgets.Cron{
-				After: fa.After,
-				Jobs:  jobs,
-				Sleep: time.Millisecond,
-			}
-			go c.Start(out, in)
-			msg := <-in
+			msg := start()
+			Expect(msg).ToNot(BeNil())
 			Expect(msg.Body).To(Equal("turn on living room light"))
 			Expect(msg.Sender).To(Equal("cron"))
 		})
 
+		It("does not send a command when the weekday is wrong", func() {
+			jobs = []string{"25 13 * * 6 turn on living room light"}
+			msg := start()
+			Expect(msg).To(BeNil())
+		})
+
 		It("sends a command when there is a range of weekdays specified", func() {
 			jobs = []string{"25 13 * * 4-6 turn on living room light"}
-			c = &gogadgets.Cron{
-				After: fa.After,
-				Jobs:  jobs,
-				Sleep: time.Millisecond,
-			}
-			go c.Start(out, in)
-			msg := <-in
+			msg := start()
+			Expect(msg).ToNot(BeNil())
 			Expect(msg.Body).To(Equal("turn on living room light"))
 			Expect(msg.Sender).To(Equal("cron"))
 		})
 
 		It("sends a command when there are several weekdays specified", func() {
 			jobs = []string{"25 13 * * 2,5,6 turn on living room light"}
-			c = &gogadgets.Cron{
-				After: fa.After,
-				Jobs:  jobs,
-				Sleep: time.Millisecond,
-			}
-			go c.Start(out, in)
-			msg := <-in
+			msg := start()
+			Expect(msg).ToNot(BeNil())
 			Expect(msg.Body).To(Equal("turn on living room light"))
 			Expect(msg.Sender).To(Equal("cron"))
 		})
@@ -110,46 +116,74 @@ var _ = Describe("Switch", func() {
 				"25	13     *     *    *    turn on living room light",
 				"25 14 * * * turn on living room light",
 			}
-			c = &gogadgets.Cron{
-				After: fa.After,
-				Jobs:  jobs,
-				Sleep: time.Millisecond,
-			}
-			go c.Start(out, in)
-			var msg gogadgets.Message
-			Eventually(func() bool {
-				msg = <-in
-				return true
-			}).Should(BeTrue())
+			msg := start()
+			Expect(msg).ToNot(BeNil())
+			Expect(msg.Body).To(Equal("turn on living room light"))
+			Expect(msg.Sender).To(Equal("cron"))
+		})
 
+		It("sends a command when there are tabs and space", func() {
+			jobs = []string{
+				"25	13     *	*    *    turn on living room light",
+			}
+			msg := start()
+			Expect(msg).ToNot(BeNil())
+			Expect(msg.Body).To(Equal("turn on living room light"))
+			Expect(msg.Sender).To(Equal("cron"))
+		})
+
+		It("sends a command when there are just tabs", func() {
+			jobs = []string{
+				"25	13	*	*	*	turn on living room light",
+			}
+			msg := start()
+			Expect(msg).ToNot(BeNil())
 			Expect(msg.Body).To(Equal("turn on living room light"))
 			Expect(msg.Sender).To(Equal("cron"))
 		})
 
 		It("sends a command when there is a range of minutes", func() {
 			jobs = []string{"22-26 13 * * * turn on living room light"}
-			c = &gogadgets.Cron{
-				After: fa.After,
-				Jobs:  jobs,
-				Sleep: time.Millisecond,
-			}
-			go c.Start(out, in)
-			msg := <-in
+			msg := start()
+			Expect(msg).ToNot(BeNil())
 			Expect(msg.Body).To(Equal("turn on living room light"))
 			Expect(msg.Sender).To(Equal("cron"))
 		})
 
 		It("sends a command when there is a range of hours", func() {
 			jobs = []string{"25 12-15 * * * turn on living room light"}
-			c = &gogadgets.Cron{
-				After: fa.After,
-				Jobs:  jobs,
-				Sleep: time.Millisecond,
-			}
-			go c.Start(out, in)
-			msg := <-in
+			msg := start()
+			Expect(msg).ToNot(BeNil())
 			Expect(msg.Body).To(Equal("turn on living room light"))
 			Expect(msg.Sender).To(Equal("cron"))
+		})
+
+		It("sends a command when there is a series of minutes", func() {
+			jobs = []string{"22,25,28 13 * * * turn on living room light"}
+			msg := start()
+			Expect(msg).ToNot(BeNil())
+			Expect(msg.Body).To(Equal("turn on living room light"))
+			Expect(msg.Sender).To(Equal("cron"))
+		})
+
+		It("sends a command when there is a series of hours", func() {
+			jobs = []string{"25 1,13 * * * turn on living room light"}
+			msg := start()
+			Expect(msg).ToNot(BeNil())
+			Expect(msg.Body).To(Equal("turn on living room light"))
+			Expect(msg.Sender).To(Equal("cron"))
+		})
+
+		It("does not send a command when it's not time", func() {
+			jobs = []string{"25 14 * * * turn on living room light"}
+			msg := start()
+			Expect(msg).To(BeNil())
+		})
+
+		It("does not send a command when the line is commented out", func() {
+			jobs = []string{"#25 14 * * * turn on living room light"}
+			msg := start()
+			Expect(msg).To(BeNil())
 		})
 
 		It("sends a command when there is a range of hours and minutes", func() {
@@ -165,68 +199,6 @@ var _ = Describe("Switch", func() {
 			// msg := <-in
 			// Expect(msg.Body).To(Equal("turn on living room light"))
 			// Expect(msg.Sender).To(Equal("cron"))
-		})
-
-		It("sends a command when there is a series of minutes", func() {
-			jobs = []string{"22,25,28 13 * * * turn on living room light"}
-			c = &gogadgets.Cron{
-				After: fa.After,
-				Jobs:  jobs,
-				Sleep: time.Millisecond,
-			}
-			go c.Start(out, in)
-			msg := <-in
-			Expect(msg.Body).To(Equal("turn on living room light"))
-			Expect(msg.Sender).To(Equal("cron"))
-		})
-
-		It("sends a command when there is a series of hours", func() {
-			jobs = []string{"25 1,13 * * * turn on living room light"}
-			c = &gogadgets.Cron{
-				After: fa.After,
-				Jobs:  jobs,
-				Sleep: time.Millisecond,
-			}
-			go c.Start(out, in)
-			msg := <-in
-			Expect(msg.Body).To(Equal("turn on living room light"))
-			Expect(msg.Sender).To(Equal("cron"))
-		})
-
-		It("does not send a command when it's not time", func() {
-			jobs = []string{"25 14 * * * turn on living room light"}
-			c = &gogadgets.Cron{
-				After: fa.After,
-				Jobs:  jobs,
-				Sleep: time.Millisecond,
-			}
-
-			go c.Start(out, in)
-			var msg *gogadgets.Message
-			select {
-			case m := <-in:
-				msg = &m
-			case <-time.After(100 * time.Millisecond):
-			}
-			Expect(msg).To(BeNil())
-		})
-
-		It("does not send a command when the line is commented out", func() {
-			jobs = []string{"#25 14 * * * turn on living room light"}
-			c = &gogadgets.Cron{
-				After: fa.After,
-				Jobs:  jobs,
-				Sleep: time.Millisecond,
-			}
-
-			go c.Start(out, in)
-			var msg *gogadgets.Message
-			select {
-			case m := <-in:
-				msg = &m
-			case <-time.After(100 * time.Millisecond):
-			}
-			Expect(msg).To(BeNil())
 		})
 	})
 })

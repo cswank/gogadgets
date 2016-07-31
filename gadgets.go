@@ -53,6 +53,7 @@ type Gadget struct {
 	OnCommands     []string
 	OffCommands    []string
 	InitialValue   string
+	targetValue    *Value
 	UID            string
 	lastCmd        string
 	status         bool
@@ -126,7 +127,7 @@ func (g *Gadget) doInputLoop(in <-chan Message) {
 	devOut := make(chan Value, 10)
 	g.devIn = make(chan Message, 10)
 	go g.Input.Start(g.devIn, devOut)
-	g.sendUpdate(nil)
+	g.sendUpdate()
 	for !g.shutdown {
 		select {
 		case msg := <-in:
@@ -172,16 +173,18 @@ func (g *Gadget) on(val *Value) {
 	if err != nil {
 		log.Println("on err", err)
 	} else if !g.status {
+		g.targetValue = val
 		g.status = true
-		g.sendUpdate(val)
+		g.sendUpdate()
 	}
 }
 
 func (g *Gadget) off() {
 	g.status = false
+	g.targetValue = nil
 	g.Output.Off()
 	g.compare = nil
-	g.sendUpdate(nil)
+	g.sendUpdate()
 }
 
 func (g *Gadget) readMessage(msg *Message) {
@@ -202,7 +205,7 @@ func (g *Gadget) readUpdate(msg *Message) {
 		g.off()
 	} else if g.status && (msg.Location == g.Location || !g.filterMessages) {
 		if g.Output.Update(msg) {
-			g.sendUpdate(&msg.Value)
+			g.sendUpdate()
 		}
 	}
 }
@@ -212,7 +215,7 @@ func (g *Gadget) readCommand(msg *Message, onoff, matched string) {
 		g.shutdown = true
 		g.off()
 	} else if msg.Body == "update" {
-		g.sendUpdate(nil)
+		g.sendUpdate()
 	} else if onoff == "on" {
 		g.readOnCommand(msg, matched)
 	} else if onoff == "off" {
@@ -315,7 +318,7 @@ func (g *Gadget) GetUID() string {
 	return g.UID
 }
 
-func (g *Gadget) sendUpdate(val *Value) {
+func (g *Gadget) sendUpdate() {
 	var value Value
 	if g.Input != nil {
 		value = *(g.Input.GetValue())
@@ -334,7 +337,7 @@ func (g *Gadget) sendUpdate(val *Value) {
 		Location:    g.Location,
 		Name:        g.Name,
 		Value:       value,
-		TargetValue: val,
+		TargetValue: g.targetValue,
 		Timestamp:   time.Now().UTC(),
 		Info: Info{
 			Direction: g.Direction,
