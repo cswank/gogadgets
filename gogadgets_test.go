@@ -41,8 +41,8 @@ type FakePoller struct {
 	val     bool
 }
 
-func (f *FakePoller) Status() interface{} {
-	return f.val
+func (f *FakePoller) Status() map[string]bool {
+	return map[string]bool{"poller": f.val}
 }
 
 func (f *FakePoller) Wait() (bool, error) {

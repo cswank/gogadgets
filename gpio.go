@@ -3,7 +3,6 @@
 package gogadgets
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -42,23 +41,31 @@ type GPIO struct {
 	buf           []byte
 }
 
-func NewGPIO(pin *Pin) (OutputDevice, error) {
+func GPIOFactory(pin *Pin) (OutputDevice, error) {
+	g, err := NewGPIO(pin)
+	if err != nil {
+		return nil, err
+	}
+	return g, nil
+}
+
+func NewGPIO(pin *Pin) (*GPIO, error) {
 	var export string
 	var ok bool
 	if pin.Platform == "rpi" {
 		export, ok = PiPins[pin.Pin]
 		if !ok {
-			return nil, errors.New(fmt.Sprintf("no such pin: %s", pin.Pin))
+			return nil, fmt.Errorf("no such pin: %s", pin.Pin)
 		}
 	} else {
 		var portMap map[string]string
 		portMap, ok = Pins["gpio"][pin.Port]
 		if !ok {
-			return nil, errors.New(fmt.Sprintf("no such port: %s", pin.Port))
+			return nil, fmt.Errorf("no such port: %s", pin.Port)
 		}
 		export, ok = portMap[pin.Pin]
 		if !ok {
-			return nil, errors.New(fmt.Sprintf("no such pin: %s", pin.Pin))
+			return nil, fmt.Errorf("no such pin: %s", pin.Pin)
 		}
 	}
 	if pin.Direction == "" {

@@ -1,8 +1,6 @@
 package gogadgets
 
 import (
-	"errors"
-	"fmt"
 	"log"
 	"time"
 )
@@ -24,15 +22,12 @@ func NewSwitch(pin *Pin) (InputDevice, error) {
 	var err error
 	var s *Switch
 	gpio, err := NewGPIO(pin)
-	poller, ok := gpio.(Poller)
-	if !ok {
-		return nil, errors.New(fmt.Sprintf("couldn't create a poller: %s", pin))
-	}
 	if err != nil {
 		return nil, err
 	}
+
 	s = &Switch{
-		GPIO:      poller,
+		GPIO:      gpio,
 		TrueValue: pin.Value,
 		Units:     pin.Units,
 	}
@@ -83,7 +78,7 @@ func (s *Switch) wait(out chan<- interface{}, err chan<- error) {
 
 func (s *Switch) readValue() {
 	v := s.GPIO.Status()
-	if v.(bool) {
+	if v["gpio"] {
 		s.Value = s.TrueValue
 	} else {
 		s.Value = s.FalseValue

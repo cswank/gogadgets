@@ -1,8 +1,6 @@
 package gogadgets
 
 import (
-	"errors"
-	"fmt"
 	"log"
 	"time"
 )
@@ -35,13 +33,9 @@ func NewFlowMeter(pin *Pin) (InputDevice, error) {
 		return nil, err
 	}
 	minSpan := getMinSpan(pin)
-	poller, ok := gpio.(Poller)
-	if !ok {
-		return nil, errors.New(fmt.Sprintf("couldn't create a poller: %s", pin))
-	}
 
 	return &FlowMeter{
-		GPIO:    poller,
+		GPIO:    gpio,
 		Value:   0.0,
 		Units:   pin.Units,
 		MinSpan: minSpan,

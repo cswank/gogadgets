@@ -21,7 +21,7 @@ var (
 		"cooler":     NewCooler,
 		"thermostat": NewThermostat,
 		"boiler":     NewBoiler,
-		"gpio":       NewGPIO,
+		"gpio":       GPIOFactory,
 		"recorder":   NewRecorder,
 		"pwm":        NewPWM,
 		"motor":      NewMotor,
@@ -161,7 +161,7 @@ type InputDevice interface {
 
 type Poller interface {
 	Wait() (bool, error)
-	Status() interface{}
+	Status() map[string]bool
 }
 
 func deviceType(t string) string {
