@@ -2,6 +2,8 @@ package gogadgets_test
 
 import (
 	"encoding/json"
+	"fmt"
+	"net"
 	"net/http"
 	"net/http/httptest"
 
@@ -15,10 +17,11 @@ var _ = Describe("Client", func() {
 	Context("success", func() {
 
 		var (
-			ts   *httptest.Server
-			addr string
-			req  map[string]string
-			cli  *gogadgets.Client
+			ts      *httptest.Server
+			addr    string
+			req     map[string]string
+			cli     *gogadgets.Client
+			cliAddr string
 		)
 
 		BeforeEach(func() {
@@ -30,7 +33,8 @@ var _ = Describe("Client", func() {
 			}))
 			addr = ts.URL
 
-			cli = gogadgets.NewClient("127.0.0.1:", addr)
+			cliAddr = fmt.Sprintf("127.0.0.1:%d", getPort())
+			cli = gogadgets.NewClient(cliAddr, addr)
 		})
 
 		AfterEach(func() {
@@ -39,8 +43,22 @@ var _ = Describe("Client", func() {
 
 		FIt("connects to a gadget", func() {
 			cli.Connect()
-			expected := map[string]string{"address": "127.0.0.1:/messages", "token": "n/a"}
+			expected := map[string]string{"address": fmt.Sprintf("%s/messages", cliAddr), "token": "n/a"}
 			Expect(req).To(Equal(expected))
 		})
 	})
 })
+
+func getPort() int {
+	addr, err := net.ResolveTCPAddr("tcp", "localhost:0")
+	if err != nil {
+		panic(err)
+	}
+
+	l, err := net.ListenTCP("tcp", addr)
+	if err != nil {
+		panic(err)
+	}
+	defer l.Close()
+	return l.Addr().(*net.TCPAddr).Port
+}
