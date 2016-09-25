@@ -29,12 +29,27 @@ func (c *Client) Connect() chan Message {
 	c.register()
 	r := rex.New("main")
 	r.Post("/messages", http.HandlerFunc(c.update))
+	r.Get("/ping", http.HandlerFunc(c.ping))
 	go func() {
 		if err := http.ListenAndServe(c.addr, r); err != nil {
 			log.Fatal(err)
 		}
 	}()
+
+	for {
+		resp, err := http.Get(fmt.Sprintf("http://%s/ping", c.addr))
+		if err != nil {
+			time.Sleep(10 * time.Millisecond)
+		} else {
+			resp.Body.Close()
+			break
+		}
+	}
 	return c.msg
+}
+
+func (c *Client) ping(w http.ResponseWriter, r *http.Request) {
+	r.Body.Close()
 }
 
 func (c *Client) update(w http.ResponseWriter, r *http.Request) {
@@ -45,6 +60,7 @@ func (c *Client) update(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
+	r.Body.Close()
 	if msg.UUID == "" {
 		msg.UUID = GetUUID()
 	}

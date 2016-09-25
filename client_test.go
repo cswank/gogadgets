@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"sync"
 
 	"github.com/cswank/gogadgets"
 	. "github.com/onsi/ginkgo"
@@ -52,14 +53,18 @@ var _ = Describe("Client", func() {
 			msg := gogadgets.Message{Type: gogadgets.UPDATE, Value: gogadgets.Value{Value: 33.3}}
 			enc.Encode(msg)
 
+			wg := &sync.WaitGroup{}
+			wg.Add(1)
 			go func() {
-				resp, err := http.Post(fmt.Sprintf("http://%s", expected["address"]), "application/json", &buf)
-				Expect(err).To(BeNil())
-				Expect(resp.StatusCode).To(Equal(http.StatusOK))
+				msg2 := <-ch
+				Expect(msg2.Value).To(Equal(msg.Value))
+				wg.Done()
 			}()
 
-			msg2 := <-ch
-			Expect(msg2.Value).To(Equal(msg.Value))
+			resp, err := http.Post(fmt.Sprintf("http://%s", expected["address"]), "application/json", &buf)
+			Expect(err).To(BeNil())
+			Expect(resp.StatusCode).To(Equal(http.StatusOK))
+			wg.Wait()
 		})
 	})
 })
