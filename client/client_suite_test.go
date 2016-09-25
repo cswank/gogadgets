@@ -1,4 +1,4 @@
-package gogadgets_test
+package client_test
 
 import (
 	"bytes"
@@ -10,9 +10,17 @@ import (
 	"sync"
 
 	"github.com/cswank/gogadgets"
+	"github.com/cswank/gogadgets/client"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+
+	"testing"
 )
+
+func TestClient(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "Client Suite")
+}
 
 var _ = Describe("Client", func() {
 
@@ -22,7 +30,7 @@ var _ = Describe("Client", func() {
 			ts      *httptest.Server
 			addr    string
 			req     map[string]string
-			cli     *gogadgets.Client
+			cli     *client.Client
 			cliAddr string
 		)
 
@@ -36,7 +44,7 @@ var _ = Describe("Client", func() {
 			addr = ts.URL
 
 			cliAddr = fmt.Sprintf("127.0.0.1:%d", getPort())
-			cli = gogadgets.NewClient(cliAddr, addr)
+			cli = client.New(cliAddr, addr)
 		})
 
 		AfterEach(func() {

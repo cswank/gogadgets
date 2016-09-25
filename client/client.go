@@ -1,4 +1,4 @@
-package gogadgets
+package client
 
 import (
 	"bytes"
@@ -8,24 +8,25 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/cswank/gogadgets"
 	"github.com/cswank/rex"
 )
 
 type Client struct {
 	addr       string
 	gadgetAddr string
-	msg        chan Message
+	msg        chan gogadgets.Message
 }
 
-func NewClient(addr, gadgetAddr string) *Client {
+func New(addr, gadgetAddr string) *Client {
 	return &Client{
 		addr:       addr,
 		gadgetAddr: gadgetAddr,
-		msg:        make(chan Message),
+		msg:        make(chan gogadgets.Message),
 	}
 }
 
-func (c *Client) Connect() chan Message {
+func (c *Client) Connect() chan gogadgets.Message {
 	c.register()
 	r := rex.New("main")
 	r.Post("/messages", http.HandlerFunc(c.update))
@@ -54,7 +55,7 @@ func (c *Client) ping(w http.ResponseWriter, r *http.Request) {
 
 func (c *Client) update(w http.ResponseWriter, r *http.Request) {
 
-	var msg Message
+	var msg gogadgets.Message
 	dec := json.NewDecoder(r.Body)
 	if err := dec.Decode(&msg); err != nil {
 		log.Println(err)
@@ -62,7 +63,7 @@ func (c *Client) update(w http.ResponseWriter, r *http.Request) {
 	}
 	r.Body.Close()
 	if msg.UUID == "" {
-		msg.UUID = GetUUID()
+		msg.UUID = gogadgets.GetUUID()
 	}
 	c.msg <- msg
 }
@@ -83,4 +84,11 @@ func (c *Client) register() {
 		tries = increment(tries)
 		time.Sleep(time.Duration(tries) * 100 * time.Millisecond)
 	}
+}
+
+func increment(i int) int {
+	if i == 100 {
+		return i
+	}
+	return i + 1
 }
