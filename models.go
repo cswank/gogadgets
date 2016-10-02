@@ -53,6 +53,7 @@ func (v *Value) ToFloat() (f float64, ok bool) {
 
 type Info struct {
 	Direction string   `json:"direction,omitempty"`
+	Type      string   `json:"type,omitempty"`
 	On        []string `json:"on,omitempty"`
 	Off       []string `json:"off,omitempty"`
 }

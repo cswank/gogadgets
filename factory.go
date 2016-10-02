@@ -71,6 +71,7 @@ func NewInputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
 	dev, err := NewInputDevice(&config.Pin)
 	if err == nil {
 		gadget = &Gadget{
+			Type:      config.Pin.Type,
 			Location:  config.Location,
 			Name:      config.Name,
 			Input:     dev,
@@ -100,6 +101,7 @@ func NewOutputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
 		}
 	}
 	gadget = &Gadget{
+		Type:           config.Pin.Type,
 		Location:       config.Location,
 		Name:           config.Name,
 		Direction:      "output",

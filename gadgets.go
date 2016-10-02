@@ -45,6 +45,7 @@ type Gadgeter interface {
 //by Gadget.  A Gadget must have either an InputDevice or
 //an OutputDevice.  Gadget fulfills the GoGaget interface.
 type Gadget struct {
+	Type           string
 	Location       string
 	Name           string
 	Output         OutputDevice
@@ -143,6 +144,7 @@ func (g *Gadget) doInputLoop(in <-chan Message) {
 				Timestamp: time.Now().UTC(),
 				Info: Info{
 					Direction: g.Direction,
+					Type:      g.Type,
 				},
 			}
 		}
@@ -340,6 +342,7 @@ func (g *Gadget) sendUpdate() {
 		TargetValue: g.targetValue,
 		Timestamp:   time.Now().UTC(),
 		Info: Info{
+			Type:      g.Type,
 			Direction: g.Direction,
 			On:        g.OnCommands,
 			Off:       g.OffCommands,
