@@ -9,8 +9,8 @@ import (
 
 func main() {
 	r := rex.New("example")
-	r.Get("/things", getThings)
-	r.Get("/things/{thing}", getThing)
+	r.Get("/things", http.HandlerFunc(getThings))
+	r.Get("/things/{thing}", http.HandlerFunc(getThing))
 	r.ServeFiles(http.FileServer(http.Dir("./www")))
 
 	http.Handle("/", r)

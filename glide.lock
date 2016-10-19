@@ -1,5 +1,5 @@
-hash: 1b1d1780100e450b3c24ba100615faec04e982fd56619d00bb1f999e607d84a0
-updated: 2016-08-14T10:17:14.769561799-06:00
+hash: b466c4de616df4e397bb2d05beaf8990931f11476a9ba29aab8a37632390ce53
+updated: 2016-10-20T11:57:59.092615445Z
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -8,7 +8,50 @@ imports:
 - name: github.com/alecthomas/units
   version: 2efee857e7cfd4f3d0138cc3cbb1b4966962b93a
 - name: github.com/cswank/rex
-  version: d994161bbe349b93a0db6377275db7ff09bdbf93
+  version: 8390566cea77dca01abfe45f47f65e5d09fc397d
+- name: github.com/cswank/xbee
+  version: 4b65d22ed8530ed06d02b6bb8ff5c99c83038c77
+- name: go.bug.st/serial.v1
+  version: fe0dfe76d3463c2e7ff0050db7995659bf82454e
 - name: gopkg.in/alecthomas/kingpin.v2
-  version: e5900212cbf65b181d3d8e08308ef06a01d117cf
-testImports: []
+  version: e9044be3ab2a8e11d4e1f418d12f0790d57e8d70
+testImports:
+- name: github.com/onsi/ginkgo
+  version: 39549e585f5005ce588e6217d4538a4c99a472c9
+  subpackages:
+  - config
+  - internal/codelocation
+  - internal/containernode
+  - internal/failer
+  - internal/leafnodes
+  - internal/remote
+  - internal/spec
+  - internal/specrunner
+  - internal/suite
+  - internal/testingtproxy
+  - internal/writer
+  - reporters
+  - reporters/stenographer
+  - reporters/stenographer/support/go-colorable
+  - reporters/stenographer/support/go-isatty
+  - types
+- name: github.com/onsi/gomega
+  version: d59fa0ac68bb5dd932ee8d24eed631cdd519efc3
+  subpackages:
+  - format
+  - internal/assertion
+  - internal/asyncassertion
+  - internal/oraclematcher
+  - internal/testingtsupport
+  - matchers
+  - matchers/support/goraph/bipartitegraph
+  - matchers/support/goraph/edge
+  - matchers/support/goraph/node
+  - matchers/support/goraph/util
+  - types
+- name: golang.org/x/sys
+  version: 002cbb5f952456d0c50e0d2aff17ea5eca716979
+  subpackages:
+  - unix
+- name: gopkg.in/yaml.v2
+  version: a5b47d31c556af34a302ce5d659e6fea44d90de0

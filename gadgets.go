@@ -10,6 +10,10 @@ import (
 	"time"
 )
 
+func Init(s SerialFactory) {
+	serialFactory = s
+}
+
 var (
 	units = map[string]string{
 		"liters":     "volume",
@@ -134,12 +138,20 @@ func (g *Gadget) doInputLoop(in <-chan Message) {
 		case msg := <-in:
 			g.readMessage(&msg)
 		case val := <-devOut:
+			location := g.Location
+			name := g.Name
+			if val.location != "" {
+				location = val.location
+			}
+			if val.name != "" {
+				name = val.name
+			}
 			g.out <- Message{
 				UUID:      GetUUID(),
 				Sender:    g.UID,
 				Type:      "update",
-				Location:  g.Location,
-				Name:      g.Name,
+				Location:  location,
+				Name:      name,
 				Value:     val,
 				Timestamp: time.Now().UTC(),
 				Info: Info{
