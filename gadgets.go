@@ -10,6 +10,10 @@ import (
 	"time"
 )
 
+func Init(p PortFactory) {
+	serialFactory = p
+}
+
 var (
 	units = map[string]string{
 		"liters":     "volume",
