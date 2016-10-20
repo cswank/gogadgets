@@ -117,15 +117,15 @@ func (x *XBee) listen(ch chan<- Value) {
 		for k, v := range a {
 			f, ok := x[k]
 			if !ok {
-				log.Println("ignoring message from unknown xbee pin:", v, x)
-				continue
-			}
-			val, u, location, name := f(v)
-			ch <- Value{
-				Value:    val,
-				Units:    u,
-				location: location,
-				name:     name,
+				log.Println("ignoring message from unknown xbee pin:", k, x)
+			} else {
+				val, u, location, name := f(v)
+				ch <- Value{
+					Value:    val,
+					Units:    u,
+					location: location,
+					name:     name,
+				}
 			}
 		}
 	}
