@@ -15,6 +15,7 @@ var (
 		"thermometer": NewThermometer,
 		"switch":      NewSwitch,
 		"flow_meter":  NewFlowMeter,
+		"xbee":        NewXBee,
 	}
 	outputFactories = map[string]OutputDeviceFactory{
 		"heater":     NewHeater,
