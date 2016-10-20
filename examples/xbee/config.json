@@ -6,8 +6,10 @@
             "name": "n/a",
             "pin": {
                 "type": "xbee",
-		"port": "/dev/tty.usbserial-A700eE5e",
-		"xbees": "{\"13a200409825c1\": {\"location\": \"garden\", \"pins\": {\"adc0\":\"moisture\", \"adc1\":\"tmp36\"}}}"
+                "args": {
+		    "port": "/dev/tty.usbserial-A700eE5e",
+		    "xbees": "{\"13a200409825c1\": {\"location\": \"garden\", \"pins\": {\"adc0\":\"moisture\", \"adc1\":\"tmp36\"}}}"
+                }
             }
         }
     ]
