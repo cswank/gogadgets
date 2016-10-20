@@ -140,15 +140,16 @@ func (g *Gadget) doInputLoop(in <-chan Message) {
 		case val := <-devOut:
 			location := g.Location
 			name := g.Name
-			if val.location != "" {
+			sender := g.UID
+			if val.location != "" && val.name != "" {
 				location = val.location
-			}
-			if val.name != "" {
 				name = val.name
+				sender = fmt.Sprintf("%s %s", location, name)
 			}
+
 			g.out <- Message{
 				UUID:      GetUUID(),
-				Sender:    g.UID,
+				Sender:    sender,
 				Type:      "update",
 				Location:  location,
 				Name:      name,
