@@ -134,8 +134,10 @@ func (x *XBee) listen(ch chan<- Value) {
 }
 
 func (x *XBee) readMessage(ch chan<- xbee.Message) {
-	msg := xbee.ReadMessage(x.port)
-	ch <- msg
+	for {
+		msg := xbee.ReadMessage(x.port)
+		ch <- msg
+	}
 }
 
 func (x *XBee) GetValue() *Value {
