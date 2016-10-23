@@ -6,28 +6,51 @@ import (
 	"go.bug.st/serial.v1"
 )
 
-func ReadMessage(port serial.Port) Message {
+var (
+	verbose bool
+)
+
+func Verbose() {
+	verbose = true
+}
+
+func logger(i ...interface{}) {
+	if verbose {
+		log.Print(i...)
+	}
+}
+
+func ReadMessage(port serial.Port, opts ...func()) Message {
+	for _, o := range opts {
+		o()
+	}
+
 	for {
 		getDelimiter(port)
 		d := make([]byte, 2)
 		n, err := port.Read(d)
 		if err != nil || n != 2 {
+			logger(err, n)
 			continue
 		}
 
 		l, err := GetLength(d)
 		if err != nil {
+			logger(err)
 			continue
+
 		}
 
 		d = []byte{}
 		d, err = getBody(d, port, int(l+1))
 		if err != nil {
+			logger(string(d), err)
 			continue
 		}
 
 		msg, err := NewMessage(d)
 		if err == nil {
+			logger(msg, err)
 			return msg
 		}
 	}
@@ -38,7 +61,7 @@ func getDelimiter(port serial.Port) {
 		d := make([]byte, 1)
 		n, err := port.Read(d)
 		if err != nil || n != 1 {
-			log.Println(n, err)
+			logger(n, err)
 			continue
 
 		}

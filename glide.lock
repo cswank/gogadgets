@@ -1,5 +1,5 @@
 hash: b466c4de616df4e397bb2d05beaf8990931f11476a9ba29aab8a37632390ce53
-updated: 2016-10-20T11:57:59.092615445Z
+updated: 2016-10-23T17:11:38.138773216Z
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -10,14 +10,19 @@ imports:
 - name: github.com/cswank/rex
   version: 8390566cea77dca01abfe45f47f65e5d09fc397d
 - name: github.com/cswank/xbee
-  version: 4b65d22ed8530ed06d02b6bb8ff5c99c83038c77
+  version: 974080d0a8815d5e18013d6aa5cae32af0d4459d
 - name: go.bug.st/serial.v1
-  version: fe0dfe76d3463c2e7ff0050db7995659bf82454e
+  version: 04302f262ca3879de7bba554937f21805e65d8a3
+- name: golang.org/x/sys
+  version: c200b10b5d5e122be351b67af224adc6128af5bf
+  subpackages:
+  - unix
+  - windows
 - name: gopkg.in/alecthomas/kingpin.v2
   version: e9044be3ab2a8e11d4e1f418d12f0790d57e8d70
 testImports:
 - name: github.com/onsi/ginkgo
-  version: 39549e585f5005ce588e6217d4538a4c99a472c9
+  version: 29e24c04228e1a522b29c76a34e8e0fc2d7279cf
   subpackages:
   - config
   - internal/codelocation
@@ -49,9 +54,5 @@ testImports:
   - matchers/support/goraph/node
   - matchers/support/goraph/util
   - types
-- name: golang.org/x/sys
-  version: 002cbb5f952456d0c50e0d2aff17ea5eca716979
-  subpackages:
-  - unix
 - name: gopkg.in/yaml.v2
   version: a5b47d31c556af34a302ce5d659e6fea44d90de0
