@@ -28,7 +28,9 @@ func Moisture(location string) func(float64) (float64, string, string, string) {
 
 func TMP36(location string) func(float64) (float64, string, string, string) {
 	return func(v float64) (float64, string, string, string) {
-		return (v * 9.0 / 50.0) - 58.0, "F", location, "temperature"
+		c := (v - 0.5) * 100.0
+		f := (c * 9.0 / 5.0) + 32.0
+		return f, "F", location, "temperature"
 	}
 }
 

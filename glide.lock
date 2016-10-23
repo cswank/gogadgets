@@ -1,5 +1,5 @@
 hash: b466c4de616df4e397bb2d05beaf8990931f11476a9ba29aab8a37632390ce53
-updated: 2016-10-23T17:11:38.138773216Z
+updated: 2016-10-23T17:22:30.405286592Z
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -10,7 +10,7 @@ imports:
 - name: github.com/cswank/rex
   version: 8390566cea77dca01abfe45f47f65e5d09fc397d
 - name: github.com/cswank/xbee
-  version: 974080d0a8815d5e18013d6aa5cae32af0d4459d
+  version: 10b4cb3cb19b83d9ab4c150bad984ee957a96d41
 - name: go.bug.st/serial.v1
   version: 04302f262ca3879de7bba554937f21805e65d8a3
 - name: golang.org/x/sys
