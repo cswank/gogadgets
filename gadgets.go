@@ -132,7 +132,9 @@ func (g *Gadget) doInputLoop(in <-chan Message) {
 	devOut := make(chan Value, 10)
 	g.devIn = make(chan Message, 10)
 	go g.Input.Start(g.devIn, devOut)
-	g.sendUpdate()
+	if g.Name != "n/a" {
+		g.sendUpdate()
+	}
 	for !g.shutdown {
 		select {
 		case msg := <-in:

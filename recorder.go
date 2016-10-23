@@ -151,7 +151,7 @@ func (r *Recorder) doSave(msg *Message) {
 		log.Println("couldn't post data", err)
 		return
 	}
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", r.token))
+	req.Header.Add("Authorization", r.token)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		log.Println("couldn't post data", err)

@@ -18,7 +18,6 @@ func ReadMessage(port serial.Port) Message {
 		l, err := GetLength(d)
 		if err != nil {
 			continue
-
 		}
 
 		d = []byte{}

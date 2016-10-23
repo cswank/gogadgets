@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -37,7 +38,7 @@ func NewServer(host, master string, port int, lg Logger) *Server {
 		isMaster = true
 	} else {
 		clients = map[string]string{
-			master: "",
+			fmt.Sprintf("%s/gadgets", master): "master",
 		}
 	}
 	return &Server{
@@ -56,7 +57,7 @@ func NewServer(host, master string, port int, lg Logger) *Server {
 
 func (s *Server) Start(i <-chan Message, o chan<- Message) {
 	if !s.isMaster {
-		go s.register()
+		s.register()
 	}
 	go s.startServer()
 	go s.cleanup()
@@ -75,7 +76,7 @@ func (s *Server) Start(i <-chan Message, o chan<- Message) {
 		case msg := <-s.external:
 			s.setSeen(msg)
 			o <- msg
-			if s.isMaster && msg.Sender == "client" {
+			if s.isMaster {
 				s.send(msg)
 			}
 		}
@@ -91,11 +92,15 @@ func (s *Server) send(msg Message) {
 }
 
 func (s *Server) doSend(host string, msg Message, token string) {
+	if len(msg.Host) > 0 && strings.Index(host, msg.Host) == 0 {
+		return
+	}
 	msg.Host = s.host
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
 	enc.Encode(msg)
 	req, err := http.NewRequest("POST", host, &buf)
+
 	s.clientsLock.Lock()
 	defer s.clientsLock.Unlock()
 	if err != nil {
@@ -110,8 +115,7 @@ func (s *Server) doSend(host string, msg Message, token string) {
 	if r != nil {
 		r.Body.Close()
 	}
-
-	if err != nil || r.StatusCode != http.StatusOK {
+	if err != nil || r.StatusCode != http.StatusOK && token != "master" {
 		delete(s.clients, host)
 	}
 }
@@ -154,10 +158,10 @@ func (s *Server) GetDirection() string {
 func (s *Server) startServer() {
 	r := rex.New("main")
 	r.Get("/gadgets", http.HandlerFunc(s.status))
-	r.Get("/gadgets/values", http.HandlerFunc(s.values))
-	r.Get("/gadgets/locations/{location}/devices/{device}/status", http.HandlerFunc(s.deviceValue))
 	r.Put("/gadgets", http.HandlerFunc(s.update))
 	r.Post("/gadgets", http.HandlerFunc(s.update))
+	r.Get("/gadgets/values", http.HandlerFunc(s.values))
+	r.Get("/gadgets/locations/{location}/devices/{device}/status", http.HandlerFunc(s.deviceValue))
 	if s.isMaster {
 		r.Post("/clients", http.HandlerFunc(s.setClient))
 		r.Get("/clients", http.HandlerFunc(s.getClients))

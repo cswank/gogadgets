@@ -28,7 +28,7 @@ func Moisture(location string) func(float64) (float64, string, string, string) {
 
 func TMP36(location string) func(float64) (float64, string, string, string) {
 	return func(v float64) (float64, string, string, string) {
-		return v, "F", location, "temperature"
+		return (v * 9.0 / 50.0) - 58.0, "F", location, "temperature"
 	}
 }
 
@@ -65,12 +65,12 @@ func NewXBee(pin *Pin) (InputDevice, error) {
 
 	j, ok := pin.Args["xbees"].(string)
 	if !ok {
-		return nil, fmt.Errorf(`can't create xbee`)
+		return nil, fmt.Errorf(`can't create xbee: %v`, pin.Args["xbees"])
 	}
 
 	var m map[string]XBeeConfig
 	if err := json.Unmarshal([]byte(j), &m); err != nil {
-		return nil, fmt.Errorf(`can't create xbee`)
+		return nil, fmt.Errorf(`can't create xbee: %v`, err)
 	}
 
 	mode := &serial.Mode{}
