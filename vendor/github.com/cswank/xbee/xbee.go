@@ -76,7 +76,7 @@ func (x *Message) GetAnalog() (map[string]float64, error) {
 	for i, o := range adc {
 		if uint8(1<<uint8(i))&x.AnalogChanMask > 0 {
 			x := vals[j]
-			m[o] = 1200.0 * float64(x) / float64(1023)
+			m[o] = 1200.0 * float64(x) / 1023.0
 			j++
 		}
 	}

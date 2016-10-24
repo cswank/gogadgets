@@ -1,5 +1,5 @@
 hash: b466c4de616df4e397bb2d05beaf8990931f11476a9ba29aab8a37632390ce53
-updated: 2016-10-23T17:22:30.405286592Z
+updated: 2016-10-24T23:19:29.300245042Z
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -10,7 +10,7 @@ imports:
 - name: github.com/cswank/rex
   version: 8390566cea77dca01abfe45f47f65e5d09fc397d
 - name: github.com/cswank/xbee
-  version: 10b4cb3cb19b83d9ab4c150bad984ee957a96d41
+  version: 989cd83230948538d86a869b6ef374b60a647cc7
 - name: go.bug.st/serial.v1
   version: 04302f262ca3879de7bba554937f21805e65d8a3
 - name: golang.org/x/sys
@@ -22,7 +22,7 @@ imports:
   version: e9044be3ab2a8e11d4e1f418d12f0790d57e8d70
 testImports:
 - name: github.com/onsi/ginkgo
-  version: 29e24c04228e1a522b29c76a34e8e0fc2d7279cf
+  version: a8ccd817611666211fdf6e6a752174a0db8374a8
   subpackages:
   - config
   - internal/codelocation
@@ -41,7 +41,7 @@ testImports:
   - reporters/stenographer/support/go-isatty
   - types
 - name: github.com/onsi/gomega
-  version: d59fa0ac68bb5dd932ee8d24eed631cdd519efc3
+  version: e46a88d81f5164c47e2d51c1c3d863dde7997993
   subpackages:
   - format
   - internal/assertion
