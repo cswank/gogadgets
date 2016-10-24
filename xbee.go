@@ -28,8 +28,8 @@ func Moisture(location string) func(float64) (float64, string, string, string) {
 
 func TMP36(location string) func(float64) (float64, string, string, string) {
 	return func(v float64) (float64, string, string, string) {
-		c := (v - 0.5) * 100.0
-		f := (c * 9.0 / 5.0) + 32.0
+		c := (v - 500.0) / 10.0
+		f := c*1.8 + 32.0
 		return f, "F", location, "temperature"
 	}
 }
@@ -84,8 +84,8 @@ func NewXBee(pin *Pin) (InputDevice, error) {
 
 	//           addr       pin
 	xbees := map[string]map[string]func(float64) (float64, string, string, string){}
-	for addr, xbee := range m {
-		xbees[addr] = xbee.getConv(xbee.Location)
+	for addr, x := range m {
+		xbees[addr] = x.getConv(x.Location)
 	}
 
 	return &XBee{

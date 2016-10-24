@@ -1,6 +1,7 @@
 package gogadgets_test
 
 import (
+	"sort"
 	"sync"
 
 	"github.com/cswank/gogadgets"
@@ -68,7 +69,7 @@ var _ = Describe("xbee", func() {
 		pin := &gogadgets.Pin{
 			Args: map[string]interface{}{
 				"port":  "fake-port",
-				"xbees": `{"13a200409825c1": {"location": "garden", "pins": {"adc0": "moisture","adc1": "tmp36"}}}`,
+				"xbees": `{"13a200404c0ebe": {"location": "garden", "pins": {"adc0": "tmp36","adc1": "tmp36"}}}`,
 			},
 		}
 
@@ -94,12 +95,18 @@ var _ = Describe("xbee", func() {
 	Describe("acd", func() {
 
 		BeforeEach(func() {
-			packet = []byte{126, 0, 18, 146, 0, 19, 162, 0, 64, 152, 37, 193, 222, 186, 1, 1, 0, 0, 2, 2, 13, 79}
+			packet = []byte{0x7E, 0x00, 0x16, 0x92, 0x00, 0x13, 0xA2, 0x00, 0x40, 0x4C, 0x0E, 0xBE, 0x61, 0x59, 0x01, 0x01, 0x00, 0x18, 0x03, 0x00, 0x10, 0x02, 0x2F, 0x01, 0xFE, 0x49}
 		})
 
 		It("reports the xbee update", func() {
+			vals := make([]float64, 2)
 			v := <-val
-			Expect(v.Value.(float64)).To(BeNumerically("~", 615.8357, 0.001))
+			vals[0] = v.Value.(float64)
+			v = <-val
+			vals[1] = v.Value.(float64)
+			sort.Float64s(vals)
+			Expect(vals[0]).To(BeNumerically("~", 49.68328445747801, 0.001))
+			Expect(vals[1]).To(BeNumerically("~", 60.0293255, 0.001))
 		})
 	})
 })
