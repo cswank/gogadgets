@@ -50,9 +50,9 @@ func ReadMessage(port serial.Port, opts ...func()) Message {
 
 		msg, err := NewMessage(d)
 		if err == nil {
-			logger(msg, err)
 			return msg
 		}
+		logger(msg, err)
 	}
 }
 

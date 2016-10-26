@@ -50,7 +50,7 @@ func NewMessage(data []byte) (Message, error) {
 		frame:  data,
 	}
 	if !msg.Check() {
-		err = fmt.Errorf("message failed checksum")
+		err = fmt.Errorf("message failed checksum: 0x%x", msg.getChecksum())
 	}
 	return msg, err
 }
@@ -125,13 +125,18 @@ func (x *Message) getRawDigital() (uint16, error) {
 	return val, binary.Read(buf, binary.BigEndian, &val)
 }
 
-func (x *Message) Check() bool {
+func (x *Message) getChecksum() byte {
 	var total byte
 	for _, item := range x.frame[:len(x.frame)-1] {
 		total += item
 	}
+	return 0xff - total
+}
+
+func (x *Message) Check() bool {
+
 	cs := x.frame[len(x.frame)-1]
-	return 0xff-total == cs
+	return x.getChecksum() == cs
 }
 
 func (x *Message) GetAddr() string {

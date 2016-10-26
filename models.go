@@ -37,6 +37,10 @@ type Value struct {
 	name     string
 }
 
+func (v *Value) GetName() string {
+	return v.name
+}
+
 func (v *Value) ToFloat() (f float64, ok bool) {
 	switch V := v.Value.(type) {
 	case bool:
