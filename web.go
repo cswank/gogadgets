@@ -169,7 +169,15 @@ func (s *Server) startServer() {
 	}
 
 	s.lg.Printf("listening on 0.0.0.0:%d\n", s.port)
-	err := http.ListenAndServe(fmt.Sprintf(":%d", s.port), r)
+
+	srv := &http.Server{
+		Addr:         fmt.Sprintf(":%d", s.port),
+		Handler:      r,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+	}
+
+	err := srv.ListenAndServe()
 	if err != nil {
 		s.lg.Fatal(err)
 	}
