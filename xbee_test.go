@@ -96,7 +96,7 @@ var _ = Describe("xbee", func() {
 			io = `{"13a200404c0ebe": {"location": "garden", "adc": {"adc0": "tmp36","adc1": "tmp36"}}}`
 		})
 
-		It("reports the xbee adc", func() {
+		It("reports the xbee analog values", func() {
 			vals := make([]float64, 2)
 			v := <-val
 			vals[0] = v.Value.(float64)
@@ -115,7 +115,7 @@ var _ = Describe("xbee", func() {
 			io = `{"13a200404c0ebe": {"location": "garden", "dio": {"dio3": "gate", "dio4": "door"}}}`
 		})
 
-		It("reports the xbee adc", func() {
+		It("reports the xbee digital io", func() {
 			vals := make([]gogadgets.Value, 2)
 			vals[0] = <-val
 			vals[1] = <-val
@@ -135,7 +135,7 @@ var _ = Describe("xbee", func() {
 			io = `{"13a200404c0ebe": {"location": "garden", "dio": {"dio3": "gate", "dio4": "door"}, "adc": {"adc0": "tmp36","adc1": "moisture"}}}`
 		})
 
-		It("reports the xbee adc", func() {
+		It("reports the xbee analog and digital values", func() {
 			vals := make([]gogadgets.Value, 4)
 			vals[0] = <-val
 			vals[1] = <-val
