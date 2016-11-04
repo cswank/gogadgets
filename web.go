@@ -33,6 +33,10 @@ type Server struct {
 	clients     map[string]string
 }
 
+func init() {
+	http.DefaultClient.Timeout = 15 * time.Second
+}
+
 func NewServer(host, master string, port int, lg Logger) *Server {
 	var isMaster bool
 	clients := map[string]string{}
