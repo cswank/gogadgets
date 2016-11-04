@@ -1,4 +1,5 @@
 {
+    "host": "http://localhost:6111",
     "gadgets": [
         {
             "location": "lab",

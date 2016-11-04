@@ -2,14 +2,16 @@
             "location": "brewery",
             "name": "recorder",
             "pin": {
-                "host": "http://192.168.1.15:8112/internal/gadgets/02d401e3-aa19-4357-b03a-858ab67205d4/locations/%%s/devices/%%s/datapoints",
-                "apikey": "xxx",
                 "type": "recorder",
-                "filter": ["hlt temperature", "mash tun temperature", "boiler temperature"],
-                "summarize": {
-                    "hlt temperature": 10,
-                    "mash tun temperature": 10,
-                    "boiler temperature": 10
+                "args": {
+                    "host": "http://192.168.1.15:8112/internal/gadgets/02d401e3-aa19-4357-b03a-858ab67205d4/sources/%s%20%s",
+                    "token": "xxx",
+                    "filter": ["hlt temperature", "mash tun temperature", "boiler temperature"],
+                    "summarize": {
+                        "hlt temperature": 10,
+                        "mash tun temperature": 10,
+                        "boiler temperature": 10
+                    }
                 }
             }
         }

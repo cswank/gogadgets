@@ -11,6 +11,8 @@ import (
 
 	"github.com/cswank/gogadgets"
 	"github.com/cswank/gogadgets/utils"
+
+	serial "go.bug.st/serial.v1"
 )
 
 const (
@@ -30,6 +32,8 @@ var (
 func main() {
 	kingpin.Version(gogadgets.Version)
 	kingpin.Parse()
+
+	gogadgets.Init(serial.Open)
 	addr = fmt.Sprintf("http://%s:%d/gadgets", *host, 6111)
 	if len(*cmd) > 0 {
 		sendCommand()

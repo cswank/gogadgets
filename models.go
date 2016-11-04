@@ -28,11 +28,17 @@ type GoGadgeter interface {
 }
 
 type Value struct {
-	Value  interface{}     `json:"value,omitempty"`
-	Units  string          `json:"units,omitempty"`
-	Output map[string]bool `json:"io,omitempty"`
-	ID     string          `json:"id,omitempty"`
-	Cmd    string          `json:"command,omitempty"`
+	Value    interface{}     `json:"value,omitempty"`
+	Units    string          `json:"units,omitempty"`
+	Output   map[string]bool `json:"io,omitempty"`
+	ID       string          `json:"id,omitempty"`
+	Cmd      string          `json:"command,omitempty"`
+	location string
+	name     string
+}
+
+func (v *Value) GetName() string {
+	return v.name
 }
 
 func (v *Value) ToFloat() (f float64, ok bool) {

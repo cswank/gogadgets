@@ -1,0 +1,16 @@
+{
+    "host": "localhost:6111",
+    "gadgets": [
+        {
+            "location": "xbee",
+            "name": "n/a",
+            "pin": {
+                "type": "xbee",
+                "args": {
+		    "port": "/dev/tty.usbserial-A700eE5e",
+		    "xbees": "{\"13a2004098263e\": {\"location\": \"grass\", \"pins\": {\"adc1\":\"moisture\", \"adc2\":\"tmp36\"}}, \"13a200409825c1\": {\"location\": \"garden\", \"pins\": {\"adc1\":\"moisture\", \"adc2\":\"tmp36\"}}}"
+                }
+            }
+        }
+    ]
+}

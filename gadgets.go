@@ -10,6 +10,10 @@ import (
 	"time"
 )
 
+func Init(s SerialFactory) {
+	serialFactory = s
+}
+
 var (
 	units = map[string]string{
 		"liters":     "volume",
@@ -128,18 +132,29 @@ func (g *Gadget) doInputLoop(in <-chan Message) {
 	devOut := make(chan Value, 10)
 	g.devIn = make(chan Message, 10)
 	go g.Input.Start(g.devIn, devOut)
-	g.sendUpdate()
+	if g.Name != "n/a" {
+		g.sendUpdate()
+	}
 	for !g.shutdown {
 		select {
 		case msg := <-in:
 			g.readMessage(&msg)
 		case val := <-devOut:
+			location := g.Location
+			name := g.Name
+			sender := g.UID
+			if val.location != "" && val.name != "" {
+				location = val.location
+				name = val.name
+				sender = fmt.Sprintf("%s %s", location, name)
+			}
+
 			g.out <- Message{
 				UUID:      GetUUID(),
-				Sender:    g.UID,
+				Sender:    sender,
 				Type:      "update",
-				Location:  g.Location,
-				Name:      g.Name,
+				Location:  location,
+				Name:      name,
 				Value:     val,
 				Timestamp: time.Now().UTC(),
 				Info: Info{
