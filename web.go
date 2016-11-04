@@ -110,6 +110,7 @@ func (s *Server) doSend(host string, msg Message, token string) {
 	}
 	r, err := http.DefaultClient.Do(req)
 	if r != nil {
+		io.Copy(ioutil.Discard, r.Body)
 		r.Body.Close()
 	}
 
