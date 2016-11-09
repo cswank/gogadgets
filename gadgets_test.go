@@ -189,14 +189,16 @@ var _ = Describe("gadgets", func() {
 				Type: "command",
 				Body: "turn on lab led",
 			}
+
 			input <- msg
+			<-output
 
 			msg = gogadgets.Message{
 				Type: "update",
 				Body: "",
 			}
-			input <- msg
 
+			input <- msg
 			msg = gogadgets.Message{
 				Type: "command",
 				Body: "turn off lab led",

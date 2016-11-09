@@ -189,11 +189,11 @@ func (g *Gadget) on(val *Value) {
 	err := g.Output.On(val)
 	if err != nil {
 		log.Println("on err", err)
-	} else if !g.status {
-		g.targetValue = val
-		g.status = true
-		g.sendUpdate()
+		return
 	}
+	g.targetValue = val
+	g.status = true
+	g.sendUpdate()
 }
 
 func (g *Gadget) off() {
