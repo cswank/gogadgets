@@ -10,6 +10,7 @@ package serial // import "go.bug.st/serial.v1"
 
 // MSDN article on Serial Communications:
 // http://msdn.microsoft.com/en-us/library/ff802693.aspx
+// (alternative link) https://msdn.microsoft.com/en-us/library/ms810467.aspx
 
 // Arduino Playground article on serial communication with Windows API:
 // http://playground.arduino.cc/Interfacing/CPPWindows
@@ -91,24 +92,24 @@ func (port *windowsPort) Write(p []byte) (int, error) {
 }
 
 const (
-	dcbBinary                = 0x00000001
-	dcbParity                = 0x00000002
-	dcbOutXCTSFlow           = 0x00000004
-	dcbOutXDSRFlow           = 0x00000008
-	dcbDTRControlDisableMask = ^0x00000030
-	dcbDTRControlEnable      = 0x00000010
-	dcbDTRControlHandshake   = 0x00000020
-	dcbDSRSensitivity        = 0x00000040
-	dcbTXContinueOnXOFF      = 0x00000080
-	dcbOutX                  = 0x00000100
-	dcbInX                   = 0x00000200
-	dcbErrorChar             = 0x00000400
-	dcbNull                  = 0x00000800
-	dcbRTSControlDisbaleMask = ^0x00003000
-	dcbRTSControlEnable      = 0x00001000
-	dcbRTSControlHandshake   = 0x00002000
-	dcbRTSControlToggle      = 0x00003000
-	dcbAbortOnError          = 0x00004000
+	dcbBinary                uint32 = 0x00000001
+	dcbParity                       = 0x00000002
+	dcbOutXCTSFlow                  = 0x00000004
+	dcbOutXDSRFlow                  = 0x00000008
+	dcbDTRControlDisableMask        = ^uint32(0x00000030)
+	dcbDTRControlEnable             = 0x00000010
+	dcbDTRControlHandshake          = 0x00000020
+	dcbDSRSensitivity               = 0x00000040
+	dcbTXContinueOnXOFF             = 0x00000080
+	dcbOutX                         = 0x00000100
+	dcbInX                          = 0x00000200
+	dcbErrorChar                    = 0x00000400
+	dcbNull                         = 0x00000800
+	dcbRTSControlDisbaleMask        = ^uint32(0x00003000)
+	dcbRTSControlEnable             = 0x00001000
+	dcbRTSControlHandshake          = 0x00002000
+	dcbRTSControlToggle             = 0x00003000
+	dcbAbortOnError                 = 0x00004000
 )
 
 type dcb struct {
@@ -186,6 +187,28 @@ var stopBitsMap = map[StopBits]byte{
 	TwoStopBits:          twoStopBits,
 }
 
+//sys escapeCommFunction(handle syscall.Handle, function uint32) (res bool) = EscapeCommFunction
+
+const (
+	commFunctionSetXOFF  = 1
+	commFunctionSetXON   = 2
+	commFunctionSetRTS   = 3
+	commFunctionClrRTS   = 4
+	commFunctionSetDTR   = 5
+	commFunctionClrDTR   = 6
+	commFunctionSetBreak = 8
+	commFunctionClrBreak = 9
+)
+
+//sys getCommModemStatus(handle syscall.Handle, bits *uint32) (res bool) = GetCommModemStatus
+
+const (
+	msCTSOn  = 0x0010
+	msDSROn  = 0x0020
+	msRingOn = 0x0040
+	msRLSDOn = 0x0080
+)
+
 func (port *windowsPort) SetMode(mode *Mode) error {
 	params := dcb{}
 	if getCommState(port.handle, &params) != nil {
@@ -209,6 +232,67 @@ func (port *windowsPort) SetMode(mode *Mode) error {
 		return &PortError{code: InvalidSerialPort}
 	}
 	return nil
+}
+
+func (port *windowsPort) SetDTR(dtr bool) error {
+	var res bool
+	if dtr {
+		res = escapeCommFunction(port.handle, commFunctionSetDTR)
+	} else {
+		res = escapeCommFunction(port.handle, commFunctionClrDTR)
+	}
+	if !res {
+		return &PortError{}
+	}
+	return nil
+}
+
+func (port *windowsPort) SetRTS(rts bool) error {
+	// It seems that there is a bug in the Windows VCP driver:
+	// it doesn't send USB control message when the RTS bit is
+	// changed, so the following code not always works with
+	// USB-to-serial adapters.
+
+	/*
+		var res bool
+		if rts {
+			res = escapeCommFunction(port.handle, commFunctionSetRTS)
+		} else {
+			res = escapeCommFunction(port.handle, commFunctionClrRTS)
+		}
+		if !res {
+			return &PortError{}
+		}
+		return nil
+	*/
+
+	// The following seems a more reliable way to do it
+
+	params := &dcb{}
+	if err := getCommState(port.handle, params); err != nil {
+		return &PortError{causedBy: err}
+	}
+	params.Flags &= dcbRTSControlDisbaleMask
+	if rts {
+		params.Flags |= dcbRTSControlEnable
+	}
+	if err := setCommState(port.handle, params); err != nil {
+		return &PortError{causedBy: err}
+	}
+	return nil
+}
+
+func (port *windowsPort) GetModemStatusBits() (*ModemStatusBits, error) {
+	var bits uint32
+	if !getCommModemStatus(port.handle, &bits) {
+		return nil, &PortError{}
+	}
+	return &ModemStatusBits{
+		CTS: (bits & msCTSOn) != 0,
+		DCD: (bits & msRLSDOn) != 0,
+		DSR: (bits & msDSROn) != 0,
+		RI:  (bits & msRingOn) != 0,
+	}, nil
 }
 
 func nativeOpen(portName string, mode *Mode) (*windowsPort, error) {
@@ -249,15 +333,19 @@ func nativeOpen(portName string, mode *Mode) (*windowsPort, error) {
 		port.Close()
 		return nil, &PortError{code: InvalidSerialPort}
 	}
-	params.Flags |= dcbRTSControlEnable | dcbDTRControlEnable
-	params.Flags &= ^uint32(dcbOutXCTSFlow)
-	params.Flags &= ^uint32(dcbOutXDSRFlow)
-	params.Flags &= ^uint32(dcbDSRSensitivity)
+	params.Flags &= dcbRTSControlDisbaleMask
+	params.Flags |= dcbRTSControlEnable
+	params.Flags &= dcbDTRControlDisableMask
+	params.Flags |= dcbDTRControlEnable
+	params.Flags &^= dcbOutXCTSFlow
+	params.Flags &^= dcbOutXDSRFlow
+	params.Flags &^= dcbDSRSensitivity
 	params.Flags |= dcbTXContinueOnXOFF
-	params.Flags &= ^uint32(dcbInX | dcbOutX)
-	params.Flags &= ^uint32(dcbErrorChar)
-	params.Flags &= ^uint32(dcbNull)
-	params.Flags &= ^uint32(dcbAbortOnError)
+	params.Flags &^= dcbInX
+	params.Flags &^= dcbOutX
+	params.Flags &^= dcbErrorChar
+	params.Flags &^= dcbNull
+	params.Flags &^= dcbAbortOnError
 	params.XonLim = 2048
 	params.XoffLim = 512
 	params.XonChar = 17  // DC1
