@@ -1,5 +1,5 @@
-hash: f7b32cb0405f340a36249bf295980357366e3331905399dace47b55a93ea50ac
-updated: 2016-11-21T17:35:57.055216838-07:00
+hash: b466c4de616df4e397bb2d05beaf8990931f11476a9ba29aab8a37632390ce53
+updated: 2016-10-26T20:42:26.960115795Z
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -7,16 +7,14 @@ imports:
   - parse
 - name: github.com/alecthomas/units
   version: 2efee857e7cfd4f3d0138cc3cbb1b4966962b93a
-- name: github.com/chimera/go-inside
-  version: ea596fb9b370f775677a4f076fd7eb8cb9a23cd9
 - name: github.com/cswank/rex
-  version: ff718331286aa736600ca86fd62f85912aa50be2
+  version: 8390566cea77dca01abfe45f47f65e5d09fc397d
 - name: github.com/cswank/xbee
   version: 274c144d847c5d2d6772bea30e18d60fb702b827
 - name: go.bug.st/serial.v1
-  version: 43fc80d807eea385cf4d60be922b6a2f61508340
+  version: 04302f262ca3879de7bba554937f21805e65d8a3
 - name: golang.org/x/sys
-  version: b699b7032584f0953262cb2788a0ca19bb494703
+  version: c200b10b5d5e122be351b67af224adc6128af5bf
   subpackages:
   - unix
   - windows
@@ -24,7 +22,7 @@ imports:
   version: e9044be3ab2a8e11d4e1f418d12f0790d57e8d70
 testImports:
 - name: github.com/onsi/ginkgo
-  version: 00054c0bb96fc880d4e0be1b90937fad438c5290
+  version: a8ccd817611666211fdf6e6a752174a0db8374a8
   subpackages:
   - config
   - internal/codelocation
@@ -43,7 +41,7 @@ testImports:
   - reporters/stenographer/support/go-isatty
   - types
 - name: github.com/onsi/gomega
-  version: f1f0f388b31eca4e2cbe7a6dd8a3a1dfddda5b1c
+  version: 7e2072f716a912a29b2dfa54398faf096a9909e3
   subpackages:
   - format
   - internal/assertion

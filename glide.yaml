@@ -4,4 +4,3 @@ import:
 - package: gopkg.in/alecthomas/kingpin.v2
   version: ~2.2.2
 - package: github.com/cswank/xbee
-- package: github.com/chimera/go-inside

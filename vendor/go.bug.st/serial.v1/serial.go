@@ -22,27 +22,8 @@ type Port interface {
 	// Returns the number of bytes written.
 	Write(p []byte) (n int, err error)
 
-	// SetDTR sets the modem status bit DataTerminalReady
-	SetDTR(dtr bool) error
-
-	// SetRTS sets the modem status bit RequestToSend
-	SetRTS(rts bool) error
-
-	// GetModemStatusBits returns a ModemStatusBits structure containing the
-	// modem status bits for the serial port (CTS, DSR, etc...)
-	GetModemStatusBits() (*ModemStatusBits, error)
-
 	// Close the serial port
 	Close() error
-}
-
-// ModemStatusBits contains all the modem status bits for a serial port (CTS, DSR, etc...).
-// It can be retrieved with the Port.GetModemStatusBits() method.
-type ModemStatusBits struct {
-	CTS bool // ClearToSend status
-	DSR bool // DataSetReady status
-	RI  bool // RingIndicator status
-	DCD bool // DataCarrierDetect status
 }
 
 // Open opens the serial port using the specified modes
@@ -113,10 +94,6 @@ const (
 	InvalidSpeed
 	// InvalidDataBits the number of data bits is not valid or not supported
 	InvalidDataBits
-	// InvalidParity the selected parity is not valid or not supported
-	InvalidParity
-	// InvalidStopBits the selected number of stop bits is not valid or not supported
-	InvalidStopBits
 	// ErrorEnumeratingPorts an error occurred while listing serial port
 	ErrorEnumeratingPorts
 )
@@ -133,13 +110,9 @@ func (e PortError) EncodedErrorString() string {
 	case PermissionDenied:
 		return "Permission denied"
 	case InvalidSpeed:
-		return "Port speed invalid or not supported"
+		return "Invalid port speed"
 	case InvalidDataBits:
-		return "Port data bits invalid or not supported"
-	case InvalidParity:
-		return "Port parity invalid or not supported"
-	case InvalidStopBits:
-		return "Port stop bits invalid or not supported"
+		return "Invalid port data bits"
 	case ErrorEnumeratingPorts:
 		return "Could not enumerate serial ports"
 	default:

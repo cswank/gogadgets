@@ -15,12 +15,10 @@ var (
 	modadvapi32 = windows.NewLazySystemDLL("advapi32.dll")
 	modkernel32 = windows.NewLazySystemDLL("kernel32.dll")
 
-	procRegEnumValueW      = modadvapi32.NewProc("RegEnumValueW")
-	procGetCommState       = modkernel32.NewProc("GetCommState")
-	procSetCommState       = modkernel32.NewProc("SetCommState")
-	procSetCommTimeouts    = modkernel32.NewProc("SetCommTimeouts")
-	procEscapeCommFunction = modkernel32.NewProc("EscapeCommFunction")
-	procGetCommModemStatus = modkernel32.NewProc("GetCommModemStatus")
+	procRegEnumValueW   = modadvapi32.NewProc("RegEnumValueW")
+	procGetCommState    = modkernel32.NewProc("GetCommState")
+	procSetCommState    = modkernel32.NewProc("SetCommState")
+	procSetCommTimeouts = modkernel32.NewProc("SetCommTimeouts")
 )
 
 func regEnumValue(key syscall.Handle, index uint32, name *uint16, nameLen *uint32, reserved *uint32, class *uint16, value *uint16, valueLen *uint32) (regerrno error) {
@@ -64,17 +62,5 @@ func setCommTimeouts(handle syscall.Handle, timeouts *commTimeouts) (err error) 
 			err = syscall.EINVAL
 		}
 	}
-	return
-}
-
-func escapeCommFunction(handle syscall.Handle, function uint32) (res bool) {
-	r0, _, _ := syscall.Syscall(procEscapeCommFunction.Addr(), 2, uintptr(handle), uintptr(function), 0)
-	res = r0 != 0
-	return
-}
-
-func getCommModemStatus(handle syscall.Handle, bits *uint32) (res bool) {
-	r0, _, _ := syscall.Syscall(procGetCommModemStatus.Addr(), 2, uintptr(handle), uintptr(unsafe.Pointer(bits)), 0)
-	res = r0 != 0
 	return
 }

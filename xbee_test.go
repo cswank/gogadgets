@@ -30,17 +30,9 @@ func (f *FakePort) SetMode(mode *serial.Mode) error {
 	return nil
 }
 
-func (f *FakePort) SetDTR(dtr bool) error { return nil }
-
-func (f *FakePort) SetRTS(rts bool) error { return nil }
-
 func (f *FakePort) setMsg(msg []byte) {
 	f.msg = msg
 	f.end = len(msg)
-}
-
-func (f *FakePort) GetModemStatusBits() (*serial.ModemStatusBits, error) {
-	return &serial.ModemStatusBits{}, nil
 }
 
 func (f *FakePort) Read(p []byte) (n int, err error) {

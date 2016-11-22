@@ -151,9 +151,6 @@ func (n *node) isResource(s string) (bool, string, string) {
 
 func (n *node) handle(pth []string, w http.ResponseWriter, r *http.Request) bool {
 	if len(pth) == 0 {
-		if n == nil || n.handler == nil {
-			return false
-		}
 		n.handler.ServeHTTP(w, r)
 		return true
 	}
