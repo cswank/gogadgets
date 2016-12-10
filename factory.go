@@ -154,8 +154,8 @@ func (f *AppFactory) GetApp() (a *App, err error) {
 
 type InputDeviceFactory func(pin *Pin) (InputDevice, error)
 
-//Inputdevices are started as goroutines by the Gadget
-//that contains it.
+//InputDevice reads values from sensors and reports
+//the values to the rest of the system.
 type InputDevice interface {
 	Start(<-chan Message, chan<- Value)
 	GetValue() *Value
