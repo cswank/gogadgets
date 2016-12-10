@@ -134,18 +134,20 @@ func (r *Recorder) summarize(msg *Message, duration time.Duration) {
 }
 
 func (r *Recorder) doSave(msg *Message) {
-	v, ok := msg.Value.Value.(float64)
+	vals, ok := r.getValue(msg)
 	if !ok {
 		return
 	}
-	m := map[string]float64{
-		"value": v,
+	for _, v := range vals {
+		u := fmt.Sprintf(r.url, msg.Location, msg.Name+v.name)
+		r.doSaveVal(v.val, u)
 	}
+}
+
+func (r *Recorder) doSaveVal(m map[string]float64, u string) {
 	buf := bytes.Buffer{}
 	enc := json.NewEncoder(&buf)
 	enc.Encode(m)
-
-	u := fmt.Sprintf(r.url, msg.Location, msg.Name)
 	req, err := http.NewRequest("POST", u, &buf)
 	if err != nil {
 		log.Println("couldn't post data", err)
@@ -160,6 +162,42 @@ func (r *Recorder) doSave(msg *Message) {
 	resp.Body.Close()
 }
 
+type dataPoint struct {
+	name string
+	val  map[string]float64
+}
+
+func (r *Recorder) getValue(msg *Message) ([]dataPoint, bool) {
+	if msg.Info.Direction == "output" {
+		return r.getOutputValue(msg)
+	}
+	return r.getInputValue(msg)
+}
+
+func (r *Recorder) getOutputValue(msg *Message) ([]dataPoint, bool) {
+	var o []dataPoint
+	var ok bool
+	for k, v := range msg.Value.Output {
+		ok = true
+		val := dataPoint{
+			val:  map[string]float64{"value": bTof(v)},
+			name: fmt.Sprintf(" %s", k),
+		}
+		o = append(o, val)
+	}
+	return o, ok
+}
+
+func (r *Recorder) getInputValue(msg *Message) ([]dataPoint, bool) {
+	v, ok := msg.Value.Value.(float64)
+	if !ok {
+		return nil, ok
+	}
+	return []dataPoint{
+		{val: map[string]float64{"value": v}},
+	}, true
+}
+
 func getFilter(f interface{}) []string {
 	if f == nil {
 		return []string{}
@@ -169,4 +207,11 @@ func getFilter(f interface{}) []string {
 		return []string{}
 	}
 	return filters
+}
+
+func bTof(b bool) float64 {
+	if b {
+		return 1.0
+	}
+	return 0.0
 }

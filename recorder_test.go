@@ -21,14 +21,17 @@ var _ = Describe("Recorder", func() {
 		r     *gogadgets.Recorder
 		ts    *httptest.Server
 		posts []string
+		urls  []string
 	)
 
 	BeforeEach(func() {
 		posts = []string{}
+		urls = []string{}
 		ts = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			buf := &bytes.Buffer{}
 			io.Copy(buf, r.Body)
-			posts = append(posts, buf.String())
+			posts = append(posts, strings.TrimSpace(buf.String()))
+			urls = append(urls, r.URL.Path)
 			r.Body.Close()
 		}))
 		cfg := fmt.Sprintf(`{
@@ -53,7 +56,8 @@ var _ = Describe("Recorder", func() {
 	})
 
 	Describe("when all's good", func() {
-		It("does it's thing", func() {
+
+		It("saves output values", func() {
 			msg := &gogadgets.Message{
 				Type:     gogadgets.UPDATE,
 				Location: "lab",
@@ -63,8 +67,28 @@ var _ = Describe("Recorder", func() {
 				},
 			}
 			r.Update(msg)
-			Expect(len(posts)).To(Equal(1))
-			Expect(strings.TrimSpace(posts[0])).To(Equal(`{"value":411}`))
+			Expect(posts).To(ConsistOf(`{"value":411}`))
+			Expect(urls).To(ConsistOf("/api/fakeid/locations/lab/devices/thermometer/datapoints"))
+		})
+
+		It("saves input values", func() {
+			msg := &gogadgets.Message{
+				Type:     gogadgets.UPDATE,
+				Location: "lab",
+				Name:     "thermostat",
+				Value: gogadgets.Value{
+					Output: map[string]bool{
+						"heat": true,
+						"cool": false,
+					},
+				},
+				Info: gogadgets.Info{
+					Direction: "output",
+				},
+			}
+			r.Update(msg)
+			Expect(posts).To(ConsistOf(`{"value":1}`, `{"value":0}`))
+			Expect(urls).To(ConsistOf("/api/fakeid/locations/lab/devices/thermostat heat/datapoints", "/api/fakeid/locations/lab/devices/thermostat cool/datapoints"))
 		})
 	})
 })
