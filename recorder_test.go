@@ -17,7 +17,6 @@ import (
 var _ = Describe("Recorder", func() {
 	var (
 		out   chan gogadgets.Message
-		in    chan gogadgets.Value
 		r     *gogadgets.Recorder
 		ts    *httptest.Server
 		posts []string
@@ -47,7 +46,6 @@ var _ = Describe("Recorder", func() {
 		Expect(err).To(BeNil())
 		r = x.(*gogadgets.Recorder)
 		out = make(chan gogadgets.Message)
-		in = make(chan gogadgets.Value)
 		r.On(nil)
 	})
 
