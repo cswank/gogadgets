@@ -91,22 +91,23 @@ type Message struct {
 }
 
 type Pin struct {
-	Type        string                 `json:"type,omitempty"`
-	Port        string                 `json:"port,omitempty"`
-	Pin         string                 `json:"pin,omitempty"`
-	Direction   string                 `json:"direction,omitempty"`
-	Edge        string                 `json:"edge,omitempty"`
-	ActiveLow   string                 `json:"active_low,omitempty"`
-	OneWirePath string                 `json:"onewirePath,omitempty"`
-	OneWireId   string                 `json:"onewireId,omitempty"`
-	Sleep       time.Duration          `json:"sleep,omitempty"`
-	Value       interface{}            `json:"value,omitempty"`
-	Units       string                 `json:"units,omitempty"`
-	Platform    string                 `json:"platform,omitempty"`
-	Frequency   int                    `json:"frequency,omitempty"`
-	Args        map[string]interface{} `json:"args,omitempty"`
-	Pins        map[string]Pin         `json:"pins,omitempty"`
-	Lock        sync.Mutex             `json:"-"`
+	Type        string        `json:"type,omitempty"`
+	Port        string        `json:"port,omitempty"`
+	Pin         string        `json:"pin,omitempty"`
+	Direction   string        `json:"direction,omitempty"`
+	Edge        string        `json:"edge,omitempty"`
+	ActiveLow   string        `json:"active_low,omitempty"`
+	OneWirePath string        `json:"onewirePath,omitempty"`
+	OneWireId   string        `json:"onewireId,omitempty"`
+	Sleep       time.Duration `json:"sleep,omitempty"`
+	Value       interface{}   `json:"value,omitempty"`
+	Units       string        `json:"units,omitempty"`
+	//Platform is either "rpi" or "beaglebone"
+	Platform  string                 `json:"platform,omitempty"`
+	Frequency int                    `json:"frequency,omitempty"`
+	Args      map[string]interface{} `json:"args,omitempty"`
+	Pins      map[string]Pin         `json:"pins,omitempty"`
+	Lock      sync.Mutex             `json:"-"`
 }
 
 type GadgetConfig struct {

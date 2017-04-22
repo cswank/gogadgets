@@ -15,14 +15,7 @@ func init() {
 }
 
 var _ = Describe("gadgets", func() {
-	var (
-		port int
-	)
-	BeforeEach(func() {
-		port = 1024 + rand.Intn(65535-1024)
-	})
-	AfterEach(func() {
-	})
+
 	Describe("commands", func() {
 		It("parses a command", func() {
 			val, unit, err := gogadgets.ParseCommand("fill tank to 5 liters")

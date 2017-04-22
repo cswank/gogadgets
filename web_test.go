@@ -27,11 +27,9 @@ var _ = Describe("server", func() {
 		in      chan gogadgets.Message
 		s       *gogadgets.Server
 		lg      *fakeLogger
-		sink    []gogadgets.Message
 	)
 
 	BeforeEach(func() {
-		sink = []gogadgets.Message{}
 		lg = &fakeLogger{}
 
 		port = 1024 + rand.Intn(65535-1024)

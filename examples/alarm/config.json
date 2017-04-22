@@ -1,0 +1,29 @@
+{
+    "host": "http://192.168.1.18:6111",
+    "gadgets": [
+        {
+            "location": "home",
+            "name": "alarm",
+            "pin": {
+                "type": "alarm",
+                "platform": "rpi",
+                "pin": "11",
+                "args": {
+                    "duration": "5m",
+                    "events": {
+                        "back yard gate": false
+                    }
+                }
+            }
+        },
+        {
+	    "location": "back yard",
+	    "name": "gate",
+            "pin": {
+                "type": "switch",
+                "platform": "rpi",
+	        "pin": "13"
+            }
+        }
+    ]
+}

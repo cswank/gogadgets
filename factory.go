@@ -18,6 +18,7 @@ var (
 		"xbee":        NewXBee,
 	}
 	outputFactories = map[string]OutputDeviceFactory{
+		"alarm":      NewAlarm,
 		"heater":     NewHeater,
 		"cooler":     NewCooler,
 		"thermostat": NewThermostat,
@@ -38,8 +39,8 @@ func NewAppFactory() *AppFactory {
 	return a
 }
 
-//There are 5 types of Input/Output devices build into
-//GoGadgets (header, cooler, gpio, thermometer and switch)
+//There are several types of Input/Output devices build into
+//GoGadgets (eg: header, cooler, gpio, thermometer and switch)
 //NewGadget reads a GadgetConfig and creates the correct
 //type of Gadget.
 func NewGadget(config *GadgetConfig) (Gadgeter, error) {
@@ -53,9 +54,8 @@ func NewGadget(config *GadgetConfig) (Gadgeter, error) {
 		return NewOutputGadget(config)
 	}
 	return nil, fmt.Errorf(
-		"couldn't build a gadget based on config: %s %s",
-		config.Location,
-		config.Name,
+		"couldn't build a gadget based on config: %v",
+		config,
 	)
 }
 
@@ -112,7 +112,7 @@ func NewOutputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
 		Output:         dev,
 		Operator:       ">=",
 		UID:            fmt.Sprintf("%s %s", config.Location, config.Name),
-		filterMessages: config.Pin.Type != "recorder",
+		filterMessages: config.Pin.Type != "recorder" && config.Pin.Type != "alarm",
 	}
 	return gadget, nil
 }
@@ -137,6 +137,7 @@ func GetTypes() map[string]ConfigHelper {
 		"thermostat":  th.Config(),
 		"recorder":    r.Config(),
 		"flow_meter":  f.Config(),
+		"alarm":       f.Config(),
 	}
 }
 

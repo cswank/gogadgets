@@ -162,7 +162,7 @@ func (g *GPIO) Wait() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return string(g.buf[:2]) == "1\n", nil
+	return strings.TrimSpace(string(g.buf[:2])) == "1", nil
 }
 
 func FD_SET(fd int, p *syscall.FdSet) {

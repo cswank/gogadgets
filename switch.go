@@ -19,6 +19,7 @@ type Switch struct {
 
 func NewSwitch(pin *Pin) (InputDevice, error) {
 	pin.Direction = "in"
+	pin.Edge = "both"
 	var err error
 	var s *Switch
 	gpio, err := NewGPIO(pin)
@@ -55,23 +56,14 @@ func (s *Switch) Config() ConfigHelper {
 //The GPIO does the real waiting here.  This wraps it and adds
 //a delay so that the inevitable bounce in the signal from the
 //physical device is ignored.
-func (s *Switch) wait(out chan<- interface{}, err chan<- error) {
+func (s *Switch) wait(out chan<- bool, err chan<- error) {
 	for {
 		val, e := s.GPIO.Wait()
 		if e != nil {
 			err <- e
 			return
 		}
-		switch v := s.TrueValue.(type) {
-		case bool:
-			out <- val
-		default:
-			if val {
-				out <- v
-			} else {
-				out <- 0.0
-			}
-		}
+		out <- val
 		time.Sleep(100 * time.Millisecond)
 	}
 }
@@ -101,7 +93,7 @@ func (s *Switch) GetValue() *Value {
 
 func (s *Switch) Start(in <-chan Message, out chan<- Value) {
 	s.out = out
-	value := make(chan interface{})
+	value := make(chan bool)
 	err := make(chan error)
 	s.readValue()
 	s.SendValue()
