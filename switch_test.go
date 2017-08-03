@@ -23,11 +23,7 @@ var _ = Describe("Switch", func() {
 	BeforeEach(func() {
 		poller := &FakePoller{}
 		s = &gogadgets.Switch{
-			GPIO:       poller,
-			Value:      5.0,
-			TrueValue:  5.0,
-			FalseValue: 0.0,
-			Units:      "liters",
+			GPIO: poller,
 		}
 		out = make(chan gogadgets.Message)
 		in = make(chan gogadgets.Value)
@@ -36,17 +32,17 @@ var _ = Describe("Switch", func() {
 	Describe("when all's good", func() {
 		It("does it's thing", func() {
 			val := <-in
-			Expect(val.Value.(float64)).To(Equal(0.0))
+			Expect(val.Value.(bool)).To(BeFalse())
 			val = <-in
-			Expect(val.Value.(float64)).To(Equal(5.0))
+			Expect(val.Value.(bool)).To(BeTrue())
 			val = <-in
-			Expect(val.Value.(float64)).To(Equal(0.0))
+			Expect(val.Value.(bool)).To(BeFalse())
 			out <- gogadgets.Message{
 				Type: "command",
 				Body: "shutdown",
 			}
 			v := s.GetValue()
-			Expect(v.Value.(float64)).To(Equal(0.0))
+			Expect(v.Value.(bool)).To(BeFalse())
 		})
 	})
 })

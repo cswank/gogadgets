@@ -27,9 +27,31 @@ var (
 	serialFactory SerialFactory
 )
 
-func moisture(location string) converter {
+/*
+Vegatronix VH400 (https://www.vegetronix.com/Products/VH400/VH400-Piecewise-Curve.phtml)
+0 to 1.1V	    VWC= 10*V-1
+1.1V to 1.3V	VWC= 25*V- 17.5
+1.3V  to 1.82V	VWC= 48.08*V- 47.5
+1.82V to 2.2V	VWC= 26.32*V- 7.89
+*/
+func vh400(location string) converter {
 	return func(v float64) (float64, string, address) {
-		return v / 1000.0, "%", address{"moisture", location}
+		v = v / 1000 //milivolts comint in
+		var m, b float64
+		if v < 1.1 {
+			m = 10
+			b = -1
+		} else if v < 1.3 {
+			m = 25
+			b = -17.5
+		} else if v < 1.82 {
+			m = 48.08
+			b = -47.5
+		} else {
+			m = 26.32
+			b = -7.89
+		}
+		return v*m + b, "VWC", address{"moisture", location}
 	}
 }
 
@@ -69,7 +91,7 @@ func (x XBeeConfig) getConversion(location string) map[string]converter {
 	for k, t := range x.ADC {
 		switch t {
 		case "moisture":
-			out[k] = moisture(location)
+			out[k] = vh400(location)
 		case "tmp36":
 			out[k] = tmp36(location)
 		}

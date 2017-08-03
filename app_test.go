@@ -54,10 +54,7 @@ var _ = Describe("gogadgets", func() {
 				Location: location,
 				Name:     name,
 				Input: &gogadgets.Switch{
-					GPIO:      poller,
-					Value:     5.0,
-					TrueValue: 5.0,
-					Units:     "liters",
+					GPIO: poller,
 				},
 				UID: fmt.Sprintf("%s %s", location, name),
 			}

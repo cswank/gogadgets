@@ -95,19 +95,11 @@ func (a *Alarm) Off() error {
 }
 
 func getAlarmEvents(e interface{}) (map[string]bool, error) {
-	tmp, ok := e.(map[string]interface{})
+	m, ok := e.(map[string]bool)
 	if !ok {
 		return nil, fmt.Errorf("could not parse alarm events %v (should be map[string]bool)\n", e)
 	}
 
-	m := map[string]bool{}
-	for k, v := range tmp {
-		b, ok := v.(bool)
-		if !ok {
-			return nil, fmt.Errorf("could not parse alarm events %v (should be map[string]bool)\n", e)
-		}
-		m[k] = b
-	}
 	return m, nil
 }
 

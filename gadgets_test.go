@@ -205,11 +205,7 @@ var _ = Describe("gadgets", func() {
 			name := "switch"
 			poller := &FakePoller{}
 			s := &gogadgets.Switch{
-				GPIO:       poller,
-				Value:      0.0,
-				TrueValue:  5.0,
-				FalseValue: 0.0,
-				Units:      "liters",
+				GPIO: poller,
 			}
 			g := gogadgets.Gadget{
 				Location: location,
@@ -222,11 +218,11 @@ var _ = Describe("gadgets", func() {
 			go g.Start(input, output)
 			<-output
 			val := <-output
-			Expect(val.Value.Value.(float64)).To(Equal(0.0))
+			Expect(val.Value.Value.(bool)).To(BeFalse())
 			val = <-output
-			Expect(val.Value.Value.(float64)).To(Equal(5.0))
+			Expect(val.Value.Value.(bool)).To(BeTrue())
 			val = <-output
-			Expect(val.Value.Value.(float64)).To(Equal(0.0))
+			Expect(val.Value.Value.(bool)).To(BeFalse())
 		})
 	})
 })

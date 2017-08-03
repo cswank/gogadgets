@@ -148,7 +148,7 @@ var _ = Describe("xbee", func() {
 			Expect(vals[1].GetName()).To(Equal("gate"))
 			Expect(vals[1].Value.(bool)).To(BeFalse())
 			Expect(vals[2].GetName()).To(Equal("moisture"))
-			Expect(vals[2].Value.(float64)).To(BeNumerically("~", 0.5982404692082112, 0.001))
+			Expect(vals[2].Value.(float64)).To(BeNumerically("~", 4.9824046920821115, 0.001))
 			Expect(vals[3].GetName()).To(Equal("temperature"))
 			Expect(vals[3].Value.(float64)).To(BeNumerically("~", 60.0293255, 0.001))
 		})

@@ -9,38 +9,25 @@ import (
 //to change value (1 to 0 or 0 to 1).  When that change
 //happens it sends an update to the rest of the system.
 type Switch struct {
-	GPIO       Poller
-	Value      interface{}
-	TrueValue  interface{}
-	FalseValue interface{}
-	Units      string
-	out        chan<- Value
+	GPIO  Poller
+	Value bool
+	Units string
+	out   chan<- Value
 }
 
 func NewSwitch(pin *Pin) (InputDevice, error) {
 	pin.Direction = "in"
 	pin.Edge = "both"
 	var err error
-	var s *Switch
 	gpio, err := NewGPIO(pin)
 	if err != nil {
 		return nil, err
 	}
 
-	s = &Switch{
-		GPIO:      gpio,
-		TrueValue: pin.Value,
-		Units:     pin.Units,
-	}
-	switch s.TrueValue.(type) {
-	case bool:
-		s.Value = false
-		s.FalseValue = false
-	default:
-		s.Value = float64(0.0)
-		s.FalseValue = float64(0.0)
-	}
-	return s, nil
+	return &Switch{
+		GPIO:  gpio,
+		Units: pin.Units,
+	}, nil
 }
 
 func (s *Switch) Config() ConfigHelper {
@@ -70,11 +57,7 @@ func (s *Switch) wait(out chan<- bool, err chan<- error) {
 
 func (s *Switch) readValue() {
 	v := s.GPIO.Status()
-	if v["gpio"] {
-		s.Value = s.TrueValue
-	} else {
-		s.Value = s.FalseValue
-	}
+	s.Value = v["gpio"]
 }
 
 func (s *Switch) SendValue() {
