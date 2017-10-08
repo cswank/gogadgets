@@ -162,6 +162,9 @@ func (h *Heater) getTarget(val *Value) {
 }
 
 func (h *Heater) readTemperature(msg *Message) {
+	if msg.Name != "temperature" {
+		return
+	}
 	temp, ok := msg.Value.ToFloat()
 	if ok {
 		h.currentTemp = temp
