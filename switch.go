@@ -43,14 +43,14 @@ func (s *Switch) Config() ConfigHelper {
 //The GPIO does the real waiting here.  This wraps it and adds
 //a delay so that the inevitable bounce in the signal from the
 //physical device is ignored.
-func (s *Switch) wait(out chan<- bool, err chan<- error) {
+func (s *Switch) wait(out chan<- bool) {
 	for {
 		val, e := s.GPIO.Wait()
 		if e != nil {
-			err <- e
-			return
+			log.Printf("gpio wait error: %s", e)
+		} else {
+			out <- val
 		}
-		out <- val
 		time.Sleep(100 * time.Millisecond)
 	}
 }
@@ -77,11 +77,10 @@ func (s *Switch) GetValue() *Value {
 func (s *Switch) Start(in <-chan Message, out chan<- Value) {
 	s.out = out
 	value := make(chan bool)
-	err := make(chan error)
 	s.readValue()
 	s.SendValue()
 	keepGoing := true
-	go s.wait(value, err)
+	go s.wait(value)
 	for keepGoing {
 		select {
 		case <-in:
@@ -89,8 +88,6 @@ func (s *Switch) Start(in <-chan Message, out chan<- Value) {
 		case val := <-value:
 			s.Value = val
 			s.SendValue()
-		case e := <-err:
-			log.Println(e)
 		}
 	}
 }

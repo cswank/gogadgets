@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math"
 	"strconv"
 	"strings"
 	"time"
@@ -286,7 +287,8 @@ func (g *Gadget) setCompare(value float64, unit string, gadget string) {
 			return msg.Location == g.Location &&
 				ok &&
 				msg.Name == gadget &&
-				val <= value
+				(math.Abs(val-value) < 0.001 || val <= value)
+
 		}
 	} else if g.Operator == ">=" {
 		g.compare = func(msg *Message) bool {
@@ -294,7 +296,7 @@ func (g *Gadget) setCompare(value float64, unit string, gadget string) {
 			return msg.Location == g.Location &&
 				ok &&
 				msg.Name == gadget &&
-				val >= value
+				(math.Abs(val-value) < 0.001 || val >= value)
 		}
 	}
 }

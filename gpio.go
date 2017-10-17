@@ -36,9 +36,6 @@ type GPIO struct {
 	direction     string
 	edge          string
 	activeLow     string
-	fd            int
-	fdSet         *syscall.FdSet
-	buf           []byte
 }
 
 func GPIOFactory(pin *Pin) (OutputDevice, error) {
@@ -145,26 +142,23 @@ func (g *GPIO) writeValue(path, value string) error {
 }
 
 func (g *GPIO) Wait() (bool, error) {
-	if g.fd == 0 {
-		fd, err := syscall.Open(g.valuePath, syscall.O_RDONLY, 0666)
-		if err != nil {
-			return false, err
-		}
-		g.fd = fd
-		g.fdSet = new(syscall.FdSet)
-		FD_SET(g.fd, g.fdSet)
-		g.buf = make([]byte, 64)
-		syscall.Read(g.fd, g.buf)
-	}
-	syscall.Select(g.fd+1, nil, nil, g.fdSet, nil)
-	syscall.Seek(g.fd, 0, 0)
-	_, err := syscall.Read(g.fd, g.buf)
+	fd, err := syscall.Open(g.valuePath, syscall.O_RDONLY, 0666)
 	if err != nil {
 		return false, err
 	}
-	return strings.TrimSpace(string(g.buf[:2])) == "1", nil
+	fdSet := new(syscall.FdSet)
+	g.fdSet(fd, fdSet)
+	buf := make([]byte, 64)
+	syscall.Read(fd, buf)
+	syscall.Select(fd+1, nil, nil, fdSet, nil)
+	syscall.Seek(fd, 0, 0)
+	_, err = syscall.Read(fd, buf)
+	if err != nil {
+		return false, err
+	}
+	return strings.TrimSpace(string(buf[:2])) == "1", syscall.Close(fd)
 }
 
-func FD_SET(fd int, p *syscall.FdSet) {
+func (g *GPIO) fdSet(fd int, p *syscall.FdSet) {
 	p.Bits[fd/32] |= 1 << (uint(fd) % 32)
 }
