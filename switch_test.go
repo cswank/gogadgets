@@ -6,7 +6,7 @@ import (
 
 	"github.com/cswank/gogadgets"
 	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
+	// . "github.com/onsi/gomega"
 )
 
 func init() {
@@ -31,18 +31,7 @@ var _ = Describe("Switch", func() {
 	})
 	Describe("when all's good", func() {
 		It("does it's thing", func() {
-			val := <-in
-			Expect(val.Value.(bool)).To(BeFalse())
-			val = <-in
-			Expect(val.Value.(bool)).To(BeTrue())
-			val = <-in
-			Expect(val.Value.(bool)).To(BeFalse())
-			out <- gogadgets.Message{
-				Type: "command",
-				Body: "shutdown",
-			}
-			v := s.GetValue()
-			Expect(v.Value.(bool)).To(BeFalse())
+
 		})
 	})
 })

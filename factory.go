@@ -164,7 +164,7 @@ type InputDevice interface {
 }
 
 type Poller interface {
-	Wait() (bool, error)
+	Wait() error
 	Status() map[string]bool
 }
 

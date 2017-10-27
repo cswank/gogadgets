@@ -45,12 +45,12 @@ func (f *FakePoller) Status() map[string]bool {
 	return map[string]bool{"poller": f.val}
 }
 
-func (f *FakePoller) Wait() (bool, error) {
+func (f *FakePoller) Wait() error {
 	if f.trigger == nil {
 		time.Sleep(100 * time.Millisecond)
 		f.val = !f.val
 	} else {
 		f.val = <-f.trigger
 	}
-	return f.val, nil
+	return nil
 }

@@ -141,22 +141,30 @@ func (g *GPIO) writeValue(path, value string) error {
 	return ioutil.WriteFile(path, []byte(value), GPIO_DEV_MODE)
 }
 
-func (g *GPIO) Wait() (bool, error) {
+func (g *GPIO) Wait() error {
 	fd, err := syscall.Open(g.valuePath, syscall.O_RDONLY, 0666)
+	fmt.Println(fd, err)
 	if err != nil {
-		return false, err
+		return err
 	}
 	fdSet := new(syscall.FdSet)
+	g.fdZero(fdSet)
 	g.fdSet(fd, fdSet)
-	buf := make([]byte, 64)
+	buf := make([]byte, 32)
 	syscall.Read(fd, buf)
 	syscall.Select(fd+1, nil, nil, fdSet, nil)
-	syscall.Seek(fd, 0, 0)
-	_, err = syscall.Read(fd, buf)
-	if err != nil {
-		return false, err
+	return syscall.Close(fd)
+}
+
+func (g *GPIO) fdIsSet(fd int, p *syscall.FdSet) bool {
+	fmt.Println(fd, fd/32, p.Bits[fd/32], (1 << uint(fd) % 32))
+	return (p.Bits[fd/32] & (1 << uint(fd) % 32)) != 0
+}
+
+func (g *GPIO) fdZero(p *syscall.FdSet) {
+	for i := range p.Bits {
+		p.Bits[i] = 0
 	}
-	return strings.TrimSpace(string(buf[:2])) == "1", syscall.Close(fd)
 }
 
 func (g *GPIO) fdSet(fd int, p *syscall.FdSet) {

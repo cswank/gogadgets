@@ -69,9 +69,7 @@ func (m *MethodRunner) Start(in <-chan Message, out chan<- Message) {
 
 func (m *MethodRunner) readMessage(msg *Message) (shutdown bool) {
 	if msg.Type == METHOD {
-		m.method = msg.Method
-		m.step = -1
-		m.runNextStep()
+		m.startMethod(msg)
 		shutdown = false
 	} else if msg.Type == COMMAND && msg.Body == "update" {
 		m.sendUpdate()
@@ -87,6 +85,30 @@ func (m *MethodRunner) readMessage(msg *Message) (shutdown bool) {
 		shutdown = false
 	}
 	return shutdown
+}
+
+func (m *MethodRunner) startMethod(msg *Message) {
+	if msg.Method.Step > 0 {
+		m.resumeMethod(msg)
+	} else {
+		m.method = msg.Method
+		m.step = -1
+		m.runNextStep()
+	}
+}
+
+func (m *MethodRunner) resumeMethod(msg *Message) {
+	m.method = msg.Method
+	m.step = msg.Method.Step
+	if m.step >= len(m.method.Steps) {
+		return
+	}
+	cmd := m.method.Steps[m.step]
+	if strings.Index(cmd, "wait") == -1 {
+		m.runNextStep()
+	} else {
+		m.readWaitCommand(cmd, msg.Method.Time)
+	}
 }
 
 func (m *MethodRunner) sendUpdate() {
@@ -125,7 +147,7 @@ func (m *MethodRunner) runNextStep() {
 	}
 	cmd := m.method.Steps[m.step]
 	if strings.Index(cmd, "wait") == 0 {
-		m.readWaitCommand(cmd)
+		m.readWaitCommand(cmd, 0)
 	} else {
 		m.sendCommand(cmd)
 		m.runNextStep()
@@ -141,8 +163,8 @@ func (m *MethodRunner) sendCommand(cmd string) {
 	m.out <- msg
 }
 
-func (m *MethodRunner) readWaitCommand(cmd string) {
-	waitTime, err := m.getWaitTime(cmd)
+func (m *MethodRunner) readWaitCommand(cmd string, resumeTime int) {
+	waitTime, err := m.getWaitTime(cmd, time.Duration(resumeTime)*time.Second)
 	if strings.Index(cmd, "wait for user") == 0 {
 		m.setUserStepChecker(cmd)
 	} else if err == nil {
@@ -221,7 +243,7 @@ func (m *MethodRunner) parseWaitCommand(cmd string) (uid, operator string, value
 	return uid, operator, value, err
 }
 
-func (m *MethodRunner) getWaitTime(cmd string) (waitTime time.Duration, err error) {
+func (m *MethodRunner) getWaitTime(cmd string, resumeTime time.Duration) (waitTime time.Duration, err error) {
 	result := timeExp.FindStringSubmatch(cmd)
 	if len(result) != 3 {
 		err = errors.New(fmt.Sprintf("could not parse command %s", cmd))
@@ -238,7 +260,12 @@ func (m *MethodRunner) getWaitTime(cmd string) (waitTime time.Duration, err erro
 		} else if units == "hours" || units == "hour" {
 			t *= 3600.0
 		}
-		waitTime = time.Duration(t * float64(time.Second))
+
+		if resumeTime > 0 {
+			waitTime = resumeTime
+		} else {
+			waitTime = time.Duration(t * float64(time.Second))
+		}
 	}
 	return waitTime, err
 }

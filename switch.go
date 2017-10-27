@@ -45,11 +45,11 @@ func (s *Switch) Config() ConfigHelper {
 //physical device is ignored.
 func (s *Switch) wait(out chan<- bool) {
 	for {
-		val, e := s.GPIO.Wait()
+		e := s.GPIO.Wait()
 		if e != nil {
 			log.Printf("gpio wait error: %s", e)
 		} else {
-			out <- val
+			out <- true
 		}
 		time.Sleep(100 * time.Millisecond)
 	}

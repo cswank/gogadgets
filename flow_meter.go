@@ -48,10 +48,7 @@ func (f *FlowMeter) Config() ConfigHelper {
 
 func (f *FlowMeter) wait(err chan<- error) {
 	for {
-		v, e := f.GPIO.Wait()
-		if !v {
-			continue
-		}
+		e := f.GPIO.Wait()
 		if e != nil {
 			err <- e
 			continue

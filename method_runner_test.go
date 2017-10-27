@@ -70,6 +70,7 @@ var _ = Describe("method runner", func() {
 			Expect(msg.Type).To(Equal("command"))
 			Expect(msg.Body).To(Equal("shutdown"))
 		})
+
 		It("runs a method with a wait command", func() {
 			go m.Start(out, in)
 			msg := gogadgets.Message{
@@ -117,5 +118,79 @@ var _ = Describe("method runner", func() {
 			Expect(msg.Type).To(Equal("command"))
 			Expect(msg.Body).To(Equal("shutdown"))
 		})
+
+		It("resumes a method with a wait for time command", func() {
+			go m.Start(out, in)
+			msg := gogadgets.Message{
+				Type: gogadgets.METHOD,
+				Method: gogadgets.Method{
+					Step: 1,
+					Time: 30,
+					Steps: []string{
+						"turn on sun",
+						"wait for 60 seconds",
+						"shutdown",
+					},
+				},
+			}
+
+			out <- msg
+			msg = <-in
+			Expect(msg.Type).To(Equal("method update"))
+			Expect(msg.Method.Step).To(Equal(1))
+			Expect(msg.Method.Time).To(Equal(30))
+
+			msg = <-in
+			Expect(msg.Type).To(Equal("method update"))
+			Expect(msg.Method.Step).To(Equal(1))
+			Expect(msg.Method.Time).To(Equal(30))
+
+			msg = <-in
+			Expect(msg.Type).To(Equal("method update"))
+			Expect(msg.Method.Step).To(Equal(1))
+			Expect(msg.Method.Time).To(Equal(29))
+		})
+
+		It("resumes a method with a wait for user command", func() {
+			go m.Start(out, in)
+			msg := gogadgets.Message{
+				Type: gogadgets.METHOD,
+				Method: gogadgets.Method{
+					Step: 1,
+					Steps: []string{
+						"turn on sun",
+						"wait for user to say ok",
+						"turn off sun",
+						"shutdown",
+					},
+				},
+			}
+
+			out <- msg
+			msg = <-in
+			Expect(msg.Type).To(Equal("method update"))
+			Expect(msg.Method.Step).To(Equal(1))
+		})
+	})
+
+	It("resumes a method", func() {
+		go m.Start(out, in)
+		msg := gogadgets.Message{
+			Type: gogadgets.METHOD,
+			Method: gogadgets.Method{
+				Step: 1,
+				Steps: []string{
+					"turn on sun",
+					"turn off sun",
+					"turn on sun",
+					"shutdown",
+				},
+			},
+		}
+
+		out <- msg
+		msg = <-in
+		Expect(msg.Type).To(Equal("method update"))
+		Expect(msg.Method.Step).To(Equal(2))
 	})
 })
