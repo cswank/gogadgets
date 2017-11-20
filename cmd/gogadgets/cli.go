@@ -21,39 +21,37 @@ const (
 )
 
 var (
-	host    = kingpin.Flag("host", "Name of Host").Short('h').Default("localhost").String()
-	config  = kingpin.Flag("config", "Path to a Gadgets config file").Short('c').Default("/etc/gogadgets/config.json").String()
-	cmd     = kingpin.Flag("cmd", "a Robot Command Language string").String()
-	status  = kingpin.Flag("status", "get the status of a gadgets system").Short('s').Bool()
-	verbose = kingpin.Flag("verbose", "get the verbose status of a gadgets system").Short('v').Bool()
-	addr    string
+	run    = kingpin.Command("run", "run a gogadgets instance")
+	config = run.Flag("config", "Path to a Gadgets config file").Short('c').Default("/etc/gogadgets.json").String()
+
+	cmd  = kingpin.Command("cmd", "send a command to a gogadgets instance")
+	host = cmd.Flag("host", "Name of gogadgets host").Short('h').Default("localhost").String()
+
+	//rcl: robobt command language
+	rcl = cmd.Arg("cmd", "a Robot Command Language string").String()
+
+	status     = kingpin.Command("status", "get the status of a gadgets system")
+	statusHost = status.Flag("host", "Name of gogadgets host").Short('h').Default("localhost").String()
+	verbose    = status.Flag("verbose", "get the verbose status of a gadgets system").Short('v').Bool()
 )
 
 func main() {
 	kingpin.Version(gogadgets.Version)
-	kingpin.Parse()
-
-	gogadgets.Init(serial.Open)
-	addr = fmt.Sprintf("http://%s:%d/gadgets", *host, 6111)
-	if len(*cmd) > 0 {
-		sendCommand()
-	} else if *status {
-		getStatus()
-	} else if *verbose {
-		getVerbose()
-	} else {
+	switch kingpin.Parse() {
+	case "run":
 		runGadgets()
+	case "cmd":
+		sendCommand()
+	case "status":
+		getStatus()
+	default:
+		log.Fatal("unknown command")
 	}
 }
 
 func runGadgets() {
-	cfg := getConfig()
-	if cfg == "" {
-		listen()
-	} else {
-		a := gogadgets.NewApp(cfg)
-		a.Start()
-	}
+	gogadgets.Init(serial.Open)
+	gogadgets.NewApp(getConfig()).Start()
 }
 
 func getConfig() string {
@@ -68,6 +66,12 @@ func getConfig() string {
 }
 
 func getStatus() {
+	addr := fmt.Sprintf("http://%s:%d/gadgets", *statusHost, 6111)
+	if *verbose {
+		getVerbose(addr)
+		return
+	}
+
 	r, err := http.Get(fmt.Sprintf("%s/values", addr))
 	if err != nil {
 		log.Fatal("err", err)
@@ -83,7 +87,7 @@ func getStatus() {
 	fmt.Println(string(d))
 }
 
-func getVerbose() {
+func getVerbose(addr string) {
 	r, err := http.Get(addr)
 	if err != nil {
 		log.Fatal("err", err)
@@ -104,46 +108,15 @@ func sendCommand() {
 		UUID:   gogadgets.GetUUID(),
 		Type:   gogadgets.COMMAND,
 		Sender: "client",
-		Body:   *cmd,
+		Body:   *rcl,
 	}
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
 	enc.Encode(&msg)
+	addr := fmt.Sprintf("http://%s:%d/gadgets", *host, 6111)
 	r, err := http.Post(addr, "application/json", &buf)
 	if err != nil {
 		log.Fatal("err", err)
 	}
 	fmt.Println(r.Status)
-}
-
-//Waits for a zmq message that contains a gogadgets
-//config.  When one is recieved it is written to the
-//default config path and a a gogadgts system is started.
-func listen() {
-	// cfg := gogadgets.SocketsConfig{
-	// 	Host:    *host,
-	// 	SubPort: 6111,
-	// 	PubPort: 6112,
-	// 	Master:  false,
-	// }
-	// s := gogadgets.NewSockets(cfg)
-	// err := s.Connect()
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// defer s.Close()
-	// time.Sleep(100 * time.Millisecond)
-	// log.Println("listening for new gadgets")
-	// msg := s.Recv()
-	// d, err := json.Marshal(&msg.Config)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// os.Mkdir(defaultDir, 0644)
-	// err = ioutil.WriteFile(defaultConfig, d, 0644)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// time.Sleep(100 * time.Millisecond)
-	// runGadgets()
 }
