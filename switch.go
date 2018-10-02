@@ -13,6 +13,9 @@ type Switch struct {
 	Value bool
 	Units string
 	out   chan<- Value
+
+	delay    time.Duration
+	lastRead time.Time
 }
 
 func NewSwitch(pin *Pin) (InputDevice, error) {
@@ -27,6 +30,7 @@ func NewSwitch(pin *Pin) (InputDevice, error) {
 	return &Switch{
 		GPIO:  gpio,
 		Units: pin.Units,
+		delay: time.Duration(50 * time.Millisecond),
 	}, nil
 }
 
@@ -45,14 +49,25 @@ func (s *Switch) Config() ConfigHelper {
 //physical device is ignored.
 func (s *Switch) wait(out chan<- bool) {
 	for {
-		e := s.GPIO.Wait()
+		e := s.doWait()
 		if e != nil {
 			log.Printf("gpio wait error: %s", e)
 		} else {
 			out <- true
 		}
-		time.Sleep(100 * time.Millisecond)
 	}
+}
+
+func (s *Switch) doWait() error {
+	n := time.Now()
+	if n.Sub(s.lastRead) < s.delay {
+		time.Sleep(s.delay)
+		return s.doWait()
+	}
+
+	err := s.GPIO.Wait()
+	s.lastRead = n
+	return err
 }
 
 func (s *Switch) readValue() {

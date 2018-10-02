@@ -16,7 +16,6 @@ import (
 
 var _ = Describe("Recorder", func() {
 	var (
-		out   chan gogadgets.Message
 		r     *gogadgets.Recorder
 		ts    *httptest.Server
 		posts []string
@@ -45,7 +44,6 @@ var _ = Describe("Recorder", func() {
 		x, err := gogadgets.NewRecorder(p)
 		Expect(err).To(BeNil())
 		r = x.(*gogadgets.Recorder)
-		out = make(chan gogadgets.Message)
 		r.On(nil)
 	})
 
