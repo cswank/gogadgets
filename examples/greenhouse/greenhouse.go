@@ -4,10 +4,10 @@ import (
 	//"syscall"
 	"flag"
 	"fmt"
-	"github.com/cswank/gogadgets"
-	"github.com/cswank/gogadgets/utils"
 	"io/ioutil"
 	"time"
+
+	"github.com/cswank/gogadgets"
 )
 
 var (
@@ -92,7 +92,7 @@ func (g *Greenhouse) Start(in <-chan gogadgets.Message, out chan<- gogadgets.Mes
 
 func main() {
 	flag.Parse()
-	if !utils.FileExists("/sys/bus/w1/devices/28-0000047ade8f") {
+	if !FileExists("/sys/bus/w1/devices/28-0000047ade8f") {
 		ioutil.WriteFile("/sys/devices/bone_capemgr.9/slots", []byte("BB-W1:00A0"), 0666)
 	}
 	a := gogadgets.NewApp(configFlag)

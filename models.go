@@ -20,6 +20,7 @@ type Logger interface {
 	Println(...interface{})
 	Printf(string, ...interface{})
 	Fatal(...interface{})
+	Fatalf(string, ...interface{})
 }
 
 type GoGadgeter interface {

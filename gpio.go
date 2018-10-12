@@ -9,8 +9,6 @@ import (
 	"path"
 	"strings"
 	"syscall"
-
-	"github.com/cswank/gogadgets/utils"
 )
 
 var (
@@ -95,7 +93,7 @@ func (g *GPIO) Config() ConfigHelper {
 }
 
 func (g *GPIO) Init() error {
-	if !utils.FileExists(g.directionPath) {
+	if !FileExists(g.directionPath) {
 		if err := g.writeValue(g.exportPath, g.export); err != nil {
 			return err
 		}

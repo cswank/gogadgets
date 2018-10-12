@@ -10,7 +10,6 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 
 	"github.com/cswank/gogadgets"
-	"github.com/cswank/gogadgets/utils"
 
 	serial "go.bug.st/serial.v1"
 )
@@ -59,7 +58,7 @@ func getConfig() string {
 	if cfg != "" {
 		return cfg
 	}
-	if utils.FileExists(defaultConfig) {
+	if gogadgets.FileExists(defaultConfig) {
 		return defaultConfig
 	}
 	return ""

@@ -2,7 +2,6 @@ package gogadgets
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"log"
 	"os"
 )
@@ -101,15 +100,18 @@ func GetConfig(config interface{}) *Config {
 	return c
 }
 
-func getConfigFromFile(configPath string) *Config {
+func getConfigFromFile(pth string) *Config {
 	c := &Config{}
-	b, err := ioutil.ReadFile(configPath)
+	f, err := os.Open(pth)
 	if err != nil {
-		panic(err)
+		lg.Fatalf("unable to open config path %s: %s", pth, err)
 	}
-	err = json.Unmarshal(b, c)
+
+	defer f.Close()
+
+	err = json.NewDecoder(f).Decode(c)
 	if err != nil {
-		panic(err)
+		lg.Fatalf("unable to parse json from config path %s: %s", pth, err)
 	}
 	return c
 }

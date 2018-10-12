@@ -7,7 +7,7 @@ package gogadgets
 // )
 
 // func TestPWM(t *testing.T) {
-// 	// if !utils.FileExists("/sys/class/gpio/export") {
+// 	// if !FileExists("/sys/class/gpio/export") {
 // 	// 	return //not a beaglebone
 // 	// }
 // 	// p := &Pin{

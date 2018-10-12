@@ -7,7 +7,7 @@ package gogadgets
 // )
 
 // func TestGPIO(t *testing.T) {
-// 	// if !utils.FileExists("/sys/class/gpio/export") {
+// 	// if !FileExists("/sys/class/gpio/export") {
 // 	// 	return //not a beaglebone
 // 	// }
 // 	// g, err := NewGPIO(&Pin{Port: "9", Pin: "15", Direction: "out"})

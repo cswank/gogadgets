@@ -88,7 +88,7 @@ package gogadgets_test
 // )
 
 // func init() {
-// 	if !utils.FileExists(testGPIODevPath) {
+// 	if !FileExists(testGPIODevPath) {
 // 		os.MkdirAll(testGPIODevPath, 0777)
 // 	}
 // }

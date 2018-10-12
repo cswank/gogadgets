@@ -149,7 +149,6 @@ func (x *XBee) listen(ch chan<- Value) {
 	go x.readMessage(msgCh)
 	for {
 		msg := <-msgCh
-
 		x.getAnalog(msg, ch)
 		x.getDigital(msg, ch)
 	}
