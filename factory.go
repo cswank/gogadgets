@@ -70,14 +70,24 @@ func newSystemGadget(config *GadgetConfig) (Gadgeter, error) {
 //is an example).
 func NewInputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
 	dev, err := NewInputDevice(&config.Pin)
+	m := map[bool]string{}
+	if config.OnValue != "" {
+		m[true] = config.OnValue
+	}
+
+	if config.OffValue != "" {
+		m[false] = config.OffValue
+	}
+
 	if err == nil {
 		gadget = &Gadget{
-			Type:      config.Pin.Type,
-			Location:  config.Location,
-			Name:      config.Name,
-			Input:     dev,
-			Direction: "input",
-			UID:       fmt.Sprintf("%s %s", config.Location, config.Name),
+			Type:        config.Pin.Type,
+			Location:    config.Location,
+			Name:        config.Name,
+			Input:       dev,
+			Direction:   "input",
+			UID:         fmt.Sprintf("%s %s", config.Location, config.Name),
+			inputLookup: m,
 		}
 	}
 	return gadget, err
