@@ -98,8 +98,8 @@ type Pin struct {
 	Direction   string        `json:"direction,omitempty"`
 	Edge        string        `json:"edge,omitempty"`
 	ActiveLow   string        `json:"active_low,omitempty"`
-	OneWirePath string        `json:"onewirePath,omitempty"`
-	OneWireId   string        `json:"onewireId,omitempty"`
+	OneWirePath string        `json:"onewire_path,omitempty"`
+	OneWireId   string        `json:"onewire_id,omitempty"`
 	Sleep       time.Duration `json:"sleep,omitempty"`
 	Value       interface{}   `json:"value,omitempty"`
 	Units       string        `json:"units,omitempty"`
@@ -115,9 +115,11 @@ type GadgetConfig struct {
 	Type         string                 `json:"type,omitempty"`
 	Location     string                 `json:"location,omitempty"`
 	Name         string                 `json:"name,omitempty"`
-	OnCommands   []string               `json:"onCommands,omitempty"`
-	OffCommands  []string               `json:"offCommands,omitempty"`
-	InitialValue string                 `json:"initialValue,omitempty"`
+	OnCommands   []string               `json:"on_commands,omitempty"`
+	OffCommands  []string               `json:"off_commands,omitempty"`
+	OnValue      string                 `json:"on_value,omitempty"`
+	OffValue     string                 `json:"off_value,omitempty"`
+	InitialValue string                 `json:"initial_value,omitempty"`
 	Pin          Pin                    `json:"pin,omitempty"`
 	Args         map[string]interface{} `json:"args,omitempty"`
 }
@@ -135,5 +137,5 @@ type ConfigHelper struct {
 	Units   []string                     `json:"units,omitempty"`
 	Args    map[string]interface{}       `json:"args,omitempty"`
 	Pins    map[string]map[string]string `json:"pins,omitempty"`
-	PinType string                       `json:"pinType"`
+	PinType string                       `json:"pin_type"`
 }
