@@ -7,8 +7,8 @@
             "pin": {
                 "type": "xbee",
                 "args": {
-		    "port": "/dev/tty.usbserial-A700eE5e",
-		    "xbees": "{\"13a2004098263e\": {\"location\": \"grass\", \"pins\": {\"adc1\":\"moisture\", \"adc2\":\"tmp36\"}}, \"13a200409825c1\": {\"location\": \"garden\", \"pins\": {\"adc1\":\"moisture\", \"adc2\":\"tmp36\"}}}"
+		    "port": "/dev/ttyUSB0",
+	            "xbees": "{\"13a200409825c1\": {\"location\": \"garage\", \"dio\": {\"dio1\":\"junk\"}}, \"13a200410407cf\": {\"location\": \"garage\", \"adc\": {\"adc1\":\"tmp36\"}, \"dio\": {\"dio2\": \"door1\", \"dio3\": \"door2\"}}}"
                 }
             }
         }
