@@ -59,6 +59,7 @@ type Gadget struct {
 	Direction      string
 	OnCommands     []string
 	OffCommands    []string
+	inputLookup    map[bool]string
 	InitialValue   string
 	targetValue    *Value
 	UID            string
@@ -142,6 +143,7 @@ func (g *Gadget) doInputLoop(in <-chan Message) {
 		case msg := <-in:
 			g.readMessage(&msg)
 		case val := <-devOut:
+			val = g.translateBool(val)
 			location := g.Location
 			name := g.Name
 			sender := g.UID
@@ -166,6 +168,20 @@ func (g *Gadget) doInputLoop(in <-chan Message) {
 			}
 		}
 	}
+}
+
+func (g *Gadget) translateBool(val Value) Value {
+	if len(g.inputLookup) == 0 {
+		return val
+	}
+	t, ok := val.Value.(bool)
+	if ok {
+		v, ok := g.inputLookup[t]
+		if ok {
+			val.Value = v
+		}
+	}
+	return val
 }
 
 func (g *Gadget) readInitialValue() {
