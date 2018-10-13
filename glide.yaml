@@ -1,6 +1,0 @@
-package: github.com/cswank/gogadgets
-import:
-- package: github.com/cswank/rex
-- package: gopkg.in/alecthomas/kingpin.v2
-  version: ~2.2.2
-- package: github.com/cswank/xbee

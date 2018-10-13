@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cswank/rex"
+	"github.com/gorilla/mux"
 )
 
 type Server struct {
@@ -163,16 +163,16 @@ func (s *Server) GetDirection() string {
 }
 
 func (s *Server) startServer() {
-	r := rex.New("main")
-	r.Get("/gadgets", http.HandlerFunc(s.status))
-	r.Put("/gadgets", http.HandlerFunc(s.update))
-	r.Post("/gadgets", http.HandlerFunc(s.update))
-	r.Get("/gadgets/values", http.HandlerFunc(s.values))
-	r.Get("/gadgets/locations/{location}/devices/{device}/status", http.HandlerFunc(s.deviceValue))
+	r := mux.NewRouter()
+	r.HandleFunc("/gadgets", http.HandlerFunc(s.status)).Methods("GET")
+	r.HandleFunc("/gadgets", http.HandlerFunc(s.update)).Methods("PUT")
+	r.HandleFunc("/gadgets", http.HandlerFunc(s.update)).Methods("POST")
+	r.HandleFunc("/gadgets/values", http.HandlerFunc(s.values)).Methods("GET")
+	r.HandleFunc("/gadgets/locations/{location}/devices/{device}/status", http.HandlerFunc(s.deviceValue)).Methods("GET")
 	if s.isMaster {
-		r.Post("/clients", http.HandlerFunc(s.setClient))
-		r.Get("/clients", http.HandlerFunc(s.getClients))
-		r.Delete("/clients", http.HandlerFunc(s.removeClient))
+		r.HandleFunc("/clients", http.HandlerFunc(s.setClient)).Methods("POST")
+		r.HandleFunc("/clients", http.HandlerFunc(s.getClients)).Methods("GET")
+		r.HandleFunc("/clients", http.HandlerFunc(s.removeClient)).Methods("DELETE")
 	}
 
 	s.lg.Printf("listening on 0.0.0.0:%d\n", s.port)
@@ -229,7 +229,7 @@ func (s *Server) status(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) deviceValue(w http.ResponseWriter, r *http.Request) {
-	vars := rex.Vars(r, "main")
+	vars := mux.Vars(r)
 	k := fmt.Sprintf("%s %s", vars["location"], vars["device"])
 	s.statusLock.Lock()
 	m, ok := s.updates[k]
