@@ -108,7 +108,7 @@ type Pin struct {
 	Frequency int                    `json:"frequency,omitempty"`
 	Args      map[string]interface{} `json:"args,omitempty"`
 	Pins      map[string]Pin         `json:"pins,omitempty"`
-	Lock      sync.Mutex             `json:"-"`
+	Lock      *sync.Mutex            `json:"-"`
 }
 
 type GadgetConfig struct {

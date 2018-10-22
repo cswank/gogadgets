@@ -143,12 +143,12 @@ var _ = Describe("method runner", func() {
 			msg = <-in
 			Expect(msg.Type).To(Equal("method update"))
 			Expect(msg.Method.Step).To(Equal(1))
-			Expect(msg.Method.Time).To(Equal(30))
+			Expect(msg.Method.Time).To(Equal(29))
 
 			msg = <-in
 			Expect(msg.Type).To(Equal("method update"))
 			Expect(msg.Method.Step).To(Equal(1))
-			Expect(msg.Method.Time).To(Equal(29))
+			Expect(msg.Method.Time).To(Equal(28))
 		})
 
 		It("resumes a method with a wait for user command", func() {
@@ -167,9 +167,13 @@ var _ = Describe("method runner", func() {
 			}
 
 			out <- msg
+			out <- gogadgets.Message{
+				Type: "update",
+				Body: "wait for user to say ok",
+			}
 			msg = <-in
 			Expect(msg.Type).To(Equal("method update"))
-			Expect(msg.Method.Step).To(Equal(1))
+			Expect(msg.Method.Step).To(Equal(2))
 		})
 	})
 
