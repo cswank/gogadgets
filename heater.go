@@ -48,6 +48,8 @@ func NewHeater(pin *Pin) (OutputDevice, error) {
 	return h, err
 }
 
+func (h *Heater) WithOutput(out map[string]OutputDevice) {}
+
 func (h *Heater) Commands(location, name string) *Commands {
 	return nil
 }

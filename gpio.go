@@ -81,6 +81,8 @@ func NewGPIO(pin *Pin) (*GPIO, error) {
 	return g, err
 }
 
+func (g *GPIO) WithOutput(out map[string]OutputDevice) {}
+
 func (g *GPIO) Commands(location, name string) *Commands {
 	return nil
 }

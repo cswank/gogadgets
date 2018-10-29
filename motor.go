@@ -9,12 +9,12 @@ driver carrier.
    |					 |
    | O O O O O O O O O O |
    --|--------------------
-   	 |					 
-	 |			
-   	 | 	   	   	
+   	 |
+	 |
+   	 |
    	 |
    	===
- 
+
 
 */
 type Motor struct {
@@ -46,6 +46,8 @@ func NewMotor(pin *Pin) (OutputDevice, error) {
 		pwm:   pwm,
 	}, nil
 }
+
+func (m *Motor) WithOutput(out map[string]OutputDevice) {}
 
 func (m *Motor) Commands(location, name string) *Commands {
 	return nil

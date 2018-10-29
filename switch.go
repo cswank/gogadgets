@@ -102,6 +102,7 @@ func (s *Switch) Start(in <-chan Message, out chan<- Value) {
 			//do nothing
 		case val := <-value:
 			s.Value = val
+			s.readValue()
 			s.SendValue()
 		}
 	}

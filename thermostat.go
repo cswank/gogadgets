@@ -125,6 +125,8 @@ func NewThermostat(pin *Pin) (OutputDevice, error) {
 	}, nil
 }
 
+func (t *Thermostat) WithOutput(out map[string]OutputDevice) {}
+
 func (t *Thermostat) Commands(location, name string) *Commands {
 	return &Commands{
 		On: []string{

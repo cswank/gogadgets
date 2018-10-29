@@ -28,6 +28,7 @@ var (
 		"pwm":        NewPWM,
 		"motor":      NewMotor,
 		"file":       NewFile,
+		"sms":        NewSMS,
 	}
 )
 
@@ -205,7 +206,7 @@ type Commands struct {
 	Off []string
 }
 
-//Outputdevices turn things on and off.  Currently the
+// OutputDevice turns things on and off.  Currently the
 type OutputDevice interface {
 	On(val *Value) error
 	Off() error
@@ -213,6 +214,7 @@ type OutputDevice interface {
 	Status() map[string]bool
 	Config() ConfigHelper
 	Commands(string, string) *Commands
+	WithOutput(map[string]OutputDevice)
 }
 
 func NewOutputDevice(pin *Pin) (dev OutputDevice, err error) {
@@ -220,5 +222,24 @@ func NewOutputDevice(pin *Pin) (dev OutputDevice, err error) {
 	if !ok {
 		return nil, errors.New("invalid pin type")
 	}
-	return f(pin)
+
+	dev, err = f(pin)
+	if err != nil {
+		return nil, err
+	}
+
+	devices := map[string]OutputDevice{}
+	for k, p := range pin.Pins {
+		f, ok := outputFactories[p.Type]
+		if !ok {
+			return nil, errors.New("invalid pin type")
+		}
+		d, err := f(&p)
+		if err != nil {
+			return nil, err
+		}
+		devices[k] = d
+	}
+	dev.WithOutput(devices)
+	return dev, nil
 }

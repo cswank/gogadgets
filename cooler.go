@@ -22,6 +22,8 @@ func NewCooler(pin *Pin) (OutputDevice, error) {
 	return c, err
 }
 
+func (c *Cooler) WithOutput(out map[string]OutputDevice) {}
+
 func (c *Cooler) Commands(location, name string) *Commands {
 	return nil
 }

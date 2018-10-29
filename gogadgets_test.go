@@ -10,6 +10,8 @@ type FakeOutput struct {
 	on bool
 }
 
+func (f *FakeOutput) WithOutput(out map[string]gogadgets.OutputDevice) {}
+
 func (f *FakeOutput) Commands(l, n string) *gogadgets.Commands {
 	return nil
 }

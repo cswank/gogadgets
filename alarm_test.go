@@ -21,10 +21,12 @@ var _ = Describe("Alarm", func() {
 		sys       map[string]string
 		status    bool
 		frontDoor bool
+		delay     string
 	)
 
 	BeforeEach(func() {
 		var err error
+		delay = "10ms"
 		tmp, err = ioutil.TempDir("", "")
 		gogadgets.GPIO_DEV_PATH = tmp
 		gogadgets.GPIO_DEV_MODE = 0777
@@ -34,28 +36,34 @@ var _ = Describe("Alarm", func() {
 			"alarm": gogadgets.Pins["gpio"]["8"]["11"],
 		}
 		sys = setupGPIOs(tmp, m)
+	})
 
+	JustBeforeEach(func() {
 		p := &gogadgets.Pin{
 			Type: "alarm",
-			Port: "8",
-			Pin:  "11",
 			Args: map[string]interface{}{
-				"events": map[string]bool{
+				"events": map[string]interface{}{
 					"front door": false,
 				},
 				"duration": "100ms",
+				"delay":    delay,
+			},
+			Pins: map[string]gogadgets.Pin{
+				"gpio": {
+					Type: "gpio",
+					Port: "8",
+					Pin:  "11",
+				},
 			},
 		}
 
-		o, err := gogadgets.NewAlarm(p)
+		o, err := gogadgets.NewOutputDevice(p)
 		Expect(err).To(BeNil())
 
 		var ok bool
 		a, ok = o.(*gogadgets.Alarm)
 		Expect(ok).To(BeTrue())
-	})
 
-	JustBeforeEach(func() {
 		if status {
 			a.On(nil)
 		}
@@ -77,9 +85,10 @@ var _ = Describe("Alarm", func() {
 		})
 
 		It("turns on the gpio when the front door is open", func() {
-			b, err := ioutil.ReadFile(sys["alarm-value"])
-			Expect(err).To(BeNil())
-			Expect(string(b)).To(Equal("1"))
+			Eventually(func() string {
+				b, _ := ioutil.ReadFile(sys["alarm-value"])
+				return string(b)
+			}).Should(Equal("1"))
 
 			Eventually(func() string {
 				b, _ := ioutil.ReadFile(sys["alarm-value"])

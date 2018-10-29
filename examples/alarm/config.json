@@ -1,28 +1,41 @@
 {
-    "host": "http://192.168.1.18:6111",
+    "host": "http://garage.local:6111",
     "gadgets": [
         {
-            "location": "home",
+            "location": "garage",
             "name": "alarm",
             "pin": {
                 "type": "alarm",
-                "platform": "rpi",
-                "pin": "11",
                 "args": {
-                    "duration": "5m",
+                    "duration": "1s",
+                    "delay": "5s",
                     "events": {
-                        "back yard gate": false
+                        "garage truck door": false
+                    }
+                },
+                "pins": {
+                    "sms": {
+                        "type": "sms",
+                        "args": {
+                            "sid": "TWILLIO SID",
+                            "token": "TWILLIO TOKEN",
+                            "from": "FROM PHONE NUMBER",
+                            "message": "the garage door is open",
+                            "to": [
+                                "TO PHONE NUMBER"
+                            ]
+                        }
                     }
                 }
             }
         },
         {
-	    "location": "back yard",
-	    "name": "gate",
+            "location": "garage",
+            "name": "truck door",
             "pin": {
                 "type": "switch",
                 "platform": "rpi",
-	        "pin": "13"
+                "pin": "15"
             }
         }
     ]
