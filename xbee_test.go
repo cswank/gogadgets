@@ -16,6 +16,7 @@ var (
 )
 
 type FakePort struct {
+	serial.Port
 	msg  []byte
 	i    int
 	lock sync.Mutex
@@ -27,6 +28,10 @@ func NewFakePort(p string, mode *serial.Mode) (serial.Port, error) {
 }
 
 func (f *FakePort) SetMode(mode *serial.Mode) error {
+	return nil
+}
+
+func (f *FakePort) BetModemStatusBits(mode *serial.Mode) error {
 	return nil
 }
 

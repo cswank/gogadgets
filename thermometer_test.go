@@ -23,10 +23,10 @@ var _ = Describe("Thermometer", func() {
 		p    string
 		f    *os.File
 		pin  *gogadgets.Pin
-		lock sync.Mutex
+		lock *sync.Mutex
 	)
 	BeforeEach(func() {
-		lock = sync.Mutex{}
+		lock = &sync.Mutex{}
 		var err error
 		tmp, err = ioutil.TempDir("", "")
 		Expect(err).To(BeNil())
@@ -94,9 +94,10 @@ var _ = Describe("Thermometer", func() {
 			f.Write([]byte("3d 01 4b 46 7f ff 03 10 6d : crc=6d YES\n3d 01 4b 46 7f ff 03 10 6d t=30812\n"))
 			f.Close()
 			lock.Unlock()
-			time.Sleep(20 * time.Millisecond)
-			v := t.GetValue()
-			Expect(v.Value).To(Equal(19.812))
+			Eventually(func() float64 {
+				v := t.GetValue()
+				return v.Value.(float64)
+			}).Should(Equal(19.812))
 		})
 	})
 })

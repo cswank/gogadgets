@@ -68,7 +68,7 @@ type Thermometer struct {
 	units      string
 	value      float64
 	sleep      time.Duration
-	lock       sync.Mutex
+	lock       *sync.Mutex
 }
 
 func NewThermometer(pin *Pin) (InputDevice, error) {
