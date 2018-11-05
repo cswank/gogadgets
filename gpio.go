@@ -143,7 +143,6 @@ func (g *GPIO) writeValue(path, value string) error {
 
 func (g *GPIO) Wait() error {
 	fd, err := syscall.Open(g.valuePath, syscall.O_RDONLY, 0666)
-	fmt.Println(fd, err)
 	if err != nil {
 		return err
 	}
@@ -157,7 +156,6 @@ func (g *GPIO) Wait() error {
 }
 
 func (g *GPIO) fdIsSet(fd int, p *syscall.FdSet) bool {
-	fmt.Println(fd, fd/32, p.Bits[fd/32], (1 << uint(fd) % 32))
 	return (p.Bits[fd/32] & (1 << uint(fd) % 32)) != 0
 }
 
