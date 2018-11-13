@@ -7,10 +7,10 @@ import (
 )
 
 /*
-Alarm (when 'on') turns on a gpio when
-the a particular event happens.  It turns
-off after a set amount of time, or when turned
-off.
+Alarm (when 'on') turns on its output devices when any of the events defined in
+pin.Args.Events happens. It turns off after:
+  1: alarm.duration has passed
+  2: the alarm is turned off
 */
 type Alarm struct {
 	out      map[string]OutputDevice
@@ -34,20 +34,27 @@ func NewAlarm(pin *Pin) (OutputDevice, error) {
 		return nil, err
 	}
 
+	out := map[string]OutputDevice{}
+
+	for k, p := range pin.Pins {
+		o, err := p.new(&p)
+		if err != nil {
+			return nil, err
+		}
+		out[k] = o
+	}
+
 	a := &Alarm{
 		duration: duration,
 		delay:    delay,
 		events:   events,
 		ch:       make(chan bool),
+		out:      out,
 	}
 
 	go a.trigger()
 
 	return a, nil
-}
-
-func (a *Alarm) WithOutput(out map[string]OutputDevice) {
-	a.out = out
 }
 
 func (a *Alarm) Commands(location, name string) *Commands {

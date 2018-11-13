@@ -86,8 +86,6 @@ func NewBoiler(pin *Pin) (OutputDevice, error) {
 	return b, err
 }
 
-func (b *Boiler) WithOutput(out map[string]OutputDevice) {}
-
 func (b *Boiler) Commands(location, name string) *Commands {
 	return nil
 }

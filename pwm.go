@@ -48,8 +48,6 @@ func NewPWM(pin *Pin) (OutputDevice, error) {
 	return pwm, err
 }
 
-func (p *PWM) WithOutput(out map[string]OutputDevice) {}
-
 func (p *PWM) Commands(location, name string) *Commands {
 	return nil
 }

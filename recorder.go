@@ -38,8 +38,6 @@ func NewRecorder(pin *Pin) (OutputDevice, error) {
 	return r, nil
 }
 
-func (r *Recorder) WithOutput(out map[string]OutputDevice) {}
-
 func (r *Recorder) Commands(location, name string) *Commands {
 	return nil
 }

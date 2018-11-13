@@ -109,6 +109,8 @@ type Pin struct {
 	Args      map[string]interface{} `json:"args,omitempty"`
 	Pins      map[string]Pin         `json:"pins,omitempty"`
 	Lock      *sync.Mutex            `json:"-"`
+
+	new func(*Pin) (OutputDevice, error)
 }
 
 type GadgetConfig struct {

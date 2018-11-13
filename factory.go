@@ -214,7 +214,6 @@ type OutputDevice interface {
 	Status() map[string]bool
 	Config() ConfigHelper
 	Commands(string, string) *Commands
-	WithOutput(map[string]OutputDevice)
 }
 
 func NewOutputDevice(pin *Pin) (dev OutputDevice, err error) {
@@ -223,23 +222,14 @@ func NewOutputDevice(pin *Pin) (dev OutputDevice, err error) {
 		return nil, errors.New("invalid pin type")
 	}
 
-	dev, err = f(pin)
-	if err != nil {
-		return nil, err
-	}
-
-	devices := map[string]OutputDevice{}
 	for k, p := range pin.Pins {
 		f, ok := outputFactories[p.Type]
 		if !ok {
 			return nil, errors.New("invalid pin type")
 		}
-		d, err := f(&p)
-		if err != nil {
-			return nil, err
-		}
-		devices[k] = d
+		p.new = f
+		pin.Pins[k] = p
 	}
-	dev.WithOutput(devices)
-	return dev, nil
+
+	return f(pin)
 }

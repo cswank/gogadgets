@@ -59,8 +59,6 @@ func NewSMS(pin *Pin) (OutputDevice, error) {
 	}, nil
 }
 
-func (s *SMS) WithOutput(out map[string]OutputDevice) {}
-
 func (s *SMS) Commands(location, name string) *Commands {
 	return nil
 }

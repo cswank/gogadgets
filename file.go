@@ -17,8 +17,6 @@ func NewFile(pin *Pin) (OutputDevice, error) {
 	}, nil
 }
 
-func (f *File) WithOutput(out map[string]OutputDevice) {}
-
 func (f *File) Commands(location, name string) *Commands {
 	return nil
 }

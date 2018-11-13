@@ -47,8 +47,6 @@ func NewMotor(pin *Pin) (OutputDevice, error) {
 	}, nil
 }
 
-func (m *Motor) WithOutput(out map[string]OutputDevice) {}
-
 func (m *Motor) Commands(location, name string) *Commands {
 	return nil
 }
