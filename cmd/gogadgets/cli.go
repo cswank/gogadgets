@@ -10,8 +10,6 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 
 	"github.com/cswank/gogadgets"
-
-	serial "go.bug.st/serial.v1"
 )
 
 const (
@@ -49,7 +47,6 @@ func main() {
 }
 
 func runGadgets() {
-	gogadgets.Init(serial.Open)
 	gogadgets.NewApp(getConfig()).Start()
 }
 

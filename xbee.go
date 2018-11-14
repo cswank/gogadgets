@@ -19,13 +19,7 @@ type address struct {
 	location string
 }
 
-type SerialFactory func(string, *serial.Mode) (serial.Port, error)
-
 type converter func(float64) (float64, string, address)
-
-var (
-	serialFactory SerialFactory
-)
 
 /*
 Vegatronix VH400 (https://www.vegetronix.com/Products/VH400/VH400-Piecewise-Curve.phtml)
@@ -99,12 +93,7 @@ func (x XBeeConfig) getConversion(location string) map[string]converter {
 	return out
 }
 
-func NewXBee(pin *Pin) (InputDevice, error) {
-	p, ok := pin.Args["port"].(string)
-	if !ok {
-		return nil, fmt.Errorf(`unable to create serial port for XBee, pin.Args["port"] should be the path to a serial device`)
-	}
-
+func NewXBee(pin *Pin, opts ...func(InputDevice) error) (InputDevice, error) {
 	j, ok := pin.Args["xbees"].(string)
 	if !ok {
 		return nil, fmt.Errorf(`can't create xbee: %v`, pin.Args["xbees"])
@@ -115,13 +104,6 @@ func NewXBee(pin *Pin) (InputDevice, error) {
 		return nil, fmt.Errorf(`can't create xbee: %v`, err)
 	}
 
-	mode := &serial.Mode{}
-
-	port, err := serialFactory(p, mode)
-	if err != nil {
-		return nil, fmt.Errorf(`unable to create serial port for XBee, err: %v`, err)
-	}
-
 	//           addr       pin
 	adc := map[string]map[string]converter{}
 	dio := map[string]map[string]address{}
@@ -130,11 +112,43 @@ func NewXBee(pin *Pin) (InputDevice, error) {
 		dio[addr] = x.getDigital(x.Location)
 	}
 
-	return &XBee{
-		port: port,
-		adc:  adc,
-		dio:  dio,
-	}, nil
+	x := &XBee{
+		adc: adc,
+		dio: dio,
+	}
+
+	for _, opt := range opts {
+		if err := opt(x); err != nil {
+			return nil, err
+		}
+	}
+
+	if x.port == nil {
+		p, ok := pin.Args["port"].(string)
+		if !ok {
+			return nil, fmt.Errorf(`unable to create serial port for XBee, pin.Args["port"] should be the path to a serial device`)
+		}
+		mode := &serial.Mode{}
+		var err error
+		x.port, err = serial.Open(p, mode)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return x, nil
+}
+
+func XBeeSerialPort(p serial.Port) func(InputDevice) error {
+	return func(i InputDevice) error {
+		x, ok := i.(*XBee)
+		if !ok {
+			return fmt.Errorf("invalid input device for XBeeSerialPort")
+		}
+
+		x.port = p
+		return nil
+	}
 }
 
 func (x *XBee) Start(ch <-chan Message, val chan<- Value) {

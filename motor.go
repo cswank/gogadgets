@@ -26,12 +26,12 @@ type Motor struct {
 
 func NewMotor(pin *Pin) (OutputDevice, error) {
 	p := pin.Pins["gpio_a"]
-	gpioA, err := NewGPIO(&p)
+	gpioA, err := newGPIO(&p)
 	if err != nil {
 		return nil, err
 	}
 	p = pin.Pins["gpio_b"]
-	gpioB, err := NewGPIO(&p)
+	gpioB, err := newGPIO(&p)
 	if err != nil {
 		return nil, err
 	}

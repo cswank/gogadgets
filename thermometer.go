@@ -71,7 +71,7 @@ type Thermometer struct {
 	lock       *sync.Mutex
 }
 
-func NewThermometer(pin *Pin) (InputDevice, error) {
+func NewThermometer(pin *Pin, opts ...func(InputDevice) error) (InputDevice, error) {
 	var therm *Thermometer
 	var err error
 	if pin.OneWirePath == "" {

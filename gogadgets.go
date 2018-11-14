@@ -5,25 +5,21 @@ import (
 	"fmt"
 )
 
-type AppFactory struct {
-	inputFactories  map[string]InputDeviceFactory
-	outputFactories map[string]OutputDeviceFactory
-}
-
 var (
-	inputFactories = map[string]InputDeviceFactory{
+	inputs = map[string]CreateInputDevice{
 		"thermometer": NewThermometer,
 		"switch":      NewSwitch,
 		"flow_meter":  NewFlowMeter,
 		"xbee":        NewXBee,
 	}
-	outputFactories = map[string]OutputDeviceFactory{
+
+	outputs = map[string]CreateOutputDevice{
 		"alarm":      NewAlarm,
 		"heater":     NewHeater,
 		"cooler":     NewCooler,
 		"thermostat": NewThermostat,
 		"boiler":     NewBoiler,
-		"gpio":       GPIOFactory,
+		"gpio":       NewGPIO,
 		"recorder":   NewRecorder,
 		"pwm":        NewPWM,
 		"motor":      NewMotor,
@@ -31,14 +27,6 @@ var (
 		"sms":        NewSMS,
 	}
 )
-
-func NewAppFactory() *AppFactory {
-	a := &AppFactory{
-		inputFactories:  inputFactories,
-		outputFactories: outputFactories,
-	}
-	return a
-}
 
 //There are several types of Input/Output devices build into
 //GoGadgets (eg: header, cooler, gpio, thermometer and switch)
@@ -50,9 +38,9 @@ func NewGadget(config *GadgetConfig) (Gadgeter, error) {
 	}
 	switch deviceType(config.Pin.Type) {
 	case "input":
-		return NewInputGadget(config)
+		return newInputGadget(config)
 	case "output":
-		return NewOutputGadget(config)
+		return newOutputGadget(config)
 	}
 	return nil, fmt.Errorf(
 		"couldn't build a gadget based on config: %v",
@@ -69,7 +57,7 @@ func newSystemGadget(config *GadgetConfig) (Gadgeter, error) {
 
 //Input Gadgets read from input devices and report their values (thermometer
 //is an example).
-func NewInputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
+func newInputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
 	dev, err := NewInputDevice(&config.Pin)
 	m := map[bool]string{}
 	if config.OnValue != "" {
@@ -95,7 +83,7 @@ func NewInputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
 }
 
 //Output Gadgets turn devices on and off.
-func NewOutputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
+func newOutputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
 	dev, err := NewOutputDevice(&config.Pin)
 	if err != nil {
 		panic(err)
@@ -128,43 +116,15 @@ func NewOutputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
 	return gadget, nil
 }
 
-//Each input and output device has a config method that returns a Pin with
-//the required fields poplulated with helpful values.
-func GetTypes() map[string]ConfigHelper {
-	t := Thermometer{}
-	s := Switch{}
-	g := GPIO{}
-	h := Heater{}
-	c := Cooler{}
-	f := FlowMeter{}
-	th := Thermostat{}
-	r := Recorder{}
-	return map[string]ConfigHelper{
-		"thermometer": t.Config(),
-		"switch":      s.Config(),
-		"gpio":        g.Config(),
-		"heater":      h.Config(),
-		"cooler":      c.Config(),
-		"thermostat":  th.Config(),
-		"recorder":    r.Config(),
-		"flow_meter":  f.Config(),
-		"alarm":       f.Config(),
-	}
+func RegisterInput(name string, f CreateInputDevice) {
+	inputs[name] = f
 }
 
-func (f *AppFactory) RegisterInputFactory(name string, factory InputDeviceFactory) {
-	f.inputFactories[name] = factory
+func RegisterOutput(name string, f CreateOutputDevice) {
+	outputs[name] = f
 }
 
-func (f *AppFactory) RegisterOutputFactory(name string, factory OutputDeviceFactory) {
-	f.outputFactories[name] = factory
-}
-
-func (f *AppFactory) GetApp() (a *App, err error) {
-	return a, err
-}
-
-type InputDeviceFactory func(pin *Pin) (InputDevice, error)
+type CreateInputDevice func(pin *Pin, opts ...func(InputDevice) error) (InputDevice, error)
 
 //Inputdevices are started as goroutines by the Gadget
 //that contains it.
@@ -180,11 +140,11 @@ type Poller interface {
 }
 
 func deviceType(t string) string {
-	_, ok := inputFactories[t]
+	_, ok := inputs[t]
 	if ok {
 		return "input"
 	}
-	_, ok = outputFactories[t]
+	_, ok = outputs[t]
 	if ok {
 		return "output"
 	}
@@ -192,14 +152,14 @@ func deviceType(t string) string {
 }
 
 func NewInputDevice(pin *Pin) (dev InputDevice, err error) {
-	f, ok := inputFactories[pin.Type]
+	f, ok := inputs[pin.Type]
 	if !ok {
 		return nil, errors.New("invalid pin type")
 	}
 	return f(pin)
 }
 
-type OutputDeviceFactory func(pin *Pin) (OutputDevice, error)
+type CreateOutputDevice func(pin *Pin) (OutputDevice, error)
 
 type Commands struct {
 	On  []string
@@ -217,13 +177,13 @@ type OutputDevice interface {
 }
 
 func NewOutputDevice(pin *Pin) (dev OutputDevice, err error) {
-	f, ok := outputFactories[pin.Type]
+	f, ok := outputs[pin.Type]
 	if !ok {
 		return nil, errors.New("invalid pin type")
 	}
 
 	for k, p := range pin.Pins {
-		f, ok := outputFactories[p.Type]
+		f, ok := outputs[p.Type]
 		if !ok {
 			return nil, errors.New("invalid pin type")
 		}

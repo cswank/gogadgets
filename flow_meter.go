@@ -25,10 +25,10 @@ type FlowMeter struct {
 	out     chan<- Value
 }
 
-func NewFlowMeter(pin *Pin) (InputDevice, error) {
+func NewFlowMeter(pin *Pin, opts ...func(InputDevice) error) (InputDevice, error) {
 	pin.Direction = "in"
 	pin.Value = true
-	gpio, err := NewGPIO(pin)
+	gpio, err := newGPIO(pin)
 	if err != nil {
 		return nil, err
 	}
