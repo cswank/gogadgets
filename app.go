@@ -45,7 +45,7 @@ func NewApp(cfg interface{}, gadgets ...Gadgeter) *App {
 	return a
 }
 
-//GetGadgets is a factory fuction that reads a GadgtConfig
+//GetGadgets is a function that reads a GadgtConfig
 //and creates all the Gadgets that are defined in it.
 func (a *App) GetGadgets(configs []GadgetConfig) {
 	a.gadgets = make([]Gadgeter, len(configs))

@@ -11,20 +11,12 @@ import (
 	serial "go.bug.st/serial.v1"
 )
 
-var (
-	fp *FakePort
-)
-
 type FakePort struct {
 	serial.Port
 	msg  []byte
 	i    int
 	lock sync.Mutex
 	end  int
-}
-
-func NewFakePort(p string, mode *serial.Mode) (serial.Port, error) {
-	return fp, nil
 }
 
 func (f *FakePort) SetMode(mode *serial.Mode) error {
@@ -66,12 +58,11 @@ var _ = Describe("xbee", func() {
 		msg    chan gogadgets.Message
 		val    chan gogadgets.Value
 		io     string
+		fp     *FakePort
 	)
 
 	BeforeEach(func() {
 		fp = &FakePort{}
-		gogadgets.Init(NewFakePort)
-
 	})
 
 	JustBeforeEach(func() {
@@ -88,7 +79,7 @@ var _ = Describe("xbee", func() {
 		msg = make(chan gogadgets.Message)
 
 		var err error
-		xbee, err = gogadgets.NewXBee(pin)
+		xbee, err = gogadgets.NewXBee(pin, gogadgets.XBeeSerialPort(fp))
 		Expect(err).To(BeNil())
 
 		go xbee.Start(msg, val)

@@ -12,7 +12,7 @@ type Cooler struct {
 func NewCooler(pin *Pin) (OutputDevice, error) {
 	var c *Cooler
 	var err error
-	g, err := NewGPIO(pin)
+	g, err := newGPIO(pin)
 	if err == nil {
 		c = &Cooler{
 			gpio:   g,

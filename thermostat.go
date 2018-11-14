@@ -85,7 +85,7 @@ func NewThermostat(pin *Pin) (OutputDevice, error) {
 	if !ok {
 		return nil, fmt.Errorf("invalid heat pin: %v", pin)
 	}
-	h, err := NewGPIO(&p)
+	h, err := newGPIO(&p)
 	if err != nil {
 		lg.Fatal(err)
 	}
@@ -95,7 +95,7 @@ func NewThermostat(pin *Pin) (OutputDevice, error) {
 		return nil, fmt.Errorf("invalid cool pin: %v", pin)
 	}
 
-	c, err := NewGPIO(&p)
+	c, err := newGPIO(&p)
 	if err != nil {
 		lg.Fatal(err)
 	}
@@ -105,7 +105,7 @@ func NewThermostat(pin *Pin) (OutputDevice, error) {
 		return nil, fmt.Errorf("invalid fan pin: %v", pin)
 	}
 
-	f, err := NewGPIO(&p)
+	f, err := newGPIO(&p)
 	if err != nil {
 		lg.Fatal(err)
 	}

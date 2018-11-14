@@ -58,7 +58,7 @@ type Boiler struct {
 func NewBoiler(pin *Pin) (OutputDevice, error) {
 	var b *Boiler
 	var err error
-	g, err := NewGPIO(pin)
+	g, err := newGPIO(pin)
 	var c cmp
 
 	var h, l float64

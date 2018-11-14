@@ -18,11 +18,11 @@ type Switch struct {
 	lastRead time.Time
 }
 
-func NewSwitch(pin *Pin) (InputDevice, error) {
+func NewSwitch(pin *Pin, opts ...func(InputDevice) error) (InputDevice, error) {
 	pin.Direction = "in"
 	pin.Edge = "both"
 	var err error
-	gpio, err := NewGPIO(pin)
+	gpio, err := newGPIO(pin)
 	if err != nil {
 		return nil, err
 	}

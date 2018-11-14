@@ -34,7 +34,7 @@ func NewHeater(pin *Pin) (OutputDevice, error) {
 	if pin.Frequency == 0 {
 		pin.Frequency = 1
 	}
-	dev, err = NewGPIO(pin)
+	dev, err = newGPIO(pin)
 	if err == nil {
 		h = &Heater{
 			toggleTime: 100 * time.Hour,

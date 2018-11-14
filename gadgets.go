@@ -12,10 +12,6 @@ import (
 	"time"
 )
 
-func Init(s SerialFactory) {
-	serialFactory = s
-}
-
 var (
 	units = map[string]string{
 		"liters":     "volume",

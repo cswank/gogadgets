@@ -36,15 +36,11 @@ type GPIO struct {
 	activeLow     string
 }
 
-func GPIOFactory(pin *Pin) (OutputDevice, error) {
-	g, err := NewGPIO(pin)
-	if err != nil {
-		return nil, err
-	}
-	return g, nil
+func NewGPIO(pin *Pin) (OutputDevice, error) {
+	return newGPIO(pin)
 }
 
-func NewGPIO(pin *Pin) (*GPIO, error) {
+func newGPIO(pin *Pin) (*GPIO, error) {
 	var export string
 	var ok bool
 	if pin.Platform == "rpi" {
