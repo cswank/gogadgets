@@ -28,10 +28,11 @@ var (
 	}
 )
 
-//There are several types of Input/Output devices build into
-//GoGadgets (eg: header, cooler, gpio, thermometer and switch)
-//NewGadget reads a GadgetConfig and creates the correct
-//type of Gadget.
+// NewGadget returns a gadget with an input or output device
+// There are several types of Input/Output devices build into
+// GoGadgets (eg: header, cooler, gpio, thermometer and switch)
+// NewGadget reads a GadgetConfig and creates the correct
+// type of Gadget.
 func NewGadget(config *GadgetConfig) (Gadgeter, error) {
 	if config.Type == "cron" {
 		return newSystemGadget(config)
@@ -55,8 +56,8 @@ func newSystemGadget(config *GadgetConfig) (Gadgeter, error) {
 	return nil, fmt.Errorf("don't know how to build %s", config.Name)
 }
 
-//Input Gadgets read from input devices and report their values (thermometer
-//is an example).
+// InputGadgets read from input devices and report their values (thermometer
+// is an example).
 func newInputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
 	dev, err := NewInputDevice(&config.Pin)
 	m := map[bool]string{}
