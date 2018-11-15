@@ -90,16 +90,6 @@ func NewThermometer(pin *Pin, opts ...func(InputDevice) error) (InputDevice, err
 	return therm, err
 }
 
-func (t *Thermometer) Config() ConfigHelper {
-	return ConfigHelper{
-		PinType: "thermometer",
-		Fields: map[string][]string{
-			"oneWireId": []string{},
-		},
-		Units: []string{"C", "F"},
-	}
-}
-
 func (t *Thermometer) GetValue() *Value {
 	return &Value{
 		Value: t.value,

@@ -34,16 +34,6 @@ func NewSwitch(pin *Pin, opts ...func(InputDevice) error) (InputDevice, error) {
 	}, nil
 }
 
-func (s *Switch) Config() ConfigHelper {
-	return ConfigHelper{
-		PinType: "pwm",
-		Pins:    Pins["gpio"],
-		Fields: map[string][]string{
-			"edge": []string{"rising", "falling", "both"},
-		},
-	}
-}
-
 //The GPIO does the real waiting here.  This wraps it and adds
 //a delay so that the inevitable bounce in the signal from the
 //physical device is ignored.

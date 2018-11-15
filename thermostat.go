@@ -157,14 +157,6 @@ func getTimeout(args map[string]interface{}) time.Duration {
 	return to
 }
 
-func (t *Thermostat) Config() ConfigHelper {
-	return ConfigHelper{
-		PinType: "gpio",
-		Units:   []string{"C", "F"},
-		Pins:    Pins["gpio"],
-	}
-}
-
 func (t *Thermostat) Update(msg *Message) bool {
 	if msg.Sender != t.sensor {
 		return false

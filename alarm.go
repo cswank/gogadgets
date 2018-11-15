@@ -61,10 +61,6 @@ func (a *Alarm) Commands(location, name string) *Commands {
 	return nil
 }
 
-func (a *Alarm) Config() ConfigHelper {
-	return ConfigHelper{}
-}
-
 func (a *Alarm) trigger() {
 	delay := time.After(100000 * time.Hour)
 	duration := time.After(100000 * time.Hour)

@@ -81,13 +81,6 @@ func (g *GPIO) Commands(location, name string) *Commands {
 	return nil
 }
 
-func (g *GPIO) Config() ConfigHelper {
-	return ConfigHelper{
-		PinType: "gpio",
-		Pins:    Pins["gpio"],
-	}
-}
-
 func (g *GPIO) Init() error {
 	if !FileExists(g.directionPath) {
 		if err := g.writeValue(g.exportPath, g.export); err != nil {

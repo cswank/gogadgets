@@ -63,10 +63,6 @@ func (s *SMS) Commands(location, name string) *Commands {
 	return nil
 }
 
-func (s *SMS) Config() ConfigHelper {
-	return ConfigHelper{}
-}
-
 func (s *SMS) Update(msg *Message) bool {
 	return false
 }

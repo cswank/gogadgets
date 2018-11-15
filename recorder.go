@@ -42,14 +42,6 @@ func (r *Recorder) Commands(location, name string) *Commands {
 	return nil
 }
 
-func (r *Recorder) Config() ConfigHelper {
-	return ConfigHelper{
-		Args: map[string]interface{}{
-			"host": []string{},
-		},
-	}
-}
-
 func getSummaries(s interface{}) map[string]time.Duration {
 	if s == nil {
 		return map[string]time.Duration{}

@@ -26,14 +26,6 @@ func (c *Cooler) Commands(location, name string) *Commands {
 	return nil
 }
 
-func (c *Cooler) Config() ConfigHelper {
-	return ConfigHelper{
-		PinType: "gpio",
-		Units:   []string{"C", "F"},
-		Pins:    Pins["gpio"],
-	}
-}
-
 func (c *Cooler) Update(msg *Message) bool {
 	now := time.Now()
 	if c.lastChange != nil && now.Sub(*c.lastChange) < 120*time.Second {

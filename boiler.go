@@ -90,14 +90,6 @@ func (b *Boiler) Commands(location, name string) *Commands {
 	return nil
 }
 
-func (b *Boiler) Config() ConfigHelper {
-	return ConfigHelper{
-		PinType: "gpio",
-		Units:   []string{"C", "F"},
-		Pins:    Pins["gpio"],
-	}
-}
-
 func (b *Boiler) Update(msg *Message) bool {
 	if msg.Sender != b.sensor {
 		return false
