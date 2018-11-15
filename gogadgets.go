@@ -42,11 +42,9 @@ func NewGadget(config *GadgetConfig) (Gadgeter, error) {
 		return newInputGadget(config)
 	case "output":
 		return newOutputGadget(config)
+	default:
+		return nil, fmt.Errorf("couldn't build a gadget based on config: %v", config)
 	}
-	return nil, fmt.Errorf(
-		"couldn't build a gadget based on config: %v",
-		config,
-	)
 }
 
 func newSystemGadget(config *GadgetConfig) (Gadgeter, error) {
