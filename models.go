@@ -1,6 +1,7 @@
 package gogadgets
 
 import (
+	"log"
 	"sync"
 	"time"
 )
@@ -15,13 +16,6 @@ var (
 	STATUS       = "status"
 	METHODUPDATE = "method update"
 )
-
-type Logger interface {
-	Println(...interface{})
-	Printf(string, ...interface{})
-	Fatal(...interface{})
-	Fatalf(string, ...interface{})
-}
 
 type GoGadgeter interface {
 	GetUID() string
@@ -131,7 +125,20 @@ type Config struct {
 	Host    string         `json:"host,omitempty"`
 	Port    int            `json:"port,omitempty"`
 	Gadgets []GadgetConfig `json:"gadgets,omitempty"`
-	Logger  Logger         `json:"-"`
+}
+
+func (c Config) CreateGadgets(gadgets ...Gadgeter) []Gadgeter {
+	var out []Gadgeter
+	out = append(out, gadgets...)
+	for _, config := range c.Gadgets {
+		gadget, err := NewGadget(&config)
+		if err != nil {
+			log.Fatal(err)
+		}
+		out = append(out, gadget)
+	}
+	out = append(out, NewServer(c.Host, c.Master, c.Port), &MethodRunner{})
+	return out
 }
 
 type ConfigHelper struct {

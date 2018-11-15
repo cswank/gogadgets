@@ -14,15 +14,6 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-type fakeLogger struct {
-	f bool
-}
-
-func (f *fakeLogger) Println(v ...interface{})          {}
-func (f *fakeLogger) Printf(s string, v ...interface{}) {}
-func (f *fakeLogger) Fatal(v ...interface{})            { f.f = true }
-func (f *fakeLogger) Fatalf(s string, v ...interface{}) { f.f = true }
-
 func init() {
 	rand.Seed(time.Now().Unix())
 }
@@ -30,11 +21,9 @@ func init() {
 var _ = Describe("gogadgets", func() {
 	var (
 		port int
-		lg   *fakeLogger
 	)
 	BeforeEach(func() {
 		port = 1024 + rand.Intn(65535-1024)
-		lg = &fakeLogger{}
 	})
 
 	Describe("app", func() {
@@ -63,9 +52,8 @@ var _ = Describe("gogadgets", func() {
 				Master: "",
 				Host:   "localhost",
 				Port:   port,
-				Logger: lg,
 			}
-			a := gogadgets.NewApp(cfg, p, s)
+			a := gogadgets.New(cfg, p, s)
 
 			input := make(chan gogadgets.Message)
 			go a.GoStart(input)
@@ -107,18 +95,16 @@ var _ = Describe("gogadgets", func() {
 				Master: "",
 				Host:   "",
 				Port:   port,
-				Logger: lg,
 			}
 
 			cfg2 := &gogadgets.Config{
 				Master: fmt.Sprintf("http://localhost:%d", port),
 				Host:   fmt.Sprintf("http://localhost:%d", port+1),
 				Port:   port + 1,
-				Logger: lg,
 			}
 
-			a := gogadgets.NewApp(cfg, light1)
-			a2 := gogadgets.NewApp(cfg2, light2)
+			a := gogadgets.New(cfg, light1)
+			a2 := gogadgets.New(cfg2, light2)
 
 			input := make(chan gogadgets.Message)
 			go a.GoStart(input)
