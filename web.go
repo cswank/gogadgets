@@ -21,7 +21,6 @@ type Server struct {
 	isMaster    bool
 	port        int
 	prefix      string
-	lg          Logger
 	external    chan Message
 	internal    chan Message
 	id          string
@@ -37,7 +36,7 @@ func init() {
 	http.DefaultClient.Timeout = 15 * time.Second
 }
 
-func NewServer(host, master string, port int, lg Logger) *Server {
+func NewServer(host, master string, port int) *Server {
 	var isMaster bool
 	clients := map[string]string{}
 	if master == "" {
@@ -52,7 +51,6 @@ func NewServer(host, master string, port int, lg Logger) *Server {
 		host:     host,
 		isMaster: isMaster,
 		port:     port,
-		lg:       lg,
 		updates:  map[string]Message{},
 		id:       "server",
 		external: make(chan Message),
@@ -175,7 +173,7 @@ func (s *Server) startServer() {
 		r.HandleFunc("/clients", http.HandlerFunc(s.removeClient)).Methods("DELETE")
 	}
 
-	s.lg.Printf("listening on 0.0.0.0:%d\n", s.port)
+	log.Printf("listening on 0.0.0.0:%d\n", s.port)
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", s.port),
@@ -186,7 +184,7 @@ func (s *Server) startServer() {
 
 	err := srv.ListenAndServe()
 	if err != nil {
-		s.lg.Fatal(err)
+		log.Fatal(err)
 	}
 }
 
@@ -223,7 +221,7 @@ func (s *Server) status(w http.ResponseWriter, r *http.Request) {
 	s.statusLock.Lock()
 	if err := enc.Encode(s.updates); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		lg.Println(err)
+		log.Println(err)
 	}
 	s.statusLock.Unlock()
 }
@@ -260,7 +258,7 @@ func (s *Server) values(w http.ResponseWriter, r *http.Request) {
 	s.statusLock.Unlock()
 	if err := enc.Encode(v); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		lg.Println(err)
+		log.Println(err)
 	}
 }
 
@@ -268,7 +266,7 @@ func (s *Server) update(w http.ResponseWriter, r *http.Request) {
 	var msg Message
 	dec := json.NewDecoder(r.Body)
 	if err := dec.Decode(&msg); err != nil {
-		lg.Println(err)
+		log.Println(err)
 		return
 	}
 	if msg.UUID == "" {

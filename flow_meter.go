@@ -42,10 +42,6 @@ func NewFlowMeter(pin *Pin, opts ...func(InputDevice) error) (InputDevice, error
 	}, nil
 }
 
-func (f *FlowMeter) Config() ConfigHelper {
-	return ConfigHelper{}
-}
-
 func (f *FlowMeter) wait(err chan<- error) {
 	for {
 		e := f.GPIO.Wait()

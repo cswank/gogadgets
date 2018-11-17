@@ -14,10 +14,6 @@ func (f *FakeOutput) Commands(l, n string) *gogadgets.Commands {
 	return nil
 }
 
-func (f *FakeOutput) Config() gogadgets.ConfigHelper {
-	return gogadgets.ConfigHelper{}
-}
-
 func (f *FakeOutput) Update(msg *gogadgets.Message) bool {
 	return false
 }

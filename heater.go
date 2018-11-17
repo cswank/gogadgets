@@ -52,14 +52,6 @@ func (h *Heater) Commands(location, name string) *Commands {
 	return nil
 }
 
-func (h *Heater) Config() ConfigHelper {
-	return ConfigHelper{
-		PinType: "pwm",
-		Units:   []string{"C", "F"},
-		Pins:    Pins["pwm"],
-	}
-}
-
 func (h *Heater) Update(msg *Message) bool {
 	var ret bool
 	if h.status && msg.Name == "temperature" {

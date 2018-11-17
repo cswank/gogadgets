@@ -47,7 +47,7 @@ func main() {
 }
 
 func runGadgets() {
-	gogadgets.NewApp(getConfig()).Start()
+	gogadgets.New(getConfig()).Start()
 }
 
 func getConfig() string {

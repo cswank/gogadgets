@@ -51,14 +51,6 @@ func (m *Motor) Commands(location, name string) *Commands {
 	return nil
 }
 
-func (m *Motor) Config() ConfigHelper {
-	// g := GPIO{}
-	// gpio := g.Config()
-	// p := PWM{}
-	// pwm := p.Config()
-	return ConfigHelper{}
-}
-
 func (m *Motor) Update(msg *Message) bool {
 	return false
 }

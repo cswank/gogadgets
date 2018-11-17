@@ -2,6 +2,7 @@ package gogadgets
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"time"
 )
@@ -87,7 +88,7 @@ func NewThermostat(pin *Pin) (OutputDevice, error) {
 	}
 	h, err := newGPIO(&p)
 	if err != nil {
-		lg.Fatal(err)
+		log.Fatal(err)
 	}
 
 	p, ok = pin.Pins["cool"]
@@ -97,7 +98,7 @@ func NewThermostat(pin *Pin) (OutputDevice, error) {
 
 	c, err := newGPIO(&p)
 	if err != nil {
-		lg.Fatal(err)
+		log.Fatal(err)
 	}
 
 	p, ok = pin.Pins["fan"]
@@ -107,7 +108,7 @@ func NewThermostat(pin *Pin) (OutputDevice, error) {
 
 	f, err := newGPIO(&p)
 	if err != nil {
-		lg.Fatal(err)
+		log.Fatal(err)
 	}
 
 	return &Thermostat{
@@ -154,14 +155,6 @@ func getTimeout(args map[string]interface{}) time.Duration {
 		to = x
 	}
 	return to
-}
-
-func (t *Thermostat) Config() ConfigHelper {
-	return ConfigHelper{
-		PinType: "gpio",
-		Units:   []string{"C", "F"},
-		Pins:    Pins["gpio"],
-	}
 }
 
 func (t *Thermostat) Update(msg *Message) bool {

@@ -6,10 +6,6 @@ func NewGPIO(pin *Pin) (OutputDevice, error) {
 	return nil, nil
 }
 
-func (g *GPIO) Config() ConfigHelper {
-	return ConfigHelper{}
-}
-
 func (g *GPIO) Init() error {
 	return nil
 }

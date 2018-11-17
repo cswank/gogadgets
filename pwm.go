@@ -52,16 +52,6 @@ func (p *PWM) Commands(location, name string) *Commands {
 	return nil
 }
 
-func (p *PWM) Config() ConfigHelper {
-	return ConfigHelper{
-		PinType: "pwm",
-		Fields: map[string][]string{
-			"frequency": []string{},
-		},
-		Pins: Pins["pwm"],
-	}
-}
-
 func (p *PWM) Update(msg *Message) bool {
 	return false
 }

@@ -26,17 +26,14 @@ var _ = Describe("server", func() {
 		out     chan gogadgets.Message
 		in      chan gogadgets.Message
 		s       *gogadgets.Server
-		lg      *fakeLogger
 	)
 
 	BeforeEach(func() {
-		lg = &fakeLogger{}
-
 		port = 1024 + rand.Intn(65535-1024)
 		addr = fmt.Sprintf("http://localhost:%d/gadgets", port)
 		cliAddr = fmt.Sprintf("http://localhost:%d/clients", port)
 
-		s = gogadgets.NewServer("", "", port, lg)
+		s = gogadgets.NewServer("", "", port)
 
 		in = make(chan gogadgets.Message)
 		out = make(chan gogadgets.Message)

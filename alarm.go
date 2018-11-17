@@ -61,10 +61,6 @@ func (a *Alarm) Commands(location, name string) *Commands {
 	return nil
 }
 
-func (a *Alarm) Config() ConfigHelper {
-	return ConfigHelper{}
-}
-
 func (a *Alarm) trigger() {
 	delay := time.After(100000 * time.Hour)
 	duration := time.After(100000 * time.Hour)
@@ -144,14 +140,14 @@ func (a *Alarm) Off() error {
 func getAlarmEvents(e interface{}) (map[string]bool, error) {
 	m, ok := e.(map[string]interface{})
 	if !ok {
-		return nil, fmt.Errorf("could not parse alarm events %v (should be map[string]bool)\n", e)
+		return nil, fmt.Errorf("could not parse alarm events %v (should be map[string]bool)", e)
 	}
 
 	out := map[string]bool{}
 	for k, v := range m {
 		b, ok := v.(bool)
 		if !ok {
-			return nil, fmt.Errorf("could not parse alarm events %v (should be map[string]bool)\n", e)
+			return nil, fmt.Errorf("could not parse alarm events %v (should be map[string]bool)", e)
 		}
 		out[k] = b
 	}

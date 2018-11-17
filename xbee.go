@@ -235,7 +235,3 @@ func (x *XBee) readMessage(ch chan<- xbee.Message) {
 func (x *XBee) GetValue() *Value {
 	return &Value{}
 }
-
-func (x *XBee) Config() ConfigHelper {
-	return ConfigHelper{}
-}
