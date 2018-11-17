@@ -20,9 +20,9 @@ type SMS struct {
 }
 
 func NewSMS(pin *Pin) (OutputDevice, error) {
-	sid, ok := pin.Args["sms"].(string)
+	sid, ok := pin.Args["sid"].(string)
 	if !ok {
-		return nil, fmt.Errorf("could not parse sms from pin args")
+		return nil, fmt.Errorf("could not parse sid from pin args")
 	}
 	from, ok := pin.Args["from"].(string)
 	if !ok {
@@ -46,7 +46,7 @@ func NewSMS(pin *Pin) (OutputDevice, error) {
 		if !ok {
 			return nil, fmt.Errorf("could not parse to from pin args")
 		}
-		tos = append(tos, val)
+		to = append(to, val)
 	}
 
 	return &SMS{
