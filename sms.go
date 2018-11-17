@@ -1,9 +1,8 @@
 package gogadgets
 
 import (
-	"encoding/json"
 	"fmt"
-	"log"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
@@ -68,30 +67,50 @@ func (s *SMS) Update(msg *Message) bool {
 }
 
 func (s *SMS) On(val *Value) error {
-	msgData := url.Values{}
 	for _, to := range s.to {
-		msgData.Add("To", to)
+		if err := s.sms(to); err != nil {
+			return err
+		}
 	}
-	msgData.Set("From", s.from)
-	msgData.Set("Body", s.message)
-	msgDataReader := *strings.NewReader(msgData.Encode())
-	client := &http.Client{}
-	req, _ := http.NewRequest("POST", s.url, &msgDataReader)
+
+	return nil
+}
+
+func (s *SMS) sms(to string) error {
+	req, err := s.request(to)
+	if err != nil {
+		return err
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+
+	defer resp.Body.Close()
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		d, _ := ioutil.ReadAll(resp.Body)
+		return fmt.Errorf("error from twillio: %s", string(d))
+	}
+
+	return nil
+}
+
+func (s *SMS) request(to string) (*http.Request, error) {
+	body := url.Values{
+		"To":   []string{to},
+		"From": []string{s.from},
+		"Body": []string{s.message},
+	}
+
+	req, err := http.NewRequest("POST", s.url, strings.NewReader(body.Encode()))
+	if err != nil {
+		return nil, err
+	}
 	req.SetBasicAuth(s.sid, s.token)
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	resp, _ := client.Do(req)
-	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-		var data map[string]interface{}
-		decoder := json.NewDecoder(resp.Body)
-		err := decoder.Decode(&data)
-		if err == nil {
-			log.Println(data["sid"])
-		}
-	} else {
-		log.Println(resp.Status)
-	}
-	return nil
+	return req, nil
 }
 
 func (s *SMS) Status() map[string]bool {
