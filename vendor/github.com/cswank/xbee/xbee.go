@@ -38,17 +38,19 @@ func GetLength(data []byte) (uint16, error) {
 //message and the length of the message so are only useful for
 //ingesting data from an xbee.
 func NewMessage(data []byte) (Message, error) {
+	var msg Message
 	var h header
 	buf := bytes.NewReader(data)
 	err := binary.Read(buf, binary.BigEndian, &h)
-	var msg Message
 	if err != nil {
 		return msg, err
 	}
+
 	msg = Message{
 		header: h,
 		frame:  data,
 	}
+
 	if !msg.Check() {
 		err = fmt.Errorf("message failed checksum: 0x%x", msg.getChecksum())
 	}

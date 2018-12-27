@@ -1,58 +1,35 @@
 package xbee
 
 import (
-	"log"
-
 	"go.bug.st/serial.v1"
 )
 
-var (
-	verbose bool
-)
-
-func Verbose() {
-	verbose = true
-}
-
-func logger(i ...interface{}) {
-	if verbose {
-		log.Print(i...)
-	}
-}
-
-func ReadMessage(port serial.Port, opts ...func()) Message {
-	for _, o := range opts {
-		o()
-	}
+func ReadMessage(port serial.Port, opts ...func()) (Message, error) {
+	var msg Message
 
 	for {
 		getDelimiter(port)
 		d := make([]byte, 2)
 		n, err := port.Read(d)
 		if err != nil || n != 2 {
-			logger(err, n)
-			continue
+			return msg, err
 		}
 
 		l, err := GetLength(d)
 		if err != nil {
-			logger(err)
-			continue
-
+			return msg, err
 		}
 
 		d = []byte{}
 		d, err = getBody(d, port, int(l+1))
 		if err != nil {
-			logger(string(d), err)
-			continue
+			return msg, err
 		}
 
 		msg, err := NewMessage(d)
 		if err == nil {
-			return msg
+			return msg, nil
 		}
-		logger(msg, err)
 	}
 }
 
@@ -61,10 +38,9 @@ func getDelimiter(port serial.Port) {
 		d := make([]byte, 1)
 		n, err := port.Read(d)
 		if err != nil || n != 1 {
-			logger(n, err)
 			continue
-
 		}
+
 		if d[0] == 0x7E {
 			return
 		}

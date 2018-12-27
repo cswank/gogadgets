@@ -227,8 +227,12 @@ func (x *XBee) getAnalog(msg xbee.Message, ch chan<- Value) {
 
 func (x *XBee) readMessage(ch chan<- xbee.Message) {
 	for {
-		msg := xbee.ReadMessage(x.port, xbee.Verbose)
-		ch <- msg
+		msg, err := xbee.ReadMessage(x.port)
+		if err != nil {
+			log.Printf("unable to read xbee message: %s", err)
+		} else {
+			ch <- msg
+		}
 	}
 }
 
