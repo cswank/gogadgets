@@ -19,7 +19,7 @@ const (
 
 var (
 	run    = kingpin.Command("run", "run a gogadgets instance")
-	config = run.Flag("config", "Path to a Gadgets config file").Short('c').Default("/etc/gogadgets.json").String()
+	config = run.Arg("config-file", "Path to a Gadgets config file").Required().String()
 
 	cmd  = kingpin.Command("cmd", "send a command to a gogadgets instance")
 	host = cmd.Flag("host", "Name of gogadgets host").Short('h').Default("localhost").String()
