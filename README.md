@@ -46,6 +46,7 @@ Gogadgets
 The config file for the led example looks like::
 
     {
+        "host": "http://<IP ADDR>:6111",
         "gadgets": [
             {
                 "location": "lab",
@@ -61,13 +62,13 @@ The config file for the led example looks like::
 
 So to try this example out you would connect an led to port 8, pin 9.  Next, start the app::
 
-    # $GOPATH/bin/gogadgets -g $GOPATH/src/bitbucket.org/cswank/gogadgets/examples/led/config.json
+    # $GOPATH/bin/gogadgets run -c /path/to/config.json
 
 Next you can turn on the led from the command line.  You can either ssh into the same beaglebone
 that is running gogagdgets, or you can install gadgets again on another machine.  If you were
 to install gogadgets on a remote machine then you can turn on the led like this::
 
-    $ $GOPATH/bin/gogadgets -c "turn on lab led"
+    $ $GOPATH/bin/gogadgets cmd "turn on lab led"
 
 ## Robot Command Language
 
