@@ -3,6 +3,7 @@ package gogadgets
 import (
 	"errors"
 	"fmt"
+	"log"
 	"sync"
 	"time"
 )
@@ -98,7 +99,7 @@ func newInputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
 func newOutputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
 	dev, err := NewOutputDevice(&config.Pin)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	if cmds := dev.Commands(config.Location, config.Name); cmds != nil {
