@@ -185,8 +185,10 @@ func (t *Thermostat) checkTemperature() {
 	gpio := t.gpios[t.lastCmd]
 	if t.cmp[t.lastCmd](*t.lastTemperature, t.target) {
 		gpio.Off()
+		log.Println("turn furnace off")
 	} else {
 		gpio.On(nil)
+		log.Println("turn furnace on")
 	}
 }
 
