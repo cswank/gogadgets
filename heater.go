@@ -15,6 +15,7 @@ type Heater struct {
 	waitTime    time.Duration
 	t1          time.Time
 	target      float64
+	percentage  bool
 	currentTemp float64
 	duration    time.Duration
 	status      bool
@@ -83,6 +84,7 @@ func (h *Heater) Status() map[string]bool {
 func (h *Heater) Off() error {
 	if h.started {
 		h.target = 0.0
+		h.percentage = false
 		h.status = false
 		h.io <- &Value{Value: false}
 	}
@@ -100,22 +102,32 @@ func (h *Heater) toggle(value chan *Value, update chan *Message) {
 		case val := <-value:
 			switch v := val.Value.(type) {
 			case float64:
+				if val.Units == "%" {
+					h.target = 1000.0
+					h.percentage = true
+					d := time.Duration(v) * time.Millisecond * 10
+					h.onTime = d * 4
+					h.offTime = (4 * time.Second) - h.onTime
+				} else {
+					h.percentage = false
+					h.getTarget(val)
+					h.setDuty()
+					h.t1 = time.Now()
+				}
+
 				h.waitTime = 100 * time.Millisecond
-				h.getTarget(val)
-				h.setDuty()
 				h.status = true
 				h.gpioStatus = true
 				h.gpio.On(nil)
-				h.t1 = time.Now()
 			case bool:
 				h.waitTime = 100 * time.Hour
 				if v == true {
 					h.status = true
 					h.gpio.On(nil)
 				} else {
-
 					h.gpio.Off()
 					h.target = 1000.0
+					h.percentage = false
 					h.status = false
 				}
 			}
@@ -149,6 +161,7 @@ func (h *Heater) getTarget(val *Value) {
 		t, ok := val.ToFloat()
 		if ok {
 			h.target = t
+			h.percentage = false
 		}
 	}
 }
@@ -172,6 +185,10 @@ func (h *Heater) readTemperature(msg *Message) {
 //and can be disabled if you are using this component to heat something
 //else, like a house.
 func (h *Heater) setDuty() {
+	if h.percentage {
+		return
+	}
+
 	diff := h.target - h.currentTemp
 	if diff <= 0.0 {
 		h.onTime = 0
