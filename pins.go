@@ -1,11 +1,11 @@
 package gogadgets
 
-//The beaglebone black GPIO pins that are available by default.
-//You can use the device tree overlay to get more.
+// The beaglebone black GPIO pins that are available by default.
+// You can use the device tree overlay to get more.
 var (
 	Pins = map[string]map[string]map[string]string{
-		"gpio": map[string]map[string]string{
-			"8": map[string]string{
+		"gpio": {
+			"8": {
 				"7":  "66",
 				"8":  "67",
 				"9":  "69",
@@ -17,19 +17,19 @@ var (
 				"16": "46",
 				"26": "61",
 			},
-			"9": map[string]string{
+			"9": {
 				"12": "60",
 				"14": "50",
 				"15": "48",
 				"16": "51",
 			},
 		},
-		"pwm": map[string]map[string]string{
-			"8": map[string]string{
+		"pwm": {
+			"8": {
 				"13": "bone_pwm_p8_13",
 				"19": "bone_pwm_p8_19",
 			},
-			"9": map[string]string{
+			"9": {
 				"14": "bone_pwm_p9_14",
 				"16": "bone_pwm_p9_16",
 				"21": "bone_pwm_p9_21",

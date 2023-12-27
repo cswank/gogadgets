@@ -1,3 +1,4 @@
+//go:build !windows
 // +build !windows
 
 package gogadgets
@@ -16,13 +17,13 @@ var (
 	GPIO_DEV_MODE = os.ModeDevice
 )
 
-//GPIO interacts with the linux sysfs interface for GPIO
-//to turn pins on and off.  The pins that are listed in
-//gogadgets.Pins have been found to be availabe by default
-//but by using the device tree overlay you can make more
-//pins available.
-//GPIO also has a Wait method and can poll a pin and wait
-//for a change of direction.
+// GPIO interacts with the linux sysfs interface for GPIO
+// to turn pins on and off.  The pins that are listed in
+// gogadgets.Pins have been found to be availabe by default
+// but by using the device tree overlay you can make more
+// pins available.
+// GPIO also has a Wait method and can poll a pin and wait
+// for a change of direction.
 type GPIO struct {
 	units         string
 	export        string
@@ -87,7 +88,7 @@ func (g *GPIO) Init() error {
 			return err
 		}
 	}
-	if g.activeLow == "1" {
+	if g.activeLow == "1" || g.activeLow == "0" {
 		if err := g.writeValue(g.activeLowPath, g.activeLow); err != nil {
 			return err
 		}
@@ -125,7 +126,11 @@ func (g *GPIO) Off() error {
 }
 
 func (g *GPIO) writeValue(path, value string) error {
-	return ioutil.WriteFile(path, []byte(value), GPIO_DEV_MODE)
+	return os.WriteFile(path, []byte(value), GPIO_DEV_MODE)
+}
+
+func (g *GPIO) Open() (*os.File, error) {
+	return os.Open(g.valuePath)
 }
 
 func (g *GPIO) Wait() error {
