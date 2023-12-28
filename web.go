@@ -275,7 +275,6 @@ func (s *Server) update(w http.ResponseWriter, r *http.Request) {
 	s.external <- msg
 }
 
-//
 func (s *Server) register() {
 	var tries int
 	addr := fmt.Sprintf("%s/clients", s.master)

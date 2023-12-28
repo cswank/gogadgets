@@ -1,3 +1,4 @@
+//go:build !windows
 // +build !windows
 
 package gogadgets
@@ -16,13 +17,13 @@ var (
 	GPIO_DEV_MODE = os.ModeDevice
 )
 
-//GPIO interacts with the linux sysfs interface for GPIO
-//to turn pins on and off.  The pins that are listed in
-//gogadgets.Pins have been found to be availabe by default
-//but by using the device tree overlay you can make more
-//pins available.
-//GPIO also has a Wait method and can poll a pin and wait
-//for a change of direction.
+// GPIO interacts with the linux sysfs interface for GPIO
+// to turn pins on and off.  The pins that are listed in
+// gogadgets.Pins have been found to be availabe by default
+// but by using the device tree overlay you can make more
+// pins available.
+// GPIO also has a Wait method and can poll a pin and wait
+// for a change of direction.
 type GPIO struct {
 	units         string
 	export        string

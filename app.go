@@ -6,9 +6,9 @@ import (
 	"os"
 )
 
-//App holds all the gadgets and handles passing Messages
-//to them, and receiving Messages from them.  It is the
-//central part of Gadgets system.
+// App holds all the gadgets and handles passing Messages
+// to them, and receiving Messages from them.  It is the
+// central part of Gadgets system.
 type App struct {
 	gadgets []Gadgeter
 }
@@ -22,9 +22,9 @@ func New(cfg interface{}, gadgets ...Gadgeter) *App {
 	}
 }
 
-//Start is the main entry point for a Gadget system.  It takes
-//a chan in case the system is started as a goroutine,
-//but it can just be called directly.
+// Start is the main entry point for a Gadget system.  It takes
+// a chan in case the system is started as a goroutine,
+// but it can just be called directly.
 func (a *App) Start() {
 	x := make(chan Message)
 	a.GoStart(x)
@@ -36,7 +36,6 @@ func (a *App) Start() {
 // gogadget systems upon a command from a central
 // web app.
 func (a *App) GoStart(input <-chan Message) {
-
 	collect := make(chan Message)
 	channels := make(map[string]chan Message)
 	for _, gadget := range a.gadgets {

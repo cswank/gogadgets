@@ -95,7 +95,7 @@ func newInputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
 	return gadget, err
 }
 
-//Output Gadgets turn devices on and off.
+// Output Gadgets turn devices on and off.
 func newOutputGadget(config *GadgetConfig) (gadget *Gadget, err error) {
 	dev, err := NewOutputDevice(&config.Pin)
 	if err != nil {
@@ -139,8 +139,8 @@ func RegisterOutput(name string, f CreateOutputDevice) {
 
 type CreateInputDevice func(pin *Pin, opts ...func(InputDevice) error) (InputDevice, error)
 
-//Inputdevices are started as goroutines by the Gadget
-//that contains it.
+// Inputdevices are started as goroutines by the Gadget
+// that contains it.
 type InputDevice interface {
 	Start(<-chan Message, chan<- Value)
 	GetValue() *Value
@@ -253,8 +253,8 @@ type Method struct {
 	Time  int      `json:"time,omitempty"`
 }
 
-//Message is what all Gadgets pass around to each
-//other.
+// Message is what all Gadgets pass around to each
+// other.
 type Message struct {
 	UUID        string    `json:"uuid"`
 	From        string    `json:"from,omitempty"`

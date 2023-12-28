@@ -42,10 +42,10 @@ type Gadgeter interface {
 	Start(in <-chan Message, out chan<- Message)
 }
 
-//Each part of a Gadgets system that controls a single
-//piece of hardware (for example: a gpio pin) is represented
-//by Gadget.  A Gadget must have either an InputDevice or
-//an OutputDevice.  Gadget fulfills the GoGaget interface.
+// Each part of a Gadgets system that controls a single
+// piece of hardware (for example: a gpio pin) is represented
+// by Gadget.  A Gadget must have either an InputDevice or
+// an OutputDevice.  Gadget fulfills the GoGaget interface.
 type Gadget struct {
 	Type           string
 	Location       string
@@ -72,9 +72,9 @@ type Gadget struct {
 	timerOut       chan bool
 }
 
-//All gadgets respond to Robot Command Language (RCL) messages.  isMyCommand
-//reads an RCL message and decides if it was meant for this instance
-//of Gadget.
+// All gadgets respond to Robot Command Language (RCL) messages.  isMyCommand
+// reads an RCL message and decides if it was meant for this instance
+// of Gadget.
 func (g *Gadget) isMyCommand(msg *Message) (bool, string, string) {
 	if msg.Type != COMMAND {
 		return false, "", ""
@@ -105,8 +105,8 @@ func (g *Gadget) GetDirection() string {
 	return "input"
 }
 
-//Start is one of the two interface methods of GoGadget.  Start takes
-//in in and out chan and is meant to be called as a goroutine.
+// Start is one of the two interface methods of GoGadget.  Start takes
+// in in and out chan and is meant to be called as a goroutine.
 func (g *Gadget) Start(in <-chan Message, out chan<- Message) {
 	g.out = out
 	g.timerIn = make(chan bool)
@@ -123,10 +123,10 @@ func (g *Gadget) Start(in <-chan Message, out chan<- Message) {
 	}
 }
 
-//Once a gadget is started as a goroutine, this loop collects
-//all the messages that are sent to this particular Gadget and
-//responds accordingly.  This is the loop that is executed if
-//this Gadget is an input Gadget
+// Once a gadget is started as a goroutine, this loop collects
+// all the messages that are sent to this particular Gadget and
+// responds accordingly.  This is the loop that is executed if
+// this Gadget is an input Gadget
 func (g *Gadget) doInputLoop(in <-chan Message) {
 	devOut := make(chan Value, 10)
 	g.devIn = make(chan Message, 10)
