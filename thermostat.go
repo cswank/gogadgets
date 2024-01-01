@@ -4,56 +4,56 @@ import (
 	"fmt"
 	"log"
 	"strings"
-	"time"
 )
 
-type cmp func(float64, float64) bool
+type cmp func(float64, float64, float64, bool) bool
 
-/*Thermostat is used for controlling a furnace.
+/*
+Thermostat is used for controlling a furnace.
 Configure a thermostat like:
 
-	{
-	    "host": "http://192.168.1.18:6111",
-	    "gadgets": [
-	        {
-	            "location": "home",
-	            "name": "temperature",
-	            "pin": {
-	                "type": "thermometer",
-	                "OneWireId": "28-0000041cb544",
-	                "Units": "F"
-	            }
-	        },
-	        {
-	            "location": "home",
-	            "name": "furnace",
-	            "pin": {
-	                "type": "thermostat",
-                    "pins": {
-                        "heat": {
-                            "platform": "rpi",
-	                        "pin": "11",
-                            "direction": "out"
-                        },
-                        "cool": {
-                            "platform": "rpi",
-	                        "pin": "13",
-                            "direction": "out"
-                        },
-                        "fan": {
-                            "platform": "rpi",
-	                        "pin": "15",
-                            "direction": "out"
-                        }
-                    },
-	                "args": {
-	                    "sensor": "home temperature",
-                        "timeout": "5m"
-	                }
-	            }
-	        }
-	    ]
-	}
+		{
+		    "host": "http://192.168.1.18:6111",
+		    "gadgets": [
+		        {
+		            "location": "home",
+		            "name": "temperature",
+		            "pin": {
+		                "type": "thermometer",
+		                "OneWireId": "28-0000041cb544",
+		                "Units": "F"
+		            }
+		        },
+		        {
+		            "location": "home",
+		            "name": "furnace",
+		            "pin": {
+		                "type": "thermostat",
+	                    "pins": {
+	                        "heat": {
+	                            "platform": "rpi",
+		                        "pin": "11",
+	                            "direction": "out"
+	                        },
+	                        "cool": {
+	                            "platform": "rpi",
+		                        "pin": "13",
+	                            "direction": "out"
+	                        },
+	                        "fan": {
+	                            "platform": "rpi",
+		                        "pin": "15",
+	                            "direction": "out"
+	                        }
+	                    },
+		                "args": {
+		                    "sensor": "home temperature",
+	                        "timeout": "5m"
+		                }
+		            }
+		        }
+		    ]
+		}
 
 With this config the thermostat will react to temperatures from
 'the lab temperature' (which is the location + name of the thermometer)
@@ -67,12 +67,10 @@ below 120.
 type Thermostat struct {
 	target float64
 
-	//minimum time between state changes
-	timeout time.Duration
+	hysteresis float64
 
 	status          bool
 	gpios           map[string]OutputDevice
-	lastChange      *time.Time
 	lastCmd         string
 	lastTemperature *float64
 	cmp             map[string]cmp
@@ -108,7 +106,12 @@ func NewThermostat(pin *Pin) (OutputDevice, error) {
 
 	f, err := newGPIO(&p)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
+	}
+
+	hy, err := getHysteresis(pin.Args)
+	if err != nil {
+		return nil, err
 	}
 
 	return &Thermostat{
@@ -118,11 +121,21 @@ func NewThermostat(pin *Pin) (OutputDevice, error) {
 			"fan":  f,
 		},
 		cmp: map[string]cmp{
-			"heat": func(x, y float64) bool { return x >= y },
-			"cool": func(x, y float64) bool { return x < y },
+			"heat": func(actual, target, hysteresis float64, status bool) bool {
+				if status {
+					return actual >= (target + hysteresis)
+				}
+				return actual >= (target - hysteresis)
+			},
+			"cool": func(actual, target, hysteresis float64, status bool) bool {
+				if status {
+					return actual <= (target - hysteresis)
+				}
+				return actual <= (target + hysteresis)
+			},
 		},
-		sensor:  pin.Args["sensor"].(string),
-		timeout: getTimeout(pin.Args),
+		sensor:     pin.Args["sensor"].(string),
+		hysteresis: hy,
 	}, nil
 }
 
@@ -138,32 +151,8 @@ func (t *Thermostat) Commands(location, name string) *Commands {
 	}
 }
 
-func getTimeout(args map[string]interface{}) time.Duration {
-	to := 5 * time.Minute
-
-	i, ok := args["timeout"]
-	if !ok {
-		return to
-	}
-
-	s, ok := i.(string)
-	if !ok {
-		return to
-	}
-
-	if x, err := time.ParseDuration(s); err == nil {
-		to = x
-	}
-	return to
-}
-
 func (t *Thermostat) Update(msg *Message) bool {
 	if msg.Sender != t.sensor {
-		return false
-	}
-	now := time.Now()
-
-	if t.lastChange != nil && now.Sub(*t.lastChange) < t.timeout {
 		return false
 	}
 
@@ -171,24 +160,24 @@ func (t *Thermostat) Update(msg *Message) bool {
 	temperature, ok := msg.Value.Value.(float64)
 	if t.status && ok && (t.lastCmd == "heat" || t.lastCmd == "cool") {
 		t.lastTemperature = &temperature
-		t.lastChange = &now
-		changed = true
-		t.checkTemperature()
+		changed = t.checkTemperature()
 	}
 	return changed
 }
 
-func (t *Thermostat) checkTemperature() {
+func (t *Thermostat) checkTemperature() bool {
 	if t.lastTemperature == nil {
-		return
+		return false
 	}
+
 	gpio := t.gpios[t.lastCmd]
-	if t.cmp[t.lastCmd](*t.lastTemperature, t.target) {
+	st := gpio.Status()["gpio"]
+	if t.cmp[t.lastCmd](*t.lastTemperature, t.target, t.hysteresis, st) {
 		gpio.Off()
-		log.Println("turn furnace off")
+		return st
 	} else {
 		gpio.On(nil)
-		log.Println("turn furnace on")
+		return !st
 	}
 }
 
@@ -205,7 +194,6 @@ func (t *Thermostat) On(val *Value) error {
 		return nil
 	}
 	t.lastCmd = parts[0]
-	t.lastChange = nil
 	t.target = tar
 	t.status = true
 	t.checkTemperature()
@@ -228,4 +216,20 @@ func (t *Thermostat) Status() map[string]bool {
 		m[key] = val.Status()["gpio"]
 	}
 	return m
+}
+
+func getHysteresis(args map[string]interface{}) (float64, error) {
+	out := float64(5)
+
+	i, ok := args["hysteresis"]
+	if !ok {
+		return out, nil
+	}
+
+	h, ok := i.(float64)
+	if !ok {
+		return out, fmt.Errorf("hysteresis is not float64")
+	}
+
+	return h, nil
 }

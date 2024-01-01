@@ -65,13 +65,13 @@ func NewBoiler(pin *Pin) (OutputDevice, error) {
 	if pin.Args["type"] == "cooler" {
 		l = pin.Args["high"].(float64)
 		h = pin.Args["low"].(float64)
-		c = func(x, y float64) bool {
+		c = func(x, y, z float64, b bool) bool {
 			return x <= y
 		}
 	} else {
 		h = pin.Args["high"].(float64)
 		l = pin.Args["low"].(float64)
-		c = func(x, y float64) bool {
+		c = func(x, y, z float64, b bool) bool {
 			return x >= y
 		}
 	}
@@ -102,10 +102,10 @@ func (b *Boiler) Update(msg *Message) bool {
 	temperature, ok := msg.Value.Value.(float64)
 	if b.status && ok {
 		ch = true
-		if b.cmp(temperature, b.highTarget) {
+		if b.cmp(temperature, b.highTarget, 0, false) {
 			b.gpio.Off()
 			b.lastChange = &now
-		} else if b.cmp(b.lowTarget, temperature) {
+		} else if b.cmp(b.lowTarget, temperature, 0, false) {
 			b.gpio.On(nil)
 			b.lastChange = &now
 		}

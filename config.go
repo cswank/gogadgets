@@ -18,10 +18,11 @@ type GadgetConfig struct {
 }
 
 type Config struct {
-	Master  string         `json:"master,omitempty"`
-	Host    string         `json:"host,omitempty"`
-	Port    int            `json:"port,omitempty"`
-	Gadgets []GadgetConfig `json:"gadgets,omitempty"`
+	Master    string         `json:"master,omitempty"`
+	Host      string         `json:"host,omitempty"`
+	Port      int            `json:"port,omitempty"`
+	Gadgets   []GadgetConfig `json:"gadgets,omitempty"`
+	Endpoints []HTTPHandler
 }
 
 func (c Config) CreateGadgets(gadgets ...Gadgeter) []Gadgeter {
@@ -34,6 +35,6 @@ func (c Config) CreateGadgets(gadgets ...Gadgeter) []Gadgeter {
 		}
 		out = append(out, gadget)
 	}
-	out = append(out, NewServer(c.Host, c.Master, c.Port), &MethodRunner{})
+	out = append(out, NewServer(c.Host, c.Master, c.Port, c.Endpoints...), &MethodRunner{})
 	return out
 }
