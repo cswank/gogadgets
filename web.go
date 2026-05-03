@@ -134,6 +134,7 @@ func (s *Server) doSend(host string, msg Message, token string) {
 	if len(token) > 0 {
 		req.Header.Add("Authorization", token)
 	}
+
 	r, err := http.DefaultClient.Do(req)
 	if r != nil {
 		io.Copy(io.Discard, r.Body)

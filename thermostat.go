@@ -193,6 +193,13 @@ func (t *Thermostat) On(val *Value) error {
 	if len(parts) == 0 {
 		return nil
 	}
+
+	if t.lastCmd != parts[0] {
+		t.gpios["heat"].Off()
+		t.gpios["cool"].Off()
+		t.gpios["fan"].Off()
+	}
+
 	t.lastCmd = parts[0]
 	t.target = tar
 	t.status = true
