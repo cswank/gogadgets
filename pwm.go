@@ -3,7 +3,6 @@ package gogadgets
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"math"
 	"os"
 	"path"
@@ -58,19 +57,19 @@ func (p *PWM) Update(msg *Message) bool {
 
 func (p *PWM) On(val *Value) error {
 	if val != nil && val.Units == "%" {
-		ioutil.WriteFile(p.runPath, []byte("0"), PWMMode)
+		os.WriteFile(p.runPath, []byte("0"), PWMMode)
 		p.duty = p.getDuty(val.Value)
-		ioutil.WriteFile(p.dutyPath, p.duty, PWMMode)
+		os.WriteFile(p.dutyPath, p.duty, PWMMode)
 	} else {
-		ioutil.WriteFile(p.runPath, []byte("0"), PWMMode)
-		ioutil.WriteFile(p.dutyPath, []byte(fmt.Sprintf("%d", p.period)), PWMMode)
+		os.WriteFile(p.runPath, []byte("0"), PWMMode)
+		os.WriteFile(p.dutyPath, []byte(fmt.Sprintf("%d", p.period)), PWMMode)
 	}
-	return ioutil.WriteFile(p.runPath, []byte("1"), PWMMode)
+	return os.WriteFile(p.runPath, []byte("1"), PWMMode)
 }
 
 func (p *PWM) Off() error {
-	ioutil.WriteFile(p.dutyPath, []byte("0"), PWMMode)
-	return ioutil.WriteFile(p.runPath, []byte("0"), PWMMode)
+	os.WriteFile(p.dutyPath, []byte("0"), PWMMode)
+	return os.WriteFile(p.runPath, []byte("0"), PWMMode)
 }
 
 func (p *PWM) Status() map[string]bool {
@@ -98,17 +97,17 @@ func setupPWM(pin *Pin) (devPath string, period int, err error) {
 	devPath = g[0]
 	period = int(NANO / float32(pin.Frequency))
 	p := path.Join(devPath, "period")
-	err = ioutil.WriteFile(p, []byte(fmt.Sprintf("%d", period)), PWMMode)
+	err = os.WriteFile(p, []byte(fmt.Sprintf("%d", period)), PWMMode)
 	if err != nil {
 		return devPath, period, err
 	}
 	p = path.Join(devPath, "duty")
-	err = ioutil.WriteFile(p, []byte(fmt.Sprintf("%d", period)), PWMMode)
+	err = os.WriteFile(p, []byte(fmt.Sprintf("%d", period)), PWMMode)
 	if err != nil {
 		return devPath, period, err
 	}
 	p = path.Join(devPath, "polarity")
-	err = ioutil.WriteFile(p, []byte("0"), PWMMode)
+	err = os.WriteFile(p, []byte("0"), PWMMode)
 	if err != nil {
 		return devPath, period, err
 	}
@@ -129,11 +128,12 @@ func writePWMDeviceTree(port, pin string) error {
 	if !ok {
 		return errors.New(fmt.Sprintf("invalid pin: %s", pin))
 	}
-	err = ioutil.WriteFile(treePath, []byte("am33xx_pwm"), PWMMode)
+
+	err = os.WriteFile(treePath, []byte("am33xx_pwm"), PWMMode)
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(treePath, []byte(val), PWMMode)
+	return os.WriteFile(treePath, []byte(val), PWMMode)
 }
 
 func getTreePath() (string, error) {

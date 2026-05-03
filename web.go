@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
@@ -15,28 +14,37 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type Server struct {
-	host        string
-	master      string
-	isMaster    bool
-	port        int
-	prefix      string
-	external    chan Message
-	internal    chan Message
-	id          string
-	updates     map[string]Message
-	seen        map[string]time.Time
-	statusLock  sync.Mutex
-	seenLock    sync.Mutex
-	clientsLock sync.Mutex
-	clients     map[string]string
-}
+type (
+	HTTPHandler interface {
+		Path() string
+		Verb() string
+		Handler(w http.ResponseWriter, r *http.Request)
+	}
+
+	Server struct {
+		host        string
+		master      string
+		isMaster    bool
+		port        int
+		prefix      string
+		external    chan Message
+		internal    chan Message
+		id          string
+		updates     map[string]Message
+		seen        map[string]time.Time
+		statusLock  sync.Mutex
+		seenLock    sync.Mutex
+		clientsLock sync.Mutex
+		clients     map[string]string
+		endpoints   []HTTPHandler
+	}
+)
 
 func init() {
 	http.DefaultClient.Timeout = 15 * time.Second
 }
 
-func NewServer(host, master string, port int) *Server {
+func NewServer(host, master string, port int, endpoints ...HTTPHandler) *Server {
 	var isMaster bool
 	clients := map[string]string{}
 	if master == "" {
@@ -47,15 +55,16 @@ func NewServer(host, master string, port int) *Server {
 		}
 	}
 	return &Server{
-		master:   master,
-		host:     host,
-		isMaster: isMaster,
-		port:     port,
-		updates:  map[string]Message{},
-		id:       "server",
-		external: make(chan Message),
-		seen:     map[string]time.Time{},
-		clients:  clients,
+		master:    master,
+		host:      host,
+		isMaster:  isMaster,
+		port:      port,
+		updates:   map[string]Message{},
+		id:        "server",
+		external:  make(chan Message),
+		seen:      map[string]time.Time{},
+		clients:   clients,
+		endpoints: endpoints,
 	}
 }
 
@@ -74,8 +83,19 @@ func (s *Server) Start(i <-chan Message, o chan<- Message) {
 				s.updates[msg.Sender] = msg
 				s.statusLock.Unlock()
 			}
-			if !s.isSeen(msg) {
-				s.send(msg)
+
+			if msg.Type == COMMAND && msg.Host != "" {
+				h := msg.Host
+				msg.Host = ""
+				if msg.Body == "reconnect" {
+					s.register()
+				} else {
+					s.doSend(fmt.Sprintf("%s/gadgets", h), msg, "")
+				}
+			} else {
+				if !s.isSeen(msg) {
+					s.send(msg)
+				}
 			}
 		case msg := <-s.external:
 			s.setSeen(msg)
@@ -99,12 +119,11 @@ func (s *Server) doSend(host string, msg Message, token string) {
 	if len(msg.Host) > 0 && strings.Index(host, msg.Host) == 0 {
 		return
 	}
+
 	msg.Host = s.host
 	var buf bytes.Buffer
-	enc := json.NewEncoder(&buf)
-	enc.Encode(msg)
+	json.NewEncoder(&buf).Encode(msg)
 	req, err := http.NewRequest("POST", host, &buf)
-
 	s.clientsLock.Lock()
 	defer s.clientsLock.Unlock()
 	if err != nil {
@@ -115,9 +134,10 @@ func (s *Server) doSend(host string, msg Message, token string) {
 	if len(token) > 0 {
 		req.Header.Add("Authorization", token)
 	}
+
 	r, err := http.DefaultClient.Do(req)
 	if r != nil {
-		io.Copy(ioutil.Discard, r.Body)
+		io.Copy(io.Discard, r.Body)
 		r.Body.Close()
 	}
 	if err != nil || r.StatusCode != http.StatusOK && token != "master" {
@@ -171,6 +191,10 @@ func (s *Server) startServer() {
 		r.HandleFunc("/clients", http.HandlerFunc(s.setClient)).Methods("POST")
 		r.HandleFunc("/clients", http.HandlerFunc(s.getClients)).Methods("GET")
 		r.HandleFunc("/clients", http.HandlerFunc(s.removeClient)).Methods("DELETE")
+	}
+
+	for _, h := range s.endpoints {
+		r.Handle(h.Path(), http.HandlerFunc(h.Handler)).Methods(h.Verb())
 	}
 
 	log.Printf("listening on 0.0.0.0:%d\n", s.port)

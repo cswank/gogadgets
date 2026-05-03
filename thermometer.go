@@ -3,8 +3,8 @@ package gogadgets
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -107,9 +107,9 @@ func (t *Thermometer) getTemperature(out chan Value, err chan error) {
 	}
 }
 
-//The 1-wire craps out once in a while and a value less than zero is a sign
-//that something went wrong.  Ususally the subsequent temperature value
-//is valid.
+// The 1-wire craps out once in a while and a value less than zero is a sign
+// that something went wrong.  Ususally the subsequent temperature value
+// is valid.
 func (t *Thermometer) isValid(value *Value) bool {
 	return value.Value.(float64) > 0.0
 }
@@ -120,15 +120,15 @@ func (t *Thermometer) isValid(value *Value) bool {
 func (t *Thermometer) readFile() (v *Value, err error) {
 	t.lock.Lock()
 	defer t.lock.Unlock()
-	b, err := ioutil.ReadFile(t.devicePath)
+	b, err := os.ReadFile(t.devicePath)
 	if err != nil {
 		return v, err
 	}
 	return t.parseValue(string(b))
 }
 
-//arseValue gets the actual tempreature from the 1-wire interface
-//sysfs file.
+// arseValue gets the actual tempreature from the 1-wire interface
+// sysfs file.
 func (t *Thermometer) parseValue(val string) (*Value, error) {
 	var v *Value
 	start := strings.Index(val, "t=")
@@ -151,7 +151,7 @@ func (t *Thermometer) parseValue(val string) (*Value, error) {
 	}, nil
 }
 
-//This is an InputDevice, so it must have a Start.
+// This is an InputDevice, so it must have a Start.
 func (t *Thermometer) Start(in <-chan Message, out chan<- Value) {
 	temperature := make(chan Value)
 

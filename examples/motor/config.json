@@ -1,40 +1,40 @@
 {
-    "gadgets": [
-        {
-            "location": "lab",
-            "name": "motor",
-            "type": "motor",
-            "pin": {
-                "type": "motor",
-                "pins": {
-                    "gpio_a": {
-                        "type": "gpio",
-                        "port": "8",
-                        "pin": "7",
-                        "direction": "out"
-                    },
-                    "gpio_b": {
-                        "type": "gpio",
-                        "port": "8",
-                        "pin": "8",
-                        "direction": "out"
-                    },
-                    "pwm": {
-                        "type": "pwm",
-                        "port": "8",
-                        "pin": "13",
-                        "frequency": 20000
-                    },
-                    "poller": {
-                        "type": "gpio",
-                        "port": "8",
-                        "pin": "9",
-                        "direction": "in",
-                        "edge": "rising",
-                        "value": true
-                    }
-                }
-            }
-        }
-    ]
+  "gadgets": [
+    {
+      "location": "lab",
+      "name": "motor",
+      "pin": {
+        "pins": {
+          "gpio_a": {
+            "direction": "out",
+            "pin": "7",
+            "port": "8",
+            "type": "gpio"
+          },
+          "gpio_b": {
+            "direction": "out",
+            "pin": "8",
+            "port": "8",
+            "type": "gpio"
+          },
+          "poller": {
+            "direction": "in",
+            "edge": "rising",
+            "pin": "9",
+            "port": "8",
+            "type": "gpio",
+            "value": true
+          },
+          "pwm": {
+            "frequency": 20000,
+            "pin": "13",
+            "port": "8",
+            "type": "pwm"
+          }
+        },
+        "type": "motor"
+      },
+      "type": "motor"
+    }
+  ]
 }

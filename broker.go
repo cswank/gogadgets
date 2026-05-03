@@ -1,6 +1,6 @@
 package gogadgets
 
-//All the gadgets of the system push their messages here.
+// All the gadgets of the system push their messages here.
 type Broker struct {
 	queue    *Queue
 	channels map[string]chan Message
@@ -33,8 +33,8 @@ func (b *Broker) Start() {
 	}
 }
 
-//Collects each message that is sent by the parts of the
-//system and pushes it in the queue.
+// Collects each message that is sent by the parts of the
+// system and pushes it in the queue.
 func (b *Broker) collectMessages(in <-chan Message) {
 	for {
 		msg := <-in
@@ -42,8 +42,8 @@ func (b *Broker) collectMessages(in <-chan Message) {
 	}
 }
 
-//After a message is collected by collectMessage, it is
-//then sent back to the rest of the system.
+// After a message is collected by collectMessage, it is
+// then sent back to the rest of the system.
 func (b *Broker) dispenseMessages(out chan<- Message) {
 	for {
 		b.queue.Lock()
@@ -57,7 +57,6 @@ func (b *Broker) dispenseMessages(out chan<- Message) {
 }
 
 func (b *Broker) sendMessage(msg Message) {
-
 	if msg.Target == "" {
 		for uid, channel := range b.channels {
 			if uid != msg.Sender {

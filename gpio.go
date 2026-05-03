@@ -88,7 +88,7 @@ func (g *GPIO) Init() error {
 			return err
 		}
 	}
-	if g.activeLow == "1" {
+	if g.activeLow == "1" || g.activeLow == "0" {
 		if err := g.writeValue(g.activeLowPath, g.activeLow); err != nil {
 			return err
 		}
@@ -126,7 +126,11 @@ func (g *GPIO) Off() error {
 }
 
 func (g *GPIO) writeValue(path, value string) error {
-	return ioutil.WriteFile(path, []byte(value), GPIO_DEV_MODE)
+	return os.WriteFile(path, []byte(value), GPIO_DEV_MODE)
+}
+
+func (g *GPIO) Open() (*os.File, error) {
+	return os.Open(g.valuePath)
 }
 
 func (g *GPIO) Wait() error {
