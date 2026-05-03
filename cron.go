@@ -105,7 +105,7 @@ func (c *Cron) getSleep() time.Duration {
 	if c.ts == nil {
 		return c.sleep
 	}
-	diff := time.Now().Sub(*c.ts)
+	diff := time.Since(*c.ts)
 	return c.sleep - diff
 }
 

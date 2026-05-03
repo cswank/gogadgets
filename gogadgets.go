@@ -285,6 +285,8 @@ type Pin struct {
 	Sleep       time.Duration `json:"sleep,omitempty"`
 	Value       interface{}   `json:"value,omitempty"`
 	Units       string        `json:"units,omitempty"`
+	//Chip is the gpiochip device number (default "0")
+	Chip string `json:"chip,omitempty"`
 	//Platform is either "rpi" or "beaglebone"
 	Platform  string                 `json:"platform,omitempty"`
 	Frequency int                    `json:"frequency,omitempty"`
