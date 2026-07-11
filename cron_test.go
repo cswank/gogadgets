@@ -1,8 +1,11 @@
 package gogadgets_test
 
 import (
+	"encoding/json"
 	"errors"
 	"math/rand"
+	"net/http"
+	"net/http/httptest"
 	"time"
 
 	"github.com/cswank/gogadgets"
@@ -221,6 +224,109 @@ var _ = Describe("Cron", func() {
 			// msg := <-in
 			// Expect(msg.Body).To(Equal("turn on living room light"))
 			// Expect(msg.Sender).To(Equal("cron"))
+		})
+	})
+
+	Describe("with a moisture guard", func() {
+		var (
+			srv   *httptest.Server
+			value float64
+		)
+
+		BeforeEach(func() {
+			srv = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				msgs := []gogadgets.Message{{
+					Location: "garden bed",
+					Name:     "soil moisture",
+					Value:    gogadgets.Value{Value: value, Units: "%"},
+				}}
+				json.NewEncoder(w).Encode(msgs)
+			}))
+			jobs = []string{"25 13 * * * turn on garden bed sprinklers"}
+		})
+
+		AfterEach(func() {
+			srv.Close()
+		})
+
+		runWithGuard := func(guard gogadgets.Guard) *gogadgets.Message {
+			var err error
+			c, err = gogadgets.NewCron(
+				nil,
+				gogadgets.CronAfter(fa.After),
+				gogadgets.CronJobs(jobs),
+				gogadgets.CronSleep(time.Millisecond),
+				gogadgets.CronGuards([]gogadgets.Guard{guard}),
+			)
+			Expect(err).To(BeNil())
+			go c.Start(out, in)
+			select {
+			case m := <-in:
+				return &m
+			case <-time.After(100 * time.Millisecond):
+				return nil
+			}
+		}
+
+		It("skips the command when sensor reads at or above max", func() {
+			value = 75
+			msg := runWithGuard(gogadgets.Guard{
+				Match:  "turn on garden bed sprinklers",
+				URL:    srv.URL,
+				Device: "garden bed soil moisture",
+				Max:    60,
+			})
+			Expect(msg).To(BeNil())
+		})
+
+		It("emits the command when sensor reads below max", func() {
+			value = 30
+			msg := runWithGuard(gogadgets.Guard{
+				Match:  "turn on garden bed sprinklers",
+				URL:    srv.URL,
+				Device: "garden bed soil moisture",
+				Max:    60,
+			})
+			Expect(msg).ToNot(BeNil())
+			Expect(msg.Body).To(Equal("turn on garden bed sprinklers"))
+		})
+
+		It("fails open when the sensor fetch errors", func() {
+			srv.Close()
+			value = 999
+			msg := runWithGuard(gogadgets.Guard{
+				Match:  "turn on garden bed sprinklers",
+				URL:    srv.URL,
+				Device: "garden bed soil moisture",
+				Max:    60,
+			})
+			Expect(msg).ToNot(BeNil())
+			Expect(msg.Body).To(Equal("turn on garden bed sprinklers"))
+		})
+
+		It("does not gate commands whose prefix doesn't match", func() {
+			jobs = []string{"25 13 * * * turn on front yard sprinklers"}
+			value = 999
+			msg := runWithGuard(gogadgets.Guard{
+				Match:  "turn on garden bed sprinklers",
+				URL:    srv.URL,
+				Device: "garden bed soil moisture",
+				Max:    60,
+			})
+			Expect(msg).ToNot(BeNil())
+			Expect(msg.Body).To(Equal("turn on front yard sprinklers"))
+		})
+
+		It("matches commands with duration suffixes", func() {
+			jobs = []string{"25 13 * * * turn on garden bed sprinklers for 10 minutes"}
+			value = 75
+			msg := runWithGuard(gogadgets.Guard{
+				Match:  "turn on garden bed sprinklers",
+				URL:    srv.URL,
+				Device: "garden bed soil moisture",
+				Max:    60,
+			})
+			Expect(msg).To(BeNil())
 		})
 	})
 })
